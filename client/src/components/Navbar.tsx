@@ -252,19 +252,6 @@ const Navbar = () => {
             className="lg:hidden bg-white border-t border-slate-200 max-h-[calc(100vh-80px)] overflow-y-auto"
           >
             <div className="px-4 py-6 space-y-4">
-              {/* Mobile Search */}
-              <div className="relative">
-                <form onSubmit={handleSearch} className="relative">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search..."
-                    className="w-full px-4 py-3 pl-10 pr-10 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 text-slate-900"
-                  />
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                </form>
-              </div>
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -275,6 +262,29 @@ const Navbar = () => {
                   {link.label}
                 </Link>
               ))}
+
+              {/* Mobile Search */}
+              <div className="pt-4 border-t border-slate-200">
+                <form onSubmit={handleSearch} className="space-y-3">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search..."
+                      className="w-full px-4 py-3 pl-10 pr-4 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 text-slate-900 bg-slate-50"
+                    />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-lg shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+                  >
+                    <Search className="w-4 h-4" />
+                    <span>Search</span>
+                  </button>
+                </form>
+              </div>
               {/* Mobile Login Button - Show when user is not logged in */}
               {isMounted && !user && (
                 <Link
