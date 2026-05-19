@@ -17,6 +17,19 @@ const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isMounted, setIsMounted] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+
+  // Static fallback pages for immediate searchability
+  const staticPages = [
+    { href: "/", label: "Home", type: "page", keywords: ["home", "main", "landing", "software", "consulting"] },
+    { href: "/about", label: "About Us", type: "page", keywords: ["about", "company", "story", "values", "mission"] },
+    { href: "/services", label: "Services", type: "page", keywords: ["services", "development", "software", "cloud", "mobile"] },
+    { href: "/portfolio", label: "Portfolio", type: "page", keywords: ["portfolio", "projects", "work", "case studies"] },
+    { href: "/team", label: "Team", type: "page", keywords: ["team", "members", "staff", "experts", "developers"] },
+    { href: "/contact", label: "Contact", type: "page", keywords: ["contact", "get in touch", "reach out", "email", "phone"] },
+  ];
+
+  const [searchableContent, setSearchableContent] = useState<any[]>(staticPages);
+
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
@@ -24,6 +37,79 @@ const Navbar = () => {
   // Prevent hydration mismatch by only rendering user-dependent content on client
   useEffect(() => {
     setIsMounted(true);
+  }, []);
+
+  // Fetch live search data from DB on mount
+  useEffect(() => {
+    const fetchSearchData = async () => {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+        
+        // Fetch services, team, and portfolios in parallel
+        const [servicesRes, teamRes, portfoliosRes] = await Promise.all([
+          fetch(`${API_URL}/services`).then(res => res.ok ? res.json() : null),
+          fetch(`${API_URL}/team?isActive=true`).then(res => res.ok ? res.json() : null),
+          fetch(`${API_URL}/portfolios?isActive=true`).then(res => res.ok ? res.json() : null),
+        ]);
+
+        const dynamicContent: any[] = [...staticPages];
+
+        if (servicesRes && servicesRes.success && Array.isArray(servicesRes.data)) {
+          servicesRes.data.forEach((service: any) => {
+            dynamicContent.push({
+              href: `/services`,
+              label: service.title,
+              type: "service",
+              keywords: [
+                service.title.toLowerCase(),
+                ...(service.description ? service.description.toLowerCase().split(/\s+/) : []),
+                "service", "solutions"
+              ]
+            });
+          });
+        }
+
+        if (teamRes && teamRes.success && Array.isArray(teamRes.data)) {
+          teamRes.data.forEach((member: any) => {
+            const roleStr = Array.isArray(member.role) ? member.role[0] : member.role;
+            dynamicContent.push({
+              href: `/team/${member._id}`,
+              label: `${member.name} - ${roleStr}`,
+              type: "team",
+              keywords: [
+                member.name.toLowerCase(),
+                roleStr?.toLowerCase() || "",
+                ...(member.skills || []).map((s: string) => s.toLowerCase()),
+                ...(member.expertise || []).map((e: string) => e.toLowerCase()),
+                "team", "member", "expert", "developer"
+              ]
+            });
+          });
+        }
+
+        if (portfoliosRes && portfoliosRes.success && Array.isArray(portfoliosRes.data)) {
+          portfoliosRes.data.forEach((project: any) => {
+            dynamicContent.push({
+              href: `/portfolio`,
+              label: project.title,
+              type: "project",
+              keywords: [
+                project.title.toLowerCase(),
+                project.category?.toLowerCase() || "",
+                ...(project.technologies || []).map((t: string) => t.toLowerCase()),
+                "project", "work", "portfolio"
+              ]
+            });
+          });
+        }
+
+        setSearchableContent(dynamicContent);
+      } catch (err) {
+        console.error("Error loading searchable content:", err);
+      }
+    };
+
+    fetchSearchData();
   }, []);
 
   useEffect(() => {
@@ -63,33 +149,7 @@ const Navbar = () => {
     }
   };
 
-  const searchableContent = [
-    // Pages
-    { href: "/", label: "Home", type: "page", keywords: ["home", "main", "landing", "software", "consulting"] },
-    { href: "/about", label: "About Us", type: "page", keywords: ["about", "company", "story", "values", "mission"] },
-    { href: "/services", label: "Services", type: "page", keywords: ["services", "development", "software", "cloud", "mobile"] },
-    { href: "/portfolio", label: "Portfolio", type: "page", keywords: ["portfolio", "projects", "work", "case studies"] },
-    { href: "/team", label: "Team", type: "page", keywords: ["team", "members", "staff", "experts", "developers"] },
-    { href: "/contact", label: "Contact", type: "page", keywords: ["contact", "get in touch", "reach out", "email", "phone"] },
-    // Services
-    { href: "/services", label: "Custom Software Development", type: "service", keywords: ["custom", "software", "development", "web", "applications", "enterprise"] },
-    { href: "/services", label: "Cloud Solutions & Migration", type: "service", keywords: ["cloud", "migration", "aws", "azure", "infrastructure"] },
-    { href: "/services", label: "Mobile App Development", type: "service", keywords: ["mobile", "app", "ios", "android", "react native", "flutter"] },
-    // Team Members
-    { href: "/team/1", label: "Taimour Khan - CEO & Founder", type: "team", keywords: ["taimour", "khan", "ceo", "founder", "leadership"] },
-    { href: "/team/2", label: "Abdul Sami - MERN Stack Developer", type: "team", keywords: ["abdul", "sami", "mern", "stack", "developer", "mongodb", "react", "node.js"] },
-    { href: "/team/3", label: "Ahmed Ali - Senior Full Stack Developer", type: "team", keywords: ["ahmed", "ali", "full stack", "react", "node.js", "typescript"] },
-    { href: "/team/4", label: "Fatima Khan - Mobile App Developer", type: "team", keywords: ["fatima", "khan", "mobile", "app", "react native", "flutter"] },
-    { href: "/team/5", label: "Hassan Malik - DevOps Engineer", type: "team", keywords: ["hassan", "malik", "devops", "docker", "kubernetes"] },
-    { href: "/team/6", label: "Zainab Ahmed - UI/UX Designer", type: "team", keywords: ["zainab", "ahmed", "ui", "ux", "designer", "frontend", "figma"] },
-    // Projects
-    { href: "/portfolio", label: "E-Commerce Platform", type: "project", keywords: ["e-commerce", "platform", "payment", "react", "node.js"] },
-    { href: "/portfolio", label: "Healthcare Management System", type: "project", keywords: ["healthcare", "management", "angular", "spring boot"] },
-    { href: "/portfolio", label: "Fitness Tracking App", type: "project", keywords: ["fitness", "tracking", "mobile", "react native"] },
-    { href: "/portfolio", label: "Financial Analytics Dashboard", type: "project", keywords: ["financial", "analytics", "dashboard", "vue.js", "python"] },
-    { href: "/portfolio", label: "Learning Management System", type: "project", keywords: ["learning", "lms", "education", "next.js"] },
-    { href: "/portfolio", label: "Food Delivery App", type: "project", keywords: ["food", "delivery", "mobile", "flutter"] },
-  ];
+  // Live dynamic searchableContent loaded on mount
 
   return (
     <nav

@@ -19,189 +19,131 @@ const SearchPage = () => {
   const query = searchParams.get("q") || "";
   const [searchQuery, setSearchQuery] = useState(query);
 
-  // All searchable content
-  const allContent = useMemo(() => {
-    const pages = [
-      { 
-        type: "page", 
-        title: "Home", 
-        description: "Main landing page with software consulting services",
-        href: "/",
-        keywords: ["home", "main", "landing", "software", "consulting", "solutions"]
-      },
-      { 
-        type: "page", 
-        title: "About Us", 
-        description: "Learn about WISER CONSULTING, our story, values, and mission",
-        href: "/about",
-        keywords: ["about", "company", "story", "values", "mission", "team", "history"]
-      },
-      { 
-        type: "page", 
-        title: "Services", 
-        description: "Our software development services including custom development, cloud solutions, and mobile apps",
-        href: "/services",
-        keywords: ["services", "development", "software", "cloud", "mobile", "solutions", "consulting"]
-      },
-      { 
-        type: "page", 
-        title: "Portfolio", 
-        description: "View our completed projects and case studies",
-        href: "/portfolio",
-        keywords: ["portfolio", "projects", "work", "case studies", "examples"]
-      },
-      { 
-        type: "page", 
-        title: "Team", 
-        description: "Meet our expert team members and developers",
-        href: "/team",
-        keywords: ["team", "members", "staff", "experts", "developers", "professionals"]
-      },
-      { 
-        type: "page", 
-        title: "Contact", 
-        description: "Get in touch with us for your software development needs",
-        href: "/contact",
-        keywords: ["contact", "get in touch", "reach out", "email", "phone", "address"]
-      }
-    ];
+  // All searchable content loaded dynamically from API
+  const [allContent, setAllContent] = useState<any[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
 
-    const services = [
-      {
-        type: "service",
-        title: "Custom Software Development",
-        description: "Tailored software solutions built to your exact specifications. From web applications to enterprise systems, we deliver scalable and maintainable code.",
-        href: "/services",
-        keywords: ["custom", "software", "development", "web", "applications", "enterprise", "api", "integration"]
-      },
-      {
-        type: "service",
-        title: "Cloud Solutions & Migration",
-        description: "Modernize your infrastructure with cloud-native solutions. We help you migrate, optimize, and scale on AWS, Azure, and Google Cloud.",
-        href: "/services",
-        keywords: ["cloud", "migration", "aws", "azure", "google cloud", "infrastructure", "scalable"]
-      },
-      {
-        type: "service",
-        title: "Mobile App Development",
-        description: "Native and cross-platform mobile applications that deliver exceptional user experiences on iOS and Android devices.",
-        href: "/services",
-        keywords: ["mobile", "app", "ios", "android", "react native", "flutter", "cross-platform"]
-      }
-    ];
+  useEffect(() => {
+    const fetchAllData = async () => {
+      const staticPages = [
+        { 
+          type: "page", 
+          title: "Home", 
+          description: "Main landing page with software consulting services",
+          href: "/",
+          keywords: ["home", "main", "landing", "software", "consulting", "solutions"]
+        },
+        { 
+          type: "page", 
+          title: "About Us", 
+          description: "Learn about WISER CONSULTING, our story, values, and mission",
+          href: "/about",
+          keywords: ["about", "company", "story", "values", "mission", "team", "history"]
+        },
+        { 
+          type: "page", 
+          title: "Services", 
+          description: "Our software development services including custom development, cloud solutions, and mobile apps",
+          href: "/services",
+          keywords: ["services", "development", "software", "cloud", "mobile", "solutions", "consulting"]
+        },
+        { 
+          type: "page", 
+          title: "Portfolio", 
+          description: "View our completed projects and case studies",
+          href: "/portfolio",
+          keywords: ["portfolio", "projects", "work", "case studies", "examples"]
+        },
+        { 
+          type: "page", 
+          title: "Team", 
+          description: "Meet our expert team members and developers",
+          href: "/team",
+          keywords: ["team", "members", "staff", "experts", "developers", "professionals"]
+        },
+        { 
+          type: "page", 
+          title: "Contact", 
+          description: "Get in touch with us for your software development needs",
+          href: "/contact",
+          keywords: ["contact", "get in touch", "reach out", "email", "phone", "address"]
+        }
+      ];
 
-    const teamMembers = [
-      {
-        type: "team",
-        title: "Taimour Khan",
-        description: "CEO & Founder - Visionary leader with 10+ years of experience in software development and business strategy.",
-        href: "/team/1",
-        keywords: ["taimour", "khan", "ceo", "founder", "leadership", "strategy", "full stack"]
-      },
-      {
-        type: "team",
-        title: "Abdul Sami",
-        description: "MERN Stack Developer - Expert in MERN stack development with a passion for building scalable and efficient web applications.",
-        href: "/team/2",
-        keywords: ["abdul", "sami", "mern", "stack", "developer", "mongodb", "express", "react", "node.js"]
-      },
-      {
-        type: "team",
-        title: "Ahmed Ali",
-        description: "Senior Full Stack Developer - Specialized in building modern web applications with React, Node.js, and cloud technologies.",
-        href: "/team/3",
-        keywords: ["ahmed", "ali", "full stack", "react", "node.js", "typescript", "aws"]
-      },
-      {
-        type: "team",
-        title: "Fatima Khan",
-        description: "Mobile App Developer - Passionate about creating beautiful and intuitive mobile experiences for iOS and Android.",
-        href: "/team/4",
-        keywords: ["fatima", "khan", "mobile", "app", "developer", "react native", "flutter", "ios", "android"]
-      },
-      {
-        type: "team",
-        title: "Hassan Malik",
-        description: "DevOps Engineer - Expert in CI/CD pipelines, containerization, and infrastructure automation.",
-        href: "/team/5",
-        keywords: ["hassan", "malik", "devops", "docker", "kubernetes", "ci/cd", "automation"]
-      },
-      {
-        type: "team",
-        title: "Zainab Ahmed",
-        description: "UI/UX Designer & Frontend Developer - Combining design thinking with technical expertise to create exceptional user experiences.",
-        href: "/team/6",
-        keywords: ["zainab", "ahmed", "ui", "ux", "designer", "frontend", "react", "figma"]
-      }
-    ];
+      try {
+        setLoadingData(true);
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+        
+        const [servicesRes, teamRes, portfoliosRes] = await Promise.all([
+          fetch(`${API_URL}/services`).then(res => res.ok ? res.json() : null),
+          fetch(`${API_URL}/team?isActive=true`).then(res => res.ok ? res.json() : null),
+          fetch(`${API_URL}/portfolios?isActive=true`).then(res => res.ok ? res.json() : null),
+        ]);
 
-    const projects = [
-      {
-        type: "project",
-        title: "E-Commerce Platform",
-        description: "A full-featured e-commerce platform with payment integration, inventory management, and analytics dashboard.",
-        href: "/portfolio",
-        keywords: ["e-commerce", "platform", "payment", "inventory", "analytics", "react", "node.js", "mongodb"]
-      },
-      {
-        type: "project",
-        title: "Healthcare Management System",
-        description: "Comprehensive healthcare management system for hospitals with patient records, scheduling, and billing.",
-        href: "/portfolio",
-        keywords: ["healthcare", "management", "system", "hospital", "patient", "records", "angular", "spring boot"]
-      },
-      {
-        type: "project",
-        title: "Fitness Tracking App",
-        description: "Cross-platform mobile app for fitness tracking with workout plans, progress monitoring, and social features.",
-        href: "/portfolio",
-        keywords: ["fitness", "tracking", "app", "mobile", "workout", "react native", "firebase"]
-      },
-      {
-        type: "project",
-        title: "Financial Analytics Dashboard",
-        description: "Real-time financial analytics dashboard with data visualization, reporting, and forecasting capabilities.",
-        href: "/portfolio",
-        keywords: ["financial", "analytics", "dashboard", "visualization", "reporting", "vue.js", "python"]
-      },
-      {
-        type: "project",
-        title: "Learning Management System",
-        description: "Enterprise LMS platform for online education with course management, assessments, and progress tracking.",
-        href: "/portfolio",
-        keywords: ["learning", "management", "lms", "education", "course", "next.js", "mongodb", "aws"]
-      },
-      {
-        type: "project",
-        title: "Food Delivery App",
-        description: "Mobile app for food delivery with real-time tracking, multiple payment options, and restaurant management.",
-        href: "/portfolio",
-        keywords: ["food", "delivery", "app", "mobile", "tracking", "payment", "flutter", "google maps"]
-      },
-      {
-        type: "project",
-        title: "Real Estate Platform",
-        description: "Property listing and management platform with virtual tours, mortgage calculator, and agent tools.",
-        href: "/portfolio",
-        keywords: ["real estate", "platform", "property", "listing", "virtual tours", "react", "express.js"]
-      },
-      {
-        type: "project",
-        title: "Supply Chain Management",
-        description: "End-to-end supply chain management system with inventory tracking, logistics, and supplier management.",
-        href: "/portfolio",
-        keywords: ["supply chain", "management", "inventory", "logistics", "angular", "java", "mysql"]
-      },
-      {
-        type: "project",
-        title: "Social Media Analytics",
-        description: "Social media analytics platform with sentiment analysis, engagement metrics, and content scheduling.",
-        href: "/portfolio",
-        keywords: ["social media", "analytics", "sentiment", "analysis", "engagement", "react", "python", "django"]
-      }
-    ];
+        const merged: any[] = [...staticPages];
 
-    return [...pages, ...services, ...teamMembers, ...projects];
+        if (servicesRes && servicesRes.success && Array.isArray(servicesRes.data)) {
+          servicesRes.data.forEach((service: any) => {
+            merged.push({
+              type: "service",
+              title: service.title,
+              description: service.description || "Tailored software solution built to your specifications.",
+              href: `/services`,
+              keywords: [
+                service.title.toLowerCase(),
+                ...(service.description ? service.description.toLowerCase().split(/\s+/) : []),
+                "service", "solutions"
+              ]
+            });
+          });
+        }
+
+        if (teamRes && teamRes.success && Array.isArray(teamRes.data)) {
+          teamRes.data.forEach((member: any) => {
+            const roleStr = Array.isArray(member.role) ? member.role.join(", ") : member.role;
+            merged.push({
+              type: "team",
+              title: member.name,
+              description: `${roleStr} - ${member.bio || "Expert team member at Wiser Consulting."}`,
+              href: `/team/${member._id}`,
+              keywords: [
+                member.name.toLowerCase(),
+                roleStr?.toLowerCase() || "",
+                ...(member.skills || []).map((s: string) => s.toLowerCase()),
+                ...(member.expertise || []).map((e: string) => e.toLowerCase()),
+                "team", "member"
+              ]
+            });
+          });
+        }
+
+        if (portfoliosRes && portfoliosRes.success && Array.isArray(portfoliosRes.data)) {
+          portfoliosRes.data.forEach((project: any) => {
+            merged.push({
+              type: "project",
+              title: project.title,
+              description: project.description || "A completed client project highlighting our engineering excellence.",
+              href: `/portfolio`,
+              keywords: [
+                project.title.toLowerCase(),
+                project.category?.toLowerCase() || "",
+                ...(project.technologies || []).map((t: string) => t.toLowerCase()),
+                "project", "portfolio"
+              ]
+            });
+          });
+        }
+
+        setAllContent(merged);
+      } catch (err) {
+        console.error("Error loading searchable content:", err);
+        setAllContent(staticPages);
+      } finally {
+        setLoadingData(false);
+      }
+    };
+
+    fetchAllData();
   }, []);
 
   // Filter results based on search query
@@ -210,9 +152,9 @@ const SearchPage = () => {
     
     const queryLower = searchQuery.toLowerCase();
     return allContent.filter(item => {
-      const titleMatch = item.title.toLowerCase().includes(queryLower);
-      const descMatch = item.description.toLowerCase().includes(queryLower);
-      const keywordMatch = item.keywords.some(keyword => 
+      const titleMatch = item.title?.toLowerCase().includes(queryLower);
+      const descMatch = item.description?.toLowerCase().includes(queryLower);
+      const keywordMatch = item.keywords?.some((keyword: string) => 
         keyword.toLowerCase().includes(queryLower)
       );
       return titleMatch || descMatch || keywordMatch;
@@ -318,7 +260,12 @@ const SearchPage = () => {
       {/* Results Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {!query ? (
+          {loadingData ? (
+            <div className="text-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900 mx-auto mb-4"></div>
+              <p className="text-slate-600">Searching all components in the website...</p>
+            </div>
+          ) : !query ? (
             <div className="text-center py-20">
               <Search className="w-16 h-16 text-slate-300 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-slate-900 mb-2">
