@@ -4,11 +4,11 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { 
-  Linkedin, 
-  Github, 
-  Twitter, 
-  Mail, 
+import {
+  Linkedin,
+  Github,
+  Twitter,
+  Mail,
   ArrowLeft,
   Code2,
   Database,
@@ -68,7 +68,7 @@ const TeamMemberPage = () => {
 
       const data = await res.json();
       console.log('Team member response:', data);
-      
+
       if (data.success && data.data) {
         setMember(data.data);
       } else {
@@ -189,7 +189,7 @@ const TeamMemberPage = () => {
               >
                 {member.name}
               </motion.h1>
-              
+
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -198,7 +198,7 @@ const TeamMemberPage = () => {
               >
                 {primaryRole}
               </motion.p>
-              
+
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

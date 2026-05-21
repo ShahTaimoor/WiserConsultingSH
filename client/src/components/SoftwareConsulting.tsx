@@ -3,11 +3,11 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { 
-  Code2, 
-  Cloud, 
-  Smartphone, 
-  ArrowRight, 
+import {
+  Code2,
+  Cloud,
+  Smartphone,
+  ArrowRight,
   CheckCircle2,
   Shield,
   Award,
@@ -129,7 +129,7 @@ const SoftwareConsulting: React.FC = () => {
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-slate-200 max-w-3xl mx-auto leading-relaxed">
-              We transform your ideas into powerful software solutions. Expert consulting, 
+              We transform your ideas into powerful software solutions. Expert consulting,
               custom development, and cutting-edge technology to drive your business forward.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">

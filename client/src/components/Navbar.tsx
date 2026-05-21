@@ -44,7 +44,7 @@ const Navbar = () => {
     const fetchSearchData = async () => {
       try {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-        
+
         // Fetch services, team, and portfolios in parallel
         const [servicesRes, teamRes, portfoliosRes] = await Promise.all([
           fetch(`${API_URL}/services`).then(res => res.ok ? res.json() : null),
@@ -153,11 +153,10 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-        isScrolled
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isScrolled
           ? "bg-white/95 backdrop-blur-md shadow-lg border-b border-slate-200"
           : "bg-white border-b border-slate-200"
-      }`}
+        }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
@@ -356,7 +355,7 @@ const Navbar = () => {
                   Login
                 </Link>
               )}
-              
+
               {isMounted && user && (
                 <div className="pt-4 border-t border-slate-200 space-y-3">
                   {/* Admin Button for Mobile - Only show for admin users */}
@@ -476,46 +475,46 @@ const Navbar = () => {
                         keyword.toLowerCase().includes(searchQuery.toLowerCase())
                       )
                     ).length === 0 && (
-                      <div className="px-6 py-8 text-center text-slate-500">
-                        <div className="text-sm mb-2">No results found for "{searchQuery}"</div>
-                        <Link
-                          href={`/search?q=${encodeURIComponent(searchQuery)}`}
-                          onClick={() => {
-                            setIsSearchOpen(false);
-                            setSearchQuery("");
-                          }}
-                          className="text-sm text-slate-900 hover:underline inline-flex items-center gap-1"
-                        >
-                          View all results
-                          <ExternalLink className="w-3 h-3" />
-                        </Link>
-                      </div>
-                    )}
+                        <div className="px-6 py-8 text-center text-slate-500">
+                          <div className="text-sm mb-2">No results found for "{searchQuery}"</div>
+                          <Link
+                            href={`/search?q=${encodeURIComponent(searchQuery)}`}
+                            onClick={() => {
+                              setIsSearchOpen(false);
+                              setSearchQuery("");
+                            }}
+                            className="text-sm text-slate-900 hover:underline inline-flex items-center gap-1"
+                          >
+                            View all results
+                            <ExternalLink className="w-3 h-3" />
+                          </Link>
+                        </div>
+                      )}
                     {searchableContent.filter((item) =>
                       item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
                       item.keywords.some((keyword) =>
                         keyword.toLowerCase().includes(searchQuery.toLowerCase())
                       )
                     ).length > 8 && (
-                      <div className="px-6 py-4 border-t border-slate-200 bg-slate-50">
-                        <Link
-                          href={`/search?q=${encodeURIComponent(searchQuery)}`}
-                          onClick={() => {
-                            setIsSearchOpen(false);
-                            setSearchQuery("");
-                          }}
-                          className="text-sm font-semibold text-slate-900 hover:text-slate-700 inline-flex items-center gap-2"
-                        >
-                          View all {searchableContent.filter((item) =>
-                            item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            item.keywords.some((keyword) =>
-                              keyword.toLowerCase().includes(searchQuery.toLowerCase())
-                            )
-                          ).length} results
-                          <ArrowRight className="w-4 h-4" />
-                        </Link>
-                      </div>
-                    )}
+                        <div className="px-6 py-4 border-t border-slate-200 bg-slate-50">
+                          <Link
+                            href={`/search?q=${encodeURIComponent(searchQuery)}`}
+                            onClick={() => {
+                              setIsSearchOpen(false);
+                              setSearchQuery("");
+                            }}
+                            className="text-sm font-semibold text-slate-900 hover:text-slate-700 inline-flex items-center gap-2"
+                          >
+                            View all {searchableContent.filter((item) =>
+                              item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                              item.keywords.some((keyword) =>
+                                keyword.toLowerCase().includes(searchQuery.toLowerCase())
+                              )
+                            ).length} results
+                            <ArrowRight className="w-4 h-4" />
+                          </Link>
+                        </div>
+                      )}
                   </div>
                 )}
               </div>

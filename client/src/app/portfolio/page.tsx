@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
-import { 
-  Globe2, 
-  Smartphone, 
-  ShoppingCart, 
+import {
+  Globe2,
+  Smartphone,
+  ShoppingCart,
   Building2,
   GraduationCap,
   Heart,
@@ -79,31 +79,31 @@ const Portfolio = () => {
     }
   };
 
-  const filteredProjects = activeFilter === "all" 
-    ? projects 
+  const filteredProjects = activeFilter === "all"
+    ? projects
     : projects.filter(project => project.category === activeFilter);
 
   const stats = [
-    { 
-      number: "100+", 
+    {
+      number: "100+",
       label: "Projects Delivered",
       icon: <Briefcase className="w-6 h-6" />,
       color: "from-blue-500 to-cyan-500"
     },
-    { 
-      number: "200+", 
+    {
+      number: "200+",
       label: "Happy Clients",
       icon: <Smile className="w-6 h-6" />,
       color: "from-purple-500 to-pink-500"
     },
-    { 
-      number: "10+", 
+    {
+      number: "10+",
       label: "Team Members",
       icon: <UserCheck className="w-6 h-6" />,
       color: "from-orange-500 to-red-500"
     },
-    { 
-      number: "5+", 
+    {
+      number: "5+",
       label: "Years Experience",
       icon: <Calendar className="w-6 h-6" />,
       color: "from-green-500 to-emerald-500"
@@ -131,7 +131,7 @@ const Portfolio = () => {
       {/* Hero Section */}
       <section className="relative text-white pt-32 pb-20 overflow-hidden">
         {/* Background Image */}
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
           style={{
             backgroundImage: 'url(/back.png)',
@@ -195,11 +195,10 @@ const Portfolio = () => {
               <button
                 key={category.id}
                 onClick={() => setActiveFilter(category.id)}
-                className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-                  activeFilter === category.id
+                className={`px-6 py-2 rounded-lg font-semibold transition-all ${activeFilter === category.id
                     ? "bg-slate-900 text-white"
                     : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                }`}
+                  }`}
               >
                 {category.label}
               </button>
@@ -252,8 +251,8 @@ const Portfolio = () => {
                             className="block"
                           >
                             {project.image &&
-                            (project.image.startsWith("http") ||
-                              project.image.startsWith("/")) ? (
+                              (project.image.startsWith("http") ||
+                                project.image.startsWith("/")) ? (
                               <img
                                 src={project.image}
                                 alt={project.title}
@@ -270,19 +269,19 @@ const Portfolio = () => {
                         ) : project.image &&
                           (project.image.startsWith("http") ||
                             project.image.startsWith("/")) ? (
-                      <img
-                        src={project.image}
-                        alt={project.title}
+                          <img
+                            src={project.image}
+                            alt={project.title}
                             width="100%"
                             height={260}
                             className="rounded-2xl object-cover w-full h-[260px] transition-transform duration-500 group-hover:scale-105"
-                      />
-                    ) : (
+                          />
+                        ) : (
                           <div className="flex items-center justify-center h-[260px] text-6xl">
                             {project.image || "🛒"}
                           </div>
-                    )}
-                  </div>
+                        )}
+                      </div>
                       <div className="flex flex-col gap-3">
                         <h3 className="text-foreground text-xl font-semibold">
                           {project.title}
