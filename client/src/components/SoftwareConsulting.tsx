@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
 import Link from 'next/link';
 import {
   Code2,
@@ -24,6 +24,54 @@ import {
   Lock,
   BarChart3
 } from 'lucide-react';
+
+const AnimatedCounter = ({ value }: { value: string }) => {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-50px" });
+  
+  // Extract number and suffix from value (e.g. "100+" -> { num: 100, suffix: "+" })
+  const match = value.match(/^(\d+)(.*)$/);
+  const targetNumber = match ? parseInt(match[1], 10) : 0;
+  const suffix = match ? match[2] : "";
+
+  useEffect(() => {
+    if (!isInView || targetNumber === 0) return;
+    
+    let start = 0;
+    const end = targetNumber;
+    const duration = 2000; // 2 seconds
+    const startTime = performance.now();
+
+    const animate = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Easing out quadratic
+      const easeProgress = progress * (2 - progress);
+      
+      const currentValue = Math.floor(easeProgress * (end - start) + start);
+      setCount(currentValue);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }, [isInView, targetNumber]);
+
+  if (targetNumber === 0) {
+    return <span ref={ref}>{value}</span>;
+  }
+
+  return (
+    <span ref={ref}>
+      {count}
+      {suffix}
+    </span>
+  );
+};
 
 const SoftwareConsulting: React.FC = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -145,25 +193,35 @@ const SoftwareConsulting: React.FC = () => {
           </motion.div>
         </div>
       </section>
-
       {/* Stats Section */}
       <section className="py-16 bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
             {stats.map((stat, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="text-center"
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                whileHover={{ 
+                  y: -8, 
+                  scale: 1.03,
+                  boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.05)"
+                }}
+                className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:border-blue-200 hover:shadow-md transition-all duration-300 cursor-pointer group text-center flex flex-col items-center justify-center"
               >
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl mb-4 text-blue-700">
+                <motion.div 
+                  whileHover={{ rotate: 360, scale: 1.1 }}
+                  transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                  className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl mb-4 text-blue-700 group-hover:from-blue-500 group-hover:to-cyan-500 group-hover:text-white transition-all duration-300 shadow-sm"
+                >
                   {stat.icon}
+                </motion.div>
+                <div className="text-3xl md:text-4xl font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors duration-300">
+                  <AnimatedCounter value={stat.value} />
                 </div>
-                <div className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">{stat.value}</div>
-                <div className="text-sm text-slate-600 font-medium">{stat.label}</div>
+                <div className="text-sm text-slate-600 font-medium group-hover:text-slate-900 transition-colors duration-300">{stat.label}</div>
               </motion.div>
             ))}
           </div>
