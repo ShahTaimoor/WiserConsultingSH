@@ -11,8 +11,10 @@ import {
   MessageSquare,
   CheckCircle2
 } from "lucide-react";
+import { useSettings } from "@/context/SettingsContext";
 
 const Contact = () => {
+  const { settings } = useSettings();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -78,29 +80,35 @@ const Contact = () => {
     }
   };
 
+  const emailVal = settings?.contactInfo?.email || "taimour448@gmail.com";
+  const phoneVal = settings?.contactInfo?.phone || "+92 313 0922988";
+  const phone2Val = settings?.contactInfo?.phone2 || "+92 3065779097";
+  const addressVal = settings?.contactInfo?.address || "Deans Trade Center, UG 390, Peshawar, Pakistan";
+  const officeHoursVal = settings?.contactInfo?.officeHours || "Monday - Saturday: 9:00 AM - 6:00 PM PKT";
+
   const contactInfo = [
     {
       icon: <Mail className="w-6 h-6" />,
       title: "Email",
-      content: "taimour448@gmail.com",
-      link: "mailto:taimour448@gmail.com"
+      content: emailVal,
+      link: `mailto:${emailVal}`
     },
     {
       icon: <Phone className="w-6 h-6" />,
       title: "Phone",
-      content: "+92 313 0922988",
-      link: "tel:+923130922988"
+      content: phoneVal,
+      link: `tel:${phoneVal.replace(/\s+/g, '')}`
     },
     {
       icon: <MapPin className="w-6 h-6" />,
       title: "Address",
-      content: "Deans Trade Center, UG 390, Peshawar, Pakistan",
-      link: "https://www.google.com/maps/search/Deans+Trade+Center+UG+390+Peshawar"
+      content: addressVal,
+      link: `https://www.google.com/maps/search/${encodeURIComponent(addressVal)}`
     },
     {
       icon: <Clock className="w-6 h-6" />,
       title: "Business Hours",
-      content: "Monday - Saturday: 9:00 AM - 6:00 PM PKT",
+      content: officeHoursVal,
       link: "#"
     }
   ];
@@ -300,19 +308,25 @@ const Contact = () => {
                       </h3>
                       {info.title === "Phone" ? (
                         <div className="flex flex-wrap gap-2">
-                          <a
-                            href="tel:+923130922988"
-                            className="text-slate-600 hover:text-slate-900 transition-colors"
-                          >
-                            +92 313 0922988
-                          </a>
-                          <span className="text-slate-400">|</span>
-                          <a
-                            href="tel:+923065779097"
-                            className="text-slate-600 hover:text-slate-900 transition-colors"
-                          >
-                            +92 3065779097
-                          </a>
+                          {phoneVal && (
+                            <a
+                              href={`tel:${phoneVal.replace(/\s+/g, '')}`}
+                              className="text-slate-600 hover:text-slate-900 transition-colors"
+                            >
+                              {phoneVal}
+                            </a>
+                          )}
+                          {phoneVal && phone2Val && (
+                            <span className="text-slate-400">|</span>
+                          )}
+                          {phone2Val && (
+                            <a
+                              href={`tel:${phone2Val.replace(/\s+/g, '')}`}
+                              className="text-slate-600 hover:text-slate-900 transition-colors"
+                            >
+                              {phone2Val}
+                            </a>
+                          )}
                         </div>
                       ) : info.link !== "#" ? (
                         <a
@@ -359,16 +373,13 @@ const Contact = () => {
               <h3 className="text-2xl font-bold text-slate-900 mb-2">
                 Visit Our Office
               </h3>
-              <p className="text-slate-600 mb-2">
-                Deans Trade Center, UG 390
-              </p>
               <p className="text-slate-600">
-                Peshawar, Khyber Pakhtunkhwa 25000, Pakistan
+                {addressVal}
               </p>
             </div>
             <div className="rounded-lg overflow-hidden shadow-lg">
               <iframe
-                src="https://www.google.com/maps?q=Deans+Trade+Center+UG+390+Peshawar+Pakistan&output=embed&zoom=15&center=34.0009333,71.5451672"
+                src={`https://www.google.com/maps?q=${encodeURIComponent(addressVal)}&output=embed&zoom=15`}
                 width="100%"
                 height="450"
                 style={{ border: 0 }}
@@ -376,12 +387,12 @@ const Contact = () => {
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
                 className="w-full"
-                title="WISER CONSULTING Office Location - Deans Trade Center, Peshawar"
+                title="WISER CONSULTING Office Location"
               ></iframe>
             </div>
             <div className="mt-6 text-center">
               <a
-                href="https://www.google.com/maps/search/Deans+Trade+Center+UG+390+Peshawar"
+                href={`https://www.google.com/maps/search/${encodeURIComponent(addressVal)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white font-semibold rounded-lg hover:bg-slate-800 transition-colors"

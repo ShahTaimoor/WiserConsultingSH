@@ -9,8 +9,10 @@ import { AppDispatch, RootState } from "@/redux/store";
 import { logout } from "@/redux/slices/auth/authSlice";
 import { Menu, X, ChevronDown, Search, X as XIcon, ArrowRight, ExternalLink, LogIn, User, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSettings } from "@/context/SettingsContext";
 
 const Navbar = () => {
+  const { settings } = useSettings();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -167,7 +169,7 @@ const Navbar = () => {
           >
             <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden group-hover:opacity-90 transition-opacity bg-slate-100">
               <Image
-                src="/logo.png"
+                src={settings?.logoUrl || "/logo.png"}
                 alt="Wiser Consulting Logo"
                 width={40}
                 height={40}

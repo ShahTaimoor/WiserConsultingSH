@@ -17,6 +17,7 @@ const teamRoutes = require('./routes/teamRoutes');
 const serviceRoutes = require('./routes/serviceRoutes');
 const contentRoutes = require('./routes/contentRoutes');
 const contactRoutes = require('./routes/contactRoutes');
+const settingsRoutes = require('./routes/settingsRoutes');
 const { apiLimiter, authLimiter, uploadLimiter } = require('./middleware/rateLimiter');
 const sanitize = require('./middleware/sanitize');
 const logger = require('./utils/logger');
@@ -79,6 +80,7 @@ app.use('/api', teamRoutes);
 app.use('/api', serviceRoutes);
 app.use('/api', contentRoutes);
 app.use('/api', contactRoutes);
+app.use('/api', settingsRoutes);
 
 app.get('/', (req, res) => {
   res.send('Welcome to the backend');

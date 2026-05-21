@@ -119,6 +119,30 @@ const portfolioImageStorage = new CloudinaryStorage({
   },
 });
 
+// Configure Cloudinary storage for site logo
+const logoImageStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'site-logos',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'],
+    transformation: [
+      { 
+        width: 600, 
+        height: 200, 
+        crop: 'limit',
+        quality: 'auto',
+        fetch_format: 'auto'
+      }
+    ],
+    public_id: (req, file) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      return `logo-${uniqueSuffix}`;
+    },
+    resource_type: 'image',
+  },
+});
+
+
 // File filter function
 const fileFilter = (req, file, cb) => {
   const allowedTypes = [
@@ -189,6 +213,16 @@ const uploadPortfolioImage = multer({
   },
   fileFilter: imageFileFilter,
 });
+
+// Multer instance for site logo uploads (single image)
+const uploadLogo = multer({
+  storage: logoImageStorage,
+  limits: {
+    fileSize: 2 * 1024 * 1024, // 2MB limit for logo
+  },
+  fileFilter: imageFileFilter,
+});
+
 
 // Configure upload fields for both local and cloudinary
 const uploadFields = uploadToCloudinary.fields([
@@ -315,6 +349,7 @@ module.exports = {
   uploadToLocal,
   uploadTeamImage,
   uploadPortfolioImage,
+  uploadLogo,
   uploadFields,
   uploadFieldsLocal,
   uploadLocalToCloudinary,

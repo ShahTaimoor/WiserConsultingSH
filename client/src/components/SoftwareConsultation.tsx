@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import AssessmentForm from './AssessmentForm';
+import { useSettings } from '@/context/SettingsContext';
 import { 
   Globe2, 
   FileCheck2, 
@@ -37,6 +38,7 @@ type AdminComment = {
 };
 
 const SoftwareConsultation: React.FC = () => {
+  const { settings } = useSettings();
   const dispatch = useDispatch<AppDispatch>();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -316,7 +318,7 @@ const SoftwareConsultation: React.FC = () => {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <motion.a
-                href="tel:+923130922988"
+                href={`tel:${(settings?.contactInfo?.phone || "+923130922988").replace(/\s+/g, '')}`}
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
                 className="px-8 py-4 bg-transparent text-white font-semibold rounded-lg text-lg border-2 border-white hover:bg-white/10 transition-all flex items-center gap-2"
@@ -329,19 +331,29 @@ const SoftwareConsultation: React.FC = () => {
             <div className="flex flex-wrap items-center justify-center gap-8 pt-8 text-slate-400">
               <div className="flex items-center gap-2">
                 <Mail className="w-5 h-5" />
-                <span className="text-sm">taimour448@gmail.com</span>
+                <span className="text-sm">{settings?.contactInfo?.email || "taimour448@gmail.com"}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-5 h-5" />
                 <div className="flex flex-wrap items-center gap-2">
-                  <a href="tel:+923130922988" className="text-sm hover:text-white transition-colors">+92 313 0922988</a>
-                  <span className="text-slate-500">|</span>
-                  <a href="tel:+923065779097" className="text-sm hover:text-white transition-colors">+92 3065779097</a>
+                  {settings?.contactInfo?.phone && (
+                    <a href={`tel:${settings.contactInfo.phone.replace(/\s+/g, '')}`} className="text-sm hover:text-white transition-colors">
+                      {settings.contactInfo.phone}
+                    </a>
+                  )}
+                  {settings?.contactInfo?.phone && settings?.contactInfo?.phone2 && (
+                    <span className="text-slate-500">|</span>
+                  )}
+                  {settings?.contactInfo?.phone2 && (
+                    <a href={`tel:${settings.contactInfo.phone2.replace(/\s+/g, '')}`} className="text-sm hover:text-white transition-colors">
+                      {settings.contactInfo.phone2}
+                    </a>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="w-5 h-5" />
-                <span className="text-sm">Deans Trade Center, UG 390, Peshawar</span>
+                <span className="text-sm">{settings?.contactInfo?.address || "Deans Trade Center, UG 390, Peshawar, Pakistan"}</span>
               </div>
             </div>
           </motion.div>

@@ -1,8 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram, FaPhone, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
+import { useSettings } from "@/context/SettingsContext";
 
 const Footer = () => {
+  const { settings } = useSettings();
   const currentYear = new Date().getFullYear();
 
   const services = [
@@ -42,7 +44,7 @@ const Footer = () => {
             <div className="flex items-center space-x-2">
               <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden bg-white/10">
                 <Image
-                  src="/logo.png"
+                  src={settings?.logoUrl || "/logo.png"}
                   alt="Wiser Consulting Logo"
                   width={40}
                   height={40}
@@ -66,28 +68,27 @@ const Footer = () => {
             {/* Social Links */}
             <div className="flex space-x-3">
               <a
-                href="#"
+                href={settings?.socialLinks?.facebook || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-lg flex items-center justify-center transition-colors border border-slate-700"
                 aria-label="Facebook"
               >
                 <FaFacebookF className="text-white text-sm" />
               </a>
               <a
-                href="#"
-                className="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-lg flex items-center justify-center transition-colors border border-slate-700"
-                aria-label="Twitter"
-              >
-                <FaTwitter className="text-white text-sm" />
-              </a>
-              <a
-                href="#"
+                href={settings?.socialLinks?.instagram || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-lg flex items-center justify-center transition-colors border border-slate-700"
                 aria-label="Instagram"
               >
                 <FaInstagram className="text-white text-sm" />
               </a>
               <a
-                href="#"
+                href={settings?.socialLinks?.linkedin || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-lg flex items-center justify-center transition-colors border border-slate-700"
                 aria-label="LinkedIn"
               >
@@ -143,8 +144,7 @@ const Footer = () => {
                 <div>
                   <p className="text-white text-sm font-medium mb-1">Address</p>
                   <p className="text-slate-400 text-sm leading-relaxed">
-                    Deans Trade Center, UG 390<br />
-                    Peshawar, Pakistan
+                    {settings?.contactInfo?.address || "Deans Trade Center, UG 390, Peshawar, Pakistan"}
                   </p>
                 </div>
               </li>
@@ -155,10 +155,10 @@ const Footer = () => {
                 <div>
                   <p className="text-white text-sm font-medium mb-1">Email</p>
                   <a
-                    href="mailto:taimour448@gmail.com"
+                    href={`mailto:${settings?.contactInfo?.email || "taimour448@gmail.com"}`}
                     className="text-slate-400 hover:text-white transition-colors text-sm"
                   >
-                    taimour448@gmail.com
+                    {settings?.contactInfo?.email || "taimour448@gmail.com"}
                   </a>
                 </div>
               </li>
@@ -169,19 +169,25 @@ const Footer = () => {
                 <div>
                   <p className="text-white text-sm font-medium mb-1">Phone</p>
                   <div className="flex flex-wrap gap-2">
-                    <a
-                      href="tel:+923130922988"
-                      className="text-slate-400 hover:text-white transition-colors text-sm"
-                    >
-                      +92 313 0922988
-                    </a>
-                    <span className="text-slate-400">|</span>
-                    <a
-                      href="tel:+923065779097"
-                      className="text-slate-400 hover:text-white transition-colors text-sm"
-                    >
-                      +92 3065779097
-                    </a>
+                    {settings?.contactInfo?.phone && (
+                      <a
+                        href={`tel:${settings.contactInfo.phone.replace(/\s+/g, '')}`}
+                        className="text-slate-400 hover:text-white transition-colors text-sm"
+                      >
+                        {settings.contactInfo.phone}
+                      </a>
+                    )}
+                    {settings?.contactInfo?.phone && settings?.contactInfo?.phone2 && (
+                      <span className="text-slate-400">|</span>
+                    )}
+                    {settings?.contactInfo?.phone2 && (
+                      <a
+                        href={`tel:${settings.contactInfo.phone2.replace(/\s+/g, '')}`}
+                        className="text-slate-400 hover:text-white transition-colors text-sm"
+                      >
+                        {settings.contactInfo.phone2}
+                      </a>
+                    )}
                   </div>
                 </div>
               </li>

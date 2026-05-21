@@ -4,7 +4,7 @@ import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, u
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Logo from "@/assets/logo/logo";
 import { NavItem, NavMain } from "@/components/shadcn-space/blocks/sidebar-01/nav-main";
-import { PieChart, Briefcase, Users, FileText, Mail, User } from "lucide-react";
+import { PieChart, Briefcase, Users, FileText, Mail, User, Settings } from "lucide-react";
 
 export const navData: NavItem[] = [
   // Main Sectiion
@@ -15,6 +15,7 @@ export const navData: NavItem[] = [
   { title: "Content", icon: FileText, href: "/admin/content" },
   { title: "Contact Submissions", icon: Mail, href: "/admin/contacts" },
   { title: "Users", icon: User, href: "/admin/users" },
+  { title: "Settings", icon: Settings, href: "/admin/settings" },
 ];
 
 export function AppSidebar() {
