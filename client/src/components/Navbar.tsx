@@ -445,7 +445,7 @@ const Navbar = () => {
                     {searchableContent
                       .filter((item) =>
                         item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        item.keywords.some((keyword) =>
+                        item.keywords.some((keyword: string) =>
                           keyword.toLowerCase().includes(searchQuery.toLowerCase())
                         )
                       )
@@ -471,7 +471,7 @@ const Navbar = () => {
                       ))}
                     {searchableContent.filter((item) =>
                       item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                      item.keywords.some((keyword) =>
+                      item.keywords.some((keyword: string) =>
                         keyword.toLowerCase().includes(searchQuery.toLowerCase())
                       )
                     ).length === 0 && (
@@ -492,7 +492,7 @@ const Navbar = () => {
                       )}
                     {searchableContent.filter((item) =>
                       item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                      item.keywords.some((keyword) =>
+                      item.keywords.some((keyword: string) =>
                         keyword.toLowerCase().includes(searchQuery.toLowerCase())
                       )
                     ).length > 8 && (
@@ -507,7 +507,7 @@ const Navbar = () => {
                           >
                             View all {searchableContent.filter((item) =>
                               item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                              item.keywords.some((keyword) =>
+                              item.keywords.some((keyword: string) =>
                                 keyword.toLowerCase().includes(searchQuery.toLowerCase())
                               )
                             ).length} results

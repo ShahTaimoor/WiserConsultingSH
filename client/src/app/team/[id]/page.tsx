@@ -22,7 +22,7 @@ import {
 interface TeamMember {
   _id: string;
   name: string;
-  role: string;
+  role: string | string[];
   bio: string;
   fullBio?: string;
   image: string;

@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { 
   Briefcase, 
   Users, 
-  Wrench, 
   FileText, 
   Mail, 
   User,
@@ -19,7 +18,6 @@ const AdminDashboard = () => {
   const [stats, setStats] = useState({
     portfolio: 0,
     team: 0,
-    services: 0,
     contacts: 0,
   });
 
@@ -34,22 +32,19 @@ const AdminDashboard = () => {
           Authorization: `Bearer ${token}` 
         };
         
-        const [portfolioRes, teamRes, servicesRes, contactsRes] = await Promise.all([
+        const [portfolioRes, teamRes, contactsRes] = await Promise.all([
           fetch(`${API_URL}/portfolios`, { headers, credentials: 'include' }),
           fetch(`${API_URL}/team`, { headers, credentials: 'include' }),
-          fetch(`${API_URL}/services`, { headers, credentials: 'include' }),
           fetch(`${API_URL}/admin/contacts`, { headers, credentials: 'include' }),
         ]);
 
         const portfolio = await portfolioRes.json();
         const team = await teamRes.json();
-        const services = await servicesRes.json();
         const contacts = await contactsRes.json();
 
         setStats({
           portfolio: portfolio.data?.length || 0,
           team: team.data?.length || 0,
-          services: services.data?.length || 0,
           contacts: contacts.data?.length || 0,
         });
       } catch (error) {
@@ -63,7 +58,6 @@ const AdminDashboard = () => {
   const quickLinks = [
     { name: 'Portfolio', href: '/admin/portfolio', icon: Briefcase, color: 'bg-blue-500' },
     { name: 'Team', href: '/admin/team', icon: Users, color: 'bg-green-500' },
-    { name: 'Services', href: '/admin/services', icon: Wrench, color: 'bg-purple-500' },
     { name: 'Content', href: '/admin/content', icon: FileText, color: 'bg-orange-500' },
     { name: 'Contact Submissions', href: '/admin/contacts', icon: Mail, color: 'bg-red-500' },
     { name: 'Users', href: '/admin/users', icon: User, color: 'bg-indigo-500' },
@@ -78,7 +72,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 p-5 sm:p-6">
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
@@ -98,17 +92,6 @@ const AdminDashboard = () => {
             </div>
             <div className="w-12 h-12 sm:w-14 sm:h-14 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0 ml-3">
               <Users className="w-6 h-6 sm:w-7 sm:h-7 text-green-500" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 p-5 sm:p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex-1 min-w-0">
-              <p className="text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wide">Services</p>
-              <p className="text-3xl sm:text-4xl font-bold text-gray-900 mt-2">{stats.services}</p>
-            </div>
-            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-purple-50 rounded-xl flex items-center justify-center flex-shrink-0 ml-3">
-              <Wrench className="w-6 h-6 sm:w-7 sm:h-7 text-purple-500" />
             </div>
           </div>
         </div>
