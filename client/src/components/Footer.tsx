@@ -19,8 +19,6 @@ const SOCIAL_PLATFORMS: {
 ];
 
 const linkColumn1 = [
-  { name: "About Us", href: "/about" },
-  { name: "Services", href: "/services" },
   { name: "Portfolio", href: "/portfolio" },
   { name: "Team", href: "/team" },
   { name: "Contact", href: "/contact" },

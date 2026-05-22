@@ -23,8 +23,7 @@ const Navbar = () => {
   // Static fallback pages for immediate searchability
   const staticPages = [
     { href: "/", label: "Home", type: "page", keywords: ["home", "main", "landing", "software", "consulting"] },
-    { href: "/about", label: "About Us", type: "page", keywords: ["about", "company", "story", "values", "mission"] },
-    { href: "/services", label: "Services", type: "page", keywords: ["services", "development", "software", "cloud", "mobile"] },
+
     { href: "/portfolio", label: "Portfolio", type: "page", keywords: ["portfolio", "projects", "work", "case studies"] },
     { href: "/team", label: "Team", type: "page", keywords: ["team", "members", "staff", "experts", "developers"] },
     { href: "/contact", label: "Contact", type: "page", keywords: ["contact", "get in touch", "reach out", "email", "phone"] },
@@ -134,8 +133,7 @@ const Navbar = () => {
 
   const navLinks = [
     { href: "/", label: "Home" },
-    { href: "/about", label: "About" },
-    { href: "/services", label: "Services" },
+
     { href: "/portfolio", label: "Portfolio" },
     { href: "/team", label: "Team" },
     { href: "/contact", label: "Contact" },
