@@ -90,27 +90,7 @@ const Services = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <section className="relative text-white pt-32 pb-20 overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: 'url(/back.png)',
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/70 via-slate-800/65 to-slate-900/70" />
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div {...fadeUp()} className="text-center">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 px-4">
-              Our Services
-            </h1>
-            <p className="text-base sm:text-lg md:text-xl text-slate-300 max-w-3xl mx-auto px-4">
-              Comprehensive software solutions to transform your business. 
-              From custom development to cloud migration, we've got you covered.
-            </p>
-          </motion.div>
-        </div>
-      </section>
+
 
       {/* Services Grid */}
       <section className="py-12 sm:py-16 lg:py-20 bg-white">

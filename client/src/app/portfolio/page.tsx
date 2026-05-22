@@ -123,28 +123,7 @@ const Portfolio = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <section className="relative text-white pt-32 pb-20 overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
-          style={{
-            backgroundImage: 'url(/back.png)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        ></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 to-slate-900/60"></div>
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div {...stagger()} className="text-center">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 px-4">
-              Our Portfolio
-            </h1>
-            <p className="text-base sm:text-lg md:text-xl text-slate-300 max-w-3xl mx-auto px-4">
-              Showcasing our best work across web applications, mobile apps, and enterprise solutions
-            </p>
-          </motion.div>
-        </div>
-      </section>
+
 
       {/* Stats */}
       <section className="py-12 sm:py-16 lg:py-20 bg-slate-50">

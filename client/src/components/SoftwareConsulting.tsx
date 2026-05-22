@@ -108,21 +108,6 @@ const SoftwareConsulting: React.FC = () => {
         </motion.video>
         <motion.div style={{ opacity: overlayOpacity }} className="absolute inset-0 bg-slate-950/60" />
         <div className="relative z-20 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-20 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
-          >
-            <motion.a
-              href="/portfolio"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              className="px-8 py-4 bg-white text-slate-900 font-semibold rounded-full text-base hover:bg-white/90 transition-colors"
-            >
-              View Our Work
-            </motion.a>
-          </motion.div>
         </div>
       </section>
 

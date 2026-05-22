@@ -81,71 +81,9 @@ const About = () => {
     }
   ];
 
-  const heroWords = ["About", "Wiser", "Consulting"];
-
   return (
     <div className="relative">
-      {/* Hero */}
-      <section className="relative w-full min-h-[70vh] flex items-center justify-center overflow-hidden bg-slate-950">
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: 'url(/back.png)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 via-slate-800/70 to-slate-900/60" />
-        <div className="relative z-20 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-20 text-center">
-          <div className="space-y-10">
-            <h1 className="text-[clamp(3rem,10vw,8rem)] font-bold text-white leading-[0.85] tracking-[-0.04em]">
-              {heroWords.map((word, i) => (
-                <motion.span
-                  key={word}
-                  initial={{ opacity: 0, y: 80 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 1, delay: i * 0.2, ease }}
-                  className="block"
-                >
-                  {word}
-                </motion.span>
-              ))}
-              <motion.span
-                initial={{ opacity: 0, y: 80 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 0.6, ease }}
-                className="block mt-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-300"
-              >
-                Since 2020
-              </motion.span>
-            </h1>
-            <motion.p
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.9, ease }}
-              className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed text-balance"
-            >
-              Transforming businesses through innovative software solutions. 
-              We are a trusted software house delivering excellence since 2020.
-            </motion.p>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 1.1, ease }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4"
-            >
-              <motion.a
-                href="/contact"
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                className="px-8 py-4 bg-white text-slate-900 font-semibold rounded-full text-base hover:bg-white/90 transition-colors"
-              >
-                Get In Touch
-              </motion.a>
-            </motion.div>
-          </div>
-        </div>
-      </section>
+
 
       {/* Our Story */}
       <section className="py-20 sm:py-28 bg-white">
