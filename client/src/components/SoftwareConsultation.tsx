@@ -8,7 +8,7 @@ import {
   Globe2, 
   FileCheck2, 
   Users, 
-  ArrowRight, 
+  // ArrowRight, 
   ChevronRight, 
   ChevronLeft,
   CheckCircle2,
@@ -23,6 +23,22 @@ import {
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '@/redux/store';
 import { fetchAdminComments } from '@/redux/slices/formSubmission/formSubmissionSlice';
+
+const ease = [0.16, 1, 0.3, 1];
+
+const fadeUp = (delay = 0) => ({
+  initial: { opacity: 0, y: 40 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-50px" },
+  transition: { duration: 0.8, delay, ease },
+});
+
+const stagger = (delay = 0) => ({
+  initial: { opacity: 0, y: 30 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true },
+  transition: { duration: 0.7, delay, ease },
+});
 
 interface AuthState {
   user: {
@@ -105,7 +121,7 @@ const SoftwareConsultation: React.FC = () => {
 
   return (
     <div className="relative">
-      {/* Hero Section - Modern Design */}
+      {/* Hero Section */}
       <section className="relative w-full min-h-[90vh] flex items-center justify-center overflow-hidden">
         <video
           className="absolute top-0 left-0 w-full h-full object-cover z-0"
@@ -115,22 +131,21 @@ const SoftwareConsultation: React.FC = () => {
           muted
           playsInline
         />
-        <div className="absolute inset-0 bg-slate-900/70 z-10" />
+        <div className="absolute inset-0 bg-slate-900/60 z-10" />
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="space-y-8"
-          >
+          <motion.div {...fadeUp()} className="space-y-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 mb-4">
               <Clock className="w-4 h-4 text-white" />
               <span className="text-sm text-white font-medium">Trusted Software House Since 2020</span>
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-white leading-tight tracking-tight px-4">
-              Transform Your Business
+              {"Transform Your Business".split(' ').map((word, i) => (
+                <motion.span key={i} {...stagger(i * 0.1)} className="inline-block">{word}{' '}</motion.span>
+              ))}
               <span className="block mt-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-300">
-                With Software Solutions
+                {"With Software Solutions".split(' ').map((word, i) => (
+                  <motion.span key={i} {...stagger(0.3 + i * 0.1)} className="inline-block">{word}{' '}</motion.span>
+                ))}
               </span>
             </h1>
             <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-slate-200 max-w-3xl mx-auto leading-relaxed px-4">
@@ -151,19 +166,16 @@ const SoftwareConsultation: React.FC = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-white border-b border-slate-200">
+      <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                {...fadeUp(index * 0.1)}
                 className="text-center"
               >
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-100 rounded-2xl mb-4 text-slate-700">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-50 rounded-2xl mb-4 text-slate-700">
                   {stat.icon}
                 </div>
                 <div className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">{stat.value}</div>
@@ -177,14 +189,8 @@ const SoftwareConsultation: React.FC = () => {
       {/* Why Choose Us Section */}
       <section className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-4 px-4">
+          <motion.div {...fadeUp()} className="text-center mb-16">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 mb-4 px-4">
               Why Choose Our Software Services
             </h2>
             <p className="text-base sm:text-lg md:text-xl text-slate-600 max-w-2xl mx-auto px-4">
@@ -215,14 +221,8 @@ const SoftwareConsultation: React.FC = () => {
       {/* Process Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-4 px-4">
+          <motion.div {...fadeUp()} className="text-center mb-16">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 mb-4 px-4">
               Our Simple Process
             </h2>
             <p className="text-base sm:text-lg md:text-xl text-slate-600 max-w-2xl mx-auto px-4">
@@ -234,13 +234,10 @@ const SoftwareConsultation: React.FC = () => {
             {processSteps.map((step, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                {...stagger(index * 0.1)}
                 className="relative"
               >
-                <div className="bg-white p-8 rounded-2xl border border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all h-full">
+                <div className="bg-white p-8 rounded-2xl transition-all h-full">
                   <div className="flex items-start justify-between mb-6">
                     <div className="text-5xl font-bold text-slate-200">{step.step}</div>
                     <div className="w-14 h-14 bg-slate-100 rounded-xl flex items-center justify-center text-slate-700">
@@ -259,17 +256,11 @@ const SoftwareConsultation: React.FC = () => {
         </div>
       </section>
 
-      {/* Destinations Section */}
+      {/* Technology Stack Section */}
       <section className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-4 px-4">
+          <motion.div {...fadeUp()} className="text-center mb-16">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 mb-4 px-4">
               Our Technology Stack
             </h2>
             <p className="text-base sm:text-lg md:text-xl text-slate-600 max-w-2xl mx-auto px-4">
@@ -281,12 +272,9 @@ const SoftwareConsultation: React.FC = () => {
             {technologies.map((tech, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.3, delay: i * 0.1 }}
+                {...stagger(i * 0.1)}
                 whileHover={{ y: -8, scale: 1.05 }}
-                className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition-all border border-slate-200 hover:border-slate-300 cursor-pointer group"
+                className="bg-white p-6 rounded-2xl transition-all cursor-pointer group"
               >
                 <div className="aspect-video mb-4 relative overflow-hidden rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
                   <span className="text-6xl">{tech.icon}</span>
@@ -301,15 +289,9 @@ const SoftwareConsultation: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-slate-900">
+      <section className="py-20 bg-slate-950">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="space-y-8"
-          >
+          <motion.div {...fadeUp()} className="space-y-8">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
               Ready to Start Your Software Project?
             </h2>
@@ -319,9 +301,9 @@ const SoftwareConsultation: React.FC = () => {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <motion.a
                 href={`tel:${(settings?.contactInfo?.phone || "+923130922988").replace(/\s+/g, '')}`}
-                whileHover={{ scale: 1.05, y: -2 }}
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 bg-transparent text-white font-semibold rounded-lg text-lg border-2 border-white hover:bg-white/10 transition-all flex items-center gap-2"
+                className="px-8 py-4 bg-white text-slate-950 font-semibold rounded-full text-lg transition-all flex items-center gap-2"
               >
                 <Phone className="w-5 h-5" />
                 Call Us Now
@@ -365,11 +347,11 @@ const SoftwareConsultation: React.FC = () => {
         <>
           <button
             onClick={() => setShowComments(!showComments)}
-            className="fixed top-40 right-0 z-50 bg-slate-900 text-white p-3 rounded-l-xl shadow-xl hover:bg-slate-800 transition-all border border-slate-700 hover:shadow-2xl"
+            className="fixed top-40 right-0 z-50 bg-slate-900 text-white p-3 rounded-l-xl hover:bg-slate-800 transition-all border border-slate-700"
           >
             {showComments ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
             {adminComments.length > 0 && (
-              <span className="absolute -top-2 -left-2 bg-red-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg">
+              <span className="absolute -top-2 -left-2 bg-red-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
                 {adminComments.length}
               </span>
             )}
@@ -380,7 +362,7 @@ const SoftwareConsultation: React.FC = () => {
             initial={{ x: "100%" }}
             animate={{ x: showComments ? 0 : "100%" }}
             transition={{ type: "tween", duration: 0.3 }}
-            className="fixed top-20 right-0 w-96 h-[85vh] bg-white shadow-2xl border-l border-slate-200 rounded-l-2xl overflow-hidden z-40"
+            className="fixed top-20 right-0 w-96 h-[85vh] bg-white border-l border-slate-200 rounded-l-2xl overflow-hidden z-40"
           >
             <div className="h-full flex flex-col">
               <div className="px-6 py-4 bg-slate-900 text-white border-b border-slate-700">
@@ -435,12 +417,9 @@ const SoftwareConsultation: React.FC = () => {
 
 const ServiceCard = ({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) => (
   <motion.div
-    initial={{ opacity: 0, y: 40 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }}
-    transition={{ duration: 0.6 }}
+    {...fadeUp()}
     whileHover={{ y: -8 }}
-    className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all border border-slate-200 hover:border-slate-300 h-full"
+    className="bg-white p-8 rounded-3xl transition-all h-full"
   >
     <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mb-6 text-slate-700">
       {icon}

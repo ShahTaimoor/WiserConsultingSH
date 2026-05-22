@@ -19,6 +19,22 @@ import {
   UserCheck,
 } from "lucide-react";
 
+const ease = [0.16, 1, 0.3, 1];
+
+const fadeUp = (delay = 0) => ({
+  initial: { opacity: 0, y: 40 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-50px" },
+  transition: { duration: 0.8, delay, ease },
+});
+
+const stagger = (delay = 0) => ({
+  initial: { opacity: 0, y: 30 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true },
+  transition: { duration: 0.7, delay, ease },
+});
+
 interface PortfolioProject {
   _id: string;
   title: string;
@@ -72,7 +88,6 @@ const Portfolio = () => {
     } catch (error) {
       console.error('Error fetching portfolios:', error);
       setError(error instanceof Error ? error.message : 'Failed to load portfolios');
-      // Fallback to empty array if API fails
       setProjects([]);
     } finally {
       setLoading(false);
@@ -88,49 +103,28 @@ const Portfolio = () => {
       number: "100+",
       label: "Projects Delivered",
       icon: <Briefcase className="w-6 h-6" />,
-      color: "from-blue-500 to-cyan-500"
     },
     {
       number: "200+",
       label: "Happy Clients",
       icon: <Smile className="w-6 h-6" />,
-      color: "from-purple-500 to-pink-500"
     },
     {
       number: "10+",
       label: "Team Members",
       icon: <UserCheck className="w-6 h-6" />,
-      color: "from-orange-500 to-red-500"
     },
     {
       number: "5+",
       label: "Years Experience",
       icon: <Calendar className="w-6 h-6" />,
-      color: "from-green-500 to-emerald-500"
     }
   ];
-
-  const cardVariants = {
-    hidden: {
-      opacity: 0,
-      y: 80,
-    },
-    visible: (index: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: {
-        delay: index * 0.2,
-        duration: 0.6,
-        ease: "easeInOut" as const,
-      },
-    }),
-  };
 
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="relative text-white pt-32 pb-20 overflow-hidden">
-        {/* Background Image */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
           style={{
@@ -139,17 +133,10 @@ const Portfolio = () => {
             backgroundPosition: 'center',
           }}
         ></div>
-        {/* Overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/90 via-slate-800/85 to-slate-900/90"></div>
-        {/* Content */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 to-slate-900/60"></div>
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center"
-          >
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 px-4">
+          <motion.div {...stagger()} className="text-center">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 px-4">
               Our Portfolio
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-slate-300 max-w-3xl mx-auto px-4">
@@ -160,19 +147,17 @@ const Portfolio = () => {
       </section>
 
       {/* Stats */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-slate-50 to-white">
+      <section className="py-12 sm:py-16 lg:py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
             {stats.map((stat, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
+                {...fadeUp(index * 0.1)}
                 whileHover={{ y: -5, scale: 1.02 }}
-                className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all border border-slate-100 group"
+                className="bg-white rounded-xl p-6 transition-all group"
               >
-                <div className={`w-14 h-14 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
+                <div className="w-14 h-14 bg-slate-50 rounded-xl flex items-center justify-center text-slate-700 mb-4 group-hover:scale-110 transition-transform">
                   {stat.icon}
                 </div>
                 <div className="text-4xl md:text-5xl font-bold text-slate-900 mb-2 group-hover:text-slate-700 transition-colors">
@@ -188,7 +173,7 @@ const Portfolio = () => {
       </section>
 
       {/* Filter Buttons */}
-      <section className="py-12 bg-white border-b border-slate-200">
+      <section className="py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap justify-center gap-4">
             {categories.map((category) => (
@@ -233,14 +218,10 @@ const Portfolio = () => {
               {filteredProjects.map((project, index) => (
                 <motion.div
                   key={project._id}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, amount: 0.3 }}
-                  custom={index}
-                  variants={cardVariants}
+                  {...stagger(index * 0.1)}
                   className="group"
                 >
-                  <Card className="p-0 ring-0 overflow-hidden shadow-none border-0 bg-transparent">
+                  <Card className="p-0 overflow-hidden rounded-2xl bg-transparent border-0">
                     <CardContent className="p-0 flex flex-col gap-4">
                       <div className="relative overflow-hidden rounded-2xl bg-slate-100">
                         {project.link ? (
@@ -321,13 +302,8 @@ const Portfolio = () => {
       {/* Testimonials */}
       <section className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">
+          <motion.div {...fadeUp()} className="text-center mb-16">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 mb-4">
               Client Testimonials
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
@@ -357,10 +333,8 @@ const Portfolio = () => {
             ].map((testimonial, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="bg-white rounded-xl p-6 shadow-sm"
+                {...fadeUp(index * 0.1)}
+                className="bg-white rounded-3xl p-6"
               >
                 <div className="flex gap-1 mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
@@ -385,15 +359,11 @@ const Portfolio = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-slate-900 to-slate-800 text-white">
+      <section className="py-20 bg-slate-950 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
+          <motion.div {...fadeUp()}>
             <Code2 className="w-16 h-16 mx-auto mb-6" />
-            <h2 className="text-4xl font-bold mb-4">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-4">
               Ready to Start Your Project?
             </h2>
             <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
@@ -401,7 +371,7 @@ const Portfolio = () => {
             </p>
             <a
               href="/contact"
-              className="inline-block px-8 py-4 bg-white text-slate-900 font-semibold rounded-lg hover:bg-slate-100 transition-colors"
+              className="inline-block px-8 py-4 bg-white text-slate-900 font-semibold rounded-full hover:bg-slate-100 transition-colors"
             >
               Start Your Project
             </a>

@@ -156,7 +156,7 @@ const Navbar = () => {
   return (
     <nav
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isScrolled
-          ? "bg-white/95 backdrop-blur-md shadow-lg border-b border-slate-200"
+          ? "bg-white/95 backdrop-blur-md border-b border-slate-200"
           : "bg-white border-b border-slate-200"
         }`}
     >
@@ -194,7 +194,7 @@ const Navbar = () => {
               <Link
                 key={link.href}
                 href={link.href}
-                className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
               >
                 {link.label}
               </Link>
@@ -206,7 +206,7 @@ const Navbar = () => {
             {/* Search Button */}
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="p-2 text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors"
+              className="p-2 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
               aria-label="Search"
             >
               <Search className="w-5 h-5" />
@@ -215,7 +215,7 @@ const Navbar = () => {
             {isMounted && !user && (
               <Link
                 href="/login"
-                className="p-2 text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors"
+                className="p-2 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
                 aria-label="Login"
               >
                 <LogIn className="w-5 h-5" />
@@ -294,7 +294,7 @@ const Navbar = () => {
           {/* Mobile menu button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="lg:hidden p-2 text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors"
+            className="lg:hidden p-2 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
             aria-label="Toggle menu"
           >
             {isOpen ? <X size={24} /> : <Menu size={24} />}

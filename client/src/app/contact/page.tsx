@@ -13,6 +13,22 @@ import {
 } from "lucide-react";
 import { useSettings } from "@/context/SettingsContext";
 
+const ease = [0.16, 1, 0.3, 1];
+
+const fadeUp = (delay = 0) => ({
+  initial: { opacity: 0, y: 40 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-50px" },
+  transition: { duration: 0.8, delay, ease },
+});
+
+const stagger = (delay = 0) => ({
+  initial: { opacity: 0, y: 30 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true },
+  transition: { duration: 0.7, delay, ease },
+});
+
 const Contact = () => {
   const { settings } = useSettings();
   const [formData, setFormData] = useState({
@@ -65,7 +81,6 @@ const Contact = () => {
           message: ""
         });
         
-        // Reset success message after 5 seconds
         setTimeout(() => setSubmitStatus("idle"), 5000);
       } else {
         setIsSubmitting(false);
@@ -117,7 +132,6 @@ const Contact = () => {
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="relative text-white pt-32 pb-20 overflow-hidden">
-        {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
           style={{
@@ -126,17 +140,10 @@ const Contact = () => {
             backgroundPosition: 'center',
           }}
         ></div>
-        {/* Overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/90 via-slate-800/85 to-slate-900/90"></div>
-        {/* Content */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 via-slate-800/60 to-slate-900/60"></div>
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center"
-          >
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 px-4">
+          <motion.div {...fadeUp()} className="text-center">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 px-4">
               Get In Touch
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-slate-300 max-w-3xl mx-auto px-4">
@@ -152,12 +159,8 @@ const Contact = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12">
             {/* Contact Form */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-6">
+            <motion.div {...fadeUp()}>
+              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 mb-6">
                 Send Us a Message
               </h2>
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -173,7 +176,7 @@ const Contact = () => {
                       required
                       value={formData.name}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 bg-white text-slate-900"
+                      className="w-full px-4 py-3 border border-slate-200 focus:ring-2 focus:ring-slate-500 focus:border-slate-500 bg-white text-slate-900"
                       placeholder="John Doe"
                     />
                   </div>
@@ -188,7 +191,7 @@ const Contact = () => {
                       required
                       value={formData.email}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 bg-white text-slate-900"
+                      className="w-full px-4 py-3 border border-slate-200 focus:ring-2 focus:ring-slate-500 focus:border-slate-500 bg-white text-slate-900"
                       placeholder="john@example.com"
                     />
                   </div>
@@ -203,7 +206,7 @@ const Contact = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 bg-white text-slate-900"
+                    className="w-full px-4 py-3 border border-slate-200 focus:ring-2 focus:ring-slate-500 focus:border-slate-500 bg-white text-slate-900"
                     placeholder="+1 (555) 123-4567"
                   />
                 </div>
@@ -217,7 +220,7 @@ const Contact = () => {
                     required
                     value={formData.subject}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 bg-white text-slate-900"
+                    className="w-full px-4 py-3 border border-slate-200 focus:ring-2 focus:ring-slate-500 focus:border-slate-500 bg-white text-slate-900"
                   >
                     <option value="">Select a subject</option>
                     <option value="general">General Inquiry</option>
@@ -238,12 +241,12 @@ const Contact = () => {
                     rows={6}
                     value={formData.message}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 bg-white text-slate-900 resize-none"
+                    className="w-full px-4 py-3 border border-slate-200 focus:ring-2 focus:ring-slate-500 focus:border-slate-500 bg-white text-slate-900 resize-none"
                     placeholder="Tell us about your project or inquiry..."
                   />
                 </div>
                 {submitStatus === "success" && (
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
+                  <div className="p-4 bg-green-50 border border-green-200 flex items-center gap-2">
                     <CheckCircle2 className="w-5 h-5 text-green-600" />
                     <p className="text-sm text-green-600">
                       Thank you! Your message has been sent successfully. We'll get back to you soon.
@@ -251,7 +254,7 @@ const Contact = () => {
                   </div>
                 )}
                 {submitStatus === "error" && (
-                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="p-4 bg-red-50 border border-red-200">
                     <p className="text-sm text-red-600">
                       Something went wrong. Please try again later.
                     </p>
@@ -260,7 +263,7 @@ const Contact = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full px-6 py-3 bg-slate-900 text-white font-semibold rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full px-6 py-3 bg-slate-900 text-white font-semibold hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
@@ -278,12 +281,8 @@ const Contact = () => {
             </motion.div>
 
             {/* Contact Information */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-6">
+            <motion.div {...fadeUp()}>
+              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 mb-6">
                 Contact Information
               </h2>
               <p className="text-slate-600 mb-8">
@@ -294,12 +293,10 @@ const Contact = () => {
                 {contactInfo.map((info, index) => (
                   <motion.div
                     key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                    className="flex gap-4 p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
+                    {...stagger(index * 0.1)}
+                    className="flex gap-4 p-4"
                   >
-                    <div className="flex-shrink-0 w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center text-white">
+                    <div className="flex-shrink-0 w-12 h-12 bg-slate-50 flex items-center justify-center text-slate-600">
                       {info.icon}
                     </div>
                     <div>
@@ -344,7 +341,7 @@ const Contact = () => {
               </div>
 
               {/* Additional Info */}
-              <div className="mt-8 p-6 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl">
+              <motion.div {...fadeUp()} className="mt-8">
                 <MessageSquare className="w-8 h-8 text-slate-900 mb-4" />
                 <h3 className="text-xl font-semibold text-slate-900 mb-2">
                   Quick Response Guarantee
@@ -353,21 +350,16 @@ const Contact = () => {
                   We typically respond to all inquiries within 24 hours during business days. 
                   For urgent matters, please call us directly.
                 </p>
-              </div>
+              </motion.div>
             </motion.div>
           </div>
         </div>
       </section>
 
       {/* Map Section */}
-      <section className="py-20 bg-slate-50">
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="bg-white rounded-xl p-8"
-          >
+          <motion.div {...fadeUp()}>
             <div className="text-center mb-6">
               <MapPin className="w-16 h-16 text-slate-400 mx-auto mb-4" />
               <h3 className="text-2xl font-bold text-slate-900 mb-2">
@@ -377,7 +369,7 @@ const Contact = () => {
                 {addressVal}
               </p>
             </div>
-            <div className="rounded-lg overflow-hidden shadow-lg">
+            <div>
               <iframe
                 src={`https://www.google.com/maps?q=${encodeURIComponent(addressVal)}&output=embed&zoom=15`}
                 width="100%"
@@ -395,7 +387,7 @@ const Contact = () => {
                 href={`https://www.google.com/maps/search/${encodeURIComponent(addressVal)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white font-semibold rounded-lg hover:bg-slate-800 transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white font-semibold hover:bg-slate-800 transition-colors"
               >
                 <MapPin className="w-5 h-5" />
                 Open in Google Maps

@@ -121,27 +121,26 @@
   }
 }
 
-/* Custom scrollbar - Professional Design */
+/* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
-
 ::-webkit-scrollbar-track {
-  background: #f1f5f9; /* Tailwind slate-100 */
-  border-radius: 9999px;
+  background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: #475569; /* Tailwind slate-600 */
+  background: #94a3b8;
   border-radius: 9999px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155; /* Tailwind slate-700 */
+  background: #64748b;
 }
-
-/* For Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #475569 #f1f5f9;
+  scrollbar-color: #94a3b8 transparent;
+}
+
+/* Smooth image rendering */
+img, video {
+  -webkit-font-smoothing: antialiased;
 }

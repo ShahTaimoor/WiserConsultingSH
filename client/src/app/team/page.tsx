@@ -17,6 +17,22 @@ import {
   UserCircle
 } from "lucide-react";
 
+const ease = [0.16, 1, 0.3, 1];
+
+const fadeUp = (delay = 0) => ({
+  initial: { opacity: 0, y: 40 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-50px" },
+  transition: { duration: 0.8, delay, ease },
+});
+
+const stagger = (delay = 0) => ({
+  initial: { opacity: 0, y: 30 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true },
+  transition: { duration: 0.7, delay, ease },
+});
+
 interface TeamMember {
   _id: string;
   name: string;
@@ -52,9 +68,8 @@ const Team = () => {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
       const url = `${API_URL}/team?isActive=true`;
       
-      // Add timeout to fetch request
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
       
       const res = await fetch(url, {
         method: 'GET',
@@ -82,14 +97,11 @@ const Team = () => {
       const data = await res.json();
       console.log('Team members response:', data);
       
-      // Helper function to sort team members: CEO > Project Manager > Full Stack > Others
       const sortTeamMembers = (members: TeamMember[]): TeamMember[] => {
         return members.sort((a, b) => {
-          // Handle role as string or array - get the first/highest priority role
           const rolesA = Array.isArray(a.role) ? a.role.map(r => String(r).toLowerCase()) : [String(a.role || '').toLowerCase()];
           const rolesB = Array.isArray(b.role) ? b.role.map(r => String(r).toLowerCase()) : [String(b.role || '').toLowerCase()];
           
-          // Priority order: CEO > Project Manager > Full Stack > Others
           const getPriority = (roles: string[]) => {
             for (const role of roles) {
               if (role.includes('ceo')) return 1;
@@ -106,7 +118,6 @@ const Team = () => {
             return priorityA - priorityB;
           }
           
-          // If same priorityy, sort by order field, then by name
           if (a.order !== b.order) {
             return a.order - b.order;
           }
@@ -119,14 +130,12 @@ const Team = () => {
         if (Array.isArray(data.data)) {
           members = data.data;
         } else if (Array.isArray(data)) {
-          // Handle case where data is directly an array
           members = data;
         } else {
           console.warn('Unexpected API response format:', data);
           setTeamMembers([]);
           return;
         }
-        // Sort members before setting
         setTeamMembers(sortTeamMembers(members));
       } else {
         console.warn('API returned success: false', data);
@@ -135,7 +144,6 @@ const Team = () => {
     } catch (error: any) {
       console.error('Error fetching team members:', error);
       
-      // Handle different types of errors
       let errorMessage = 'Failed to load team members. ';
       if (error.name === 'AbortError') {
         errorMessage += 'Request timed out. Please check your connection and try again.';
@@ -148,7 +156,6 @@ const Team = () => {
       }
       
       setError(errorMessage);
-      // Keep empty array on error - page will show empty state
       setTeamMembers([]);
     } finally {
       setLoading(false);
@@ -163,7 +170,6 @@ const Team = () => {
     { name: "Full Stack", icon: <Globe2 className="w-5 h-5" /> },
   ];
 
-  // Retry fetch on error
   const retryFetch = () => {
     setLoading(true);
     fetchTeamMembers();
@@ -175,34 +181,28 @@ const Team = () => {
     const filterName = activeFilter.toLowerCase();
 
     return teamMembers.filter((member) => {
-      // Handle role as string or array
       const roles = Array.isArray(member.role) 
         ? member.role.map(r => String(r).toLowerCase())
         : [String(member.role || '').toLowerCase()];
       const roleString = roles.join(' ');
       const expertise = (member.expertise || []).map((e) => String(e).toLowerCase());
       
-      // CEO filter
       if (filterName === 'ceo') {
         return roles.some(r => r.includes('ceo'));
       }
       
-      // Project Manager filter
       if (filterName === 'project manager') {
         return roles.some(r => r.includes('project manager'));
       }
       
-      // Frontend Development filter
       if (filterName === 'frontend development') {
         return roles.some(r => r.includes('frontend')) || expertise.includes('frontend development');
       }
       
-      // Mobile Development filter
       if (filterName === 'mobile development') {
         return roles.some(r => r.includes('mobile')) || expertise.includes('mobile development');
       }
       
-      // Full Stack filter
       if (filterName === 'full stack') {
         return roles.some(r => r.includes('full stack')) || expertise.includes('full stack');
       }
@@ -226,7 +226,6 @@ const Team = () => {
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="relative text-white pt-32 pb-20 overflow-hidden">
-        {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
           style={{
@@ -235,17 +234,10 @@ const Team = () => {
             backgroundPosition: 'center',
           }}
         ></div>
-        {/* Overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/90 via-slate-800/85 to-slate-900/90"></div>
-        {/* Content */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 via-slate-800/60 to-slate-900/60"></div>
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center"
-          >
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 px-4">
+          <motion.div {...fadeUp()} className="text-center">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 px-4">
               Our Team
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-slate-300 max-w-3xl mx-auto px-4">
@@ -256,9 +248,9 @@ const Team = () => {
       </section>
 
       {/* Filter Section */}
-      <section className="py-12 bg-white border-b border-slate-200">
+      <section className="py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap justify-center gap-4">
+          <motion.div {...fadeUp(0.1)} className="flex flex-wrap justify-center gap-4">
             <button
               onClick={() => setActiveFilter("all")}
               className={`px-6 py-2 rounded-lg font-semibold transition-all ${
@@ -283,7 +275,7 @@ const Team = () => {
                 {skill.name}
               </button>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -323,7 +315,6 @@ const Team = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               {filteredMembers.map((member, index) => {
-                // Get primary and secondary roles
                 const roles = Array.isArray(member.role) ? member.role : [member.role];
                 const primaryRole = roles[0] || '';
                 const secondaryRole = roles.length > 1 ? roles.slice(1).join(', ') : (member.expertise && member.expertise.length > 0 ? member.expertise[0] : 'Software Engineer');
@@ -331,18 +322,15 @@ const Team = () => {
                 return (
                   <motion.div
                     key={member._id}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, amount: 0.3 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 group"
+                    {...stagger(index * 0.1)}
+                    className="bg-slate-50 rounded-3xl overflow-hidden hover:bg-slate-100 transition-colors duration-300"
                   >
                     <div className="p-6">
                       <div 
                         onClick={() => router.push(`/team/${member._id}`)}
                         className="cursor-pointer"
                       >
-                        {/* Profile Picture with Animation */}
+                        {/* Profile Picture */}
                         <div className="flex justify-center mb-6">
                           <motion.div
                             initial={{ scale: 0.8, opacity: 0 }}
@@ -352,7 +340,7 @@ const Team = () => {
                             whileHover={{ scale: 1.05 }}
                             className="relative"
                           >
-                            <div className="w-32 h-32 rounded-full bg-sky-100 p-1 flex items-center justify-center">
+                            <div className="w-32 h-32 rounded-full flex items-center justify-center overflow-hidden">
                               {member.image && (member.image.startsWith('http') || member.image.startsWith('/')) ? (
                                 <motion.img
                                   src={member.image}
@@ -362,7 +350,7 @@ const Team = () => {
                                   transition={{ duration: 0.3 }}
                                 />
                               ) : (
-                                <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 rounded-full flex items-center justify-center text-6xl">
+                                <div className="w-full h-full bg-slate-200 rounded-full flex items-center justify-center text-6xl">
                                   {member.image || '👨‍💼'}
                                 </div>
                               )}
@@ -371,61 +359,37 @@ const Team = () => {
                         </div>
 
                         {/* Name */}
-                        <motion.h3
-                          initial={{ opacity: 0, y: 10 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 0.5, delay: index * 0.1 + 0.2 }}
-                          className="text-2xl font-bold text-slate-900 mb-2 text-center group-hover:text-slate-700 transition-colors"
-                        >
+                        <h3 className="text-2xl font-bold text-slate-900 mb-2 text-center">
                           {member.name}
-                        </motion.h3>
+                        </h3>
 
                         {/* Primary Role */}
-                        <motion.p
-                          initial={{ opacity: 0, y: 10 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 0.5, delay: index * 0.1 + 0.25 }}
-                          className="text-slate-700 text-sm font-medium text-center mb-1"
-                        >
+                        <p className="text-slate-700 text-sm font-medium text-center mb-1">
                           {primaryRole}
-                        </motion.p>
+                        </p>
 
                         {/* Secondary Role/Specialization */}
-                        <motion.p
-                          initial={{ opacity: 0, y: 10 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 0.5, delay: index * 0.1 + 0.3 }}
-                          className="text-slate-500 text-xs text-center mb-4"
-                        >
+                        <p className="text-slate-500 text-xs text-center mb-4">
                           {secondaryRole}
-                        </motion.p>
+                        </p>
 
                         {/* Skills/Technologies */}
                         {member.skills && member.skills.length > 0 && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.5, delay: index * 0.1 + 0.35 }}
-                            className="flex flex-wrap justify-center gap-2 mb-6"
-                          >
+                          <div className="flex flex-wrap justify-center gap-2 mb-6">
                             {member.skills.slice(0, 3).map((skill, idx) => (
                               <span
                                 key={idx}
-                                className="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-full"
+                                className="px-3 py-1 bg-white text-slate-700 text-xs font-medium rounded-full"
                               >
                                 {skill}
                               </span>
                             ))}
                             {member.skills.length > 3 && (
-                              <span className="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-full">
+                              <span className="px-3 py-1 bg-white text-slate-700 text-xs font-medium rounded-full">
                                 +{member.skills.length - 3} more
                               </span>
                             )}
-                          </motion.div>
+                          </div>
                         )}
                       </div>
 
@@ -460,7 +424,7 @@ const Team = () => {
                         <motion.div 
                           onClick={() => router.push(`/team/${member._id}`)}
                           whileHover={{ x: 5 }}
-                          className="flex items-center gap-2 text-slate-500 group-hover:text-slate-900 transition-colors text-sm font-semibold cursor-pointer"
+                          className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors text-sm font-semibold cursor-pointer"
                         >
                           View Profile
                           <ArrowRight className="w-4 h-4" />
@@ -476,14 +440,10 @@ const Team = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-slate-900 to-slate-800 text-white">
+      <section className="py-20 bg-slate-950 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-4xl font-bold mb-4">
+          <motion.div {...fadeUp()}>
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-4">
               Join Our Team
             </h2>
             <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
@@ -491,7 +451,7 @@ const Team = () => {
             </p>
             <Link
               href="/contact"
-              className="inline-block px-8 py-4 bg-white text-slate-900 font-semibold rounded-lg hover:bg-slate-100 transition-colors"
+              className="inline-block px-8 py-4 bg-white text-slate-900 font-semibold rounded-full hover:bg-slate-100 transition-colors"
             >
               Get In Touch
             </Link>

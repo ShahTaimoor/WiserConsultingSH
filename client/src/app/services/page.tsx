@@ -8,14 +8,25 @@ import {
   Cloud, 
   Smartphone, 
   ArrowRight,
-  Cpu,
-  Lock,
   BarChart3,
-  Globe2,
   Zap,
   Shield,
   CheckCircle2
 } from "lucide-react";
+
+const ease = [0.16, 1, 0.3, 1];
+
+function fadeUp(delay = 0) {
+  return {
+    initial: { opacity: 0, y: 24 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.7, ease, delay }
+  };
+}
+
+function stagger(index: number, base = 0.08) {
+  return { duration: 0.7, ease, delay: index * base };
+}
 
 const Services = () => {
   const services = [
@@ -28,8 +39,7 @@ const Services = () => {
         "Enterprise Software Solutions",
         "API Development & Integration",
         "Legacy System Modernization"
-      ],
-      color: "from-blue-500 to-cyan-500"
+      ]
     },
     {
       icon: <Cloud className="w-10 h-10" />,
@@ -40,8 +50,7 @@ const Services = () => {
         "Infrastructure as Code",
         "Cloud Architecture Design",
         "Cost Optimization"
-      ],
-      color: "from-purple-500 to-pink-500"
+      ]
     },
     {
       icon: <Smartphone className="w-10 h-10" />,
@@ -52,8 +61,7 @@ const Services = () => {
         "React Native & Flutter",
         "Mobile UI/UX Design",
         "App Store Optimization"
-      ],
-      color: "from-green-500 to-emerald-500"
+      ]
     }
   ];
 
@@ -84,24 +92,16 @@ const Services = () => {
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="relative text-white pt-32 pb-20 overflow-hidden">
-        {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: 'url(/back.png)',
           }}
-        ></div>
-        {/* Overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/90 via-slate-800/85 to-slate-900/90"></div>
-        {/* Content */}
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/70 via-slate-800/65 to-slate-900/70" />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center"
-          >
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 px-4">
+          <motion.div {...fadeUp()} className="text-center">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 px-4">
               Our Services
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-slate-300 max-w-3xl mx-auto px-4">
@@ -119,12 +119,11 @@ const Services = () => {
             {services.map((service, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-xl transition-all group"
+                {...fadeUp()}
+                transition={stagger(index)}
+                className="bg-slate-50 rounded-2xl p-6 hover:bg-slate-100 transition-colors group"
               >
-                <div className={`w-16 h-16 bg-gradient-to-br ${service.color} rounded-lg flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform`}>
+                <div className="w-16 h-16 bg-slate-200 rounded-xl flex items-center justify-center text-slate-700 mb-4 group-hover:bg-slate-900 group-hover:text-white transition-colors">
                   {service.icon}
                 </div>
                 <h3 className="text-2xl font-bold text-slate-900 mb-3">
@@ -136,7 +135,7 @@ const Services = () => {
                 <ul className="space-y-2 mb-6">
                   {service.features.map((feature, idx) => (
                     <li key={idx} className="flex items-start gap-2 text-sm text-slate-600">
-                      <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <CheckCircle2 className="w-4 h-4 text-slate-700 mt-0.5 flex-shrink-0" />
                       <span>{feature}</span>
                     </li>
                   ))}
@@ -157,13 +156,8 @@ const Services = () => {
       {/* Process Section */}
       <section className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-4 px-4">
+          <motion.div {...fadeUp()} className="text-center mb-16">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 mb-4 px-4">
               Our Process
             </h2>
             <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto px-4">
@@ -174,12 +168,11 @@ const Services = () => {
             {process.map((step, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
+                {...fadeUp()}
+                transition={stagger(index)}
                 className="relative"
               >
-                <div className="bg-white rounded-xl p-6 shadow-sm h-full">
+                <div className="bg-white rounded-2xl p-6 h-full">
                   <div className="text-4xl font-bold text-slate-200 mb-4">
                     {step.step}
                   </div>
@@ -204,23 +197,13 @@ const Services = () => {
       {/* Why Choose Us */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">
+          <motion.div {...fadeUp()} className="text-center mb-16">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900">
               Why Choose Us
             </h2>
           </motion.div>
           <div className="grid md:grid-cols-3 gap-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="text-center"
-            >
+            <motion.div {...fadeUp()} className="text-center bg-slate-50 rounded-2xl p-8">
               <Shield className="w-12 h-12 text-slate-900 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-slate-900 mb-2">
                 Proven Track Record
@@ -229,12 +212,7 @@ const Services = () => {
                 100+ successful projects delivered with 98% client satisfaction rate
               </p>
             </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-center"
-            >
+            <motion.div {...fadeUp()} transition={stagger(1)} className="text-center bg-slate-50 rounded-2xl p-8">
               <Zap className="w-12 h-12 text-slate-900 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-slate-900 mb-2">
                 Fast Delivery
@@ -243,12 +221,7 @@ const Services = () => {
                 Agile methodologies ensure rapid development without compromising quality
               </p>
             </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-center"
-            >
+            <motion.div {...fadeUp()} transition={stagger(2)} className="text-center bg-slate-50 rounded-2xl p-8">
               <BarChart3 className="w-12 h-12 text-slate-900 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-slate-900 mb-2">
                 Scalable Solutions
@@ -262,14 +235,10 @@ const Services = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-slate-900 to-slate-800 text-white">
+      <section className="py-20 bg-slate-950 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-4xl font-bold mb-4">
+          <motion.div {...fadeUp()}>
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-4">
               Ready to Start Your Project?
             </h2>
             <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
@@ -277,7 +246,7 @@ const Services = () => {
             </p>
             <Link
               href="/contact"
-              className="inline-block px-8 py-4 bg-white text-slate-900 font-semibold rounded-lg hover:bg-slate-100 transition-colors"
+              className="inline-block px-8 py-4 bg-white text-slate-900 font-semibold rounded-full hover:bg-slate-100 transition-colors"
             >
               Get Started Today
             </Link>
