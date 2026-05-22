@@ -1,36 +1,18 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { 
-  Linkedin, 
-  Github, 
-  Twitter, 
-  Mail, 
-  ArrowRight,
-  Code2,
-  Smartphone,
-  Globe2,
-  Briefcase,
-  UserCircle
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Play } from "lucide-react";
 
-const ease = [0.16, 1, 0.3, 1];
+const ease = [0.16, 1, 0.3, 1] as const;
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 40 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true, margin: "-50px" },
   transition: { duration: 0.8, delay, ease },
-});
-
-const stagger = (delay = 0) => ({
-  initial: { opacity: 0, y: 30 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true },
-  transition: { duration: 0.7, delay, ease },
 });
 
 interface TeamMember {
@@ -51,12 +33,57 @@ interface TeamMember {
   isActive: boolean;
 }
 
+const getPrimaryRole = (member: TeamMember) => {
+  const roles = Array.isArray(member.role) ? member.role : [member.role];
+  return roles[0] || "Team Member";
+};
+
+const CARD_WIDTH_RATIO = 2 / 3; // active card 2/3 width → next card shows ~half on the right
+
 const Team = () => {
   const router = useRouter();
-  const [activeFilter, setActiveFilter] = useState("all");
+  const [activeIndex, setActiveIndex] = useState(0);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [cardWidth, setCardWidth] = useState(0);
+  const [slideStep, setSlideStep] = useState(0);
+
+  const measureCarousel = useCallback(() => {
+    const viewport = carouselRef.current;
+    const track = trackRef.current;
+    if (!viewport) return;
+
+    const cardW = Math.round(viewport.clientWidth * CARD_WIDTH_RATIO);
+    setCardWidth(cardW);
+
+    const measureStep = () => {
+      if (track && track.children.length > 1) {
+        const first = track.children[0] as HTMLElement;
+        const second = track.children[1] as HTMLElement;
+        const step = second.offsetLeft - first.offsetLeft;
+        setSlideStep(step > 0 ? step : cardW + 20);
+      } else {
+        setSlideStep(cardW + 20);
+      }
+    };
+
+    measureStep();
+    requestAnimationFrame(measureStep);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (loading || teamMembers.length === 0) return;
+
+    measureCarousel();
+
+    const observer = new ResizeObserver(measureCarousel);
+    const node = carouselRef.current;
+    if (node) observer.observe(node);
+    return () => observer.disconnect();
+  }, [loading, teamMembers.length, measureCarousel]);
 
   useEffect(() => {
     fetchTeamMembers();
@@ -162,54 +189,32 @@ const Team = () => {
     }
   };
 
-  const skills = [
-    { name: "CEO", icon: <UserCircle className="w-5 h-5" /> },
-    { name: "Project Manager", icon: <Briefcase className="w-5 h-5" /> },
-    { name: "Frontend Development", icon: <Code2 className="w-5 h-5" /> },
-    { name: "Mobile Development", icon: <Smartphone className="w-5 h-5" /> },
-    { name: "Full Stack", icon: <Globe2 className="w-5 h-5" /> },
-  ];
-
   const retryFetch = () => {
     setLoading(true);
     fetchTeamMembers();
   };
 
-  const filteredMembers = (() => {
-    if (activeFilter === "all") return teamMembers;
+  useEffect(() => {
+    if (activeIndex >= teamMembers.length) {
+      setActiveIndex(0);
+    }
+  }, [teamMembers.length, activeIndex]);
 
-    const filterName = activeFilter.toLowerCase();
+  const goToPrev = () => {
+    if (teamMembers.length <= 1) return;
+    setActiveIndex((prev) =>
+      prev === 0 ? teamMembers.length - 1 : prev - 1
+    );
+  };
 
-    return teamMembers.filter((member) => {
-      const roles = Array.isArray(member.role) 
-        ? member.role.map(r => String(r).toLowerCase())
-        : [String(member.role || '').toLowerCase()];
-      const roleString = roles.join(' ');
-      const expertise = (member.expertise || []).map((e) => String(e).toLowerCase());
-      
-      if (filterName === 'ceo') {
-        return roles.some(r => r.includes('ceo'));
-      }
-      
-      if (filterName === 'project manager') {
-        return roles.some(r => r.includes('project manager'));
-      }
-      
-      if (filterName === 'frontend development') {
-        return roles.some(r => r.includes('frontend')) || expertise.includes('frontend development');
-      }
-      
-      if (filterName === 'mobile development') {
-        return roles.some(r => r.includes('mobile')) || expertise.includes('mobile development');
-      }
-      
-      if (filterName === 'full stack') {
-        return roles.some(r => r.includes('full stack')) || expertise.includes('full stack');
-      }
+  const goToNext = () => {
+    if (teamMembers.length <= 1) return;
+    setActiveIndex((prev) =>
+      prev === teamMembers.length - 1 ? 0 : prev + 1
+    );
+  };
 
-      return false;
-    });
-  })();
+  const activeMember = teamMembers[activeIndex];
 
   if (loading) {
     return (
@@ -247,47 +252,10 @@ const Team = () => {
         </div>
       </section>
 
-      {/* Filter Section */}
-      <section className="py-12 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div {...fadeUp(0.1)} className="flex flex-wrap justify-center gap-4">
-            <button
-              onClick={() => setActiveFilter("all")}
-              className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-                activeFilter === "all"
-                  ? "bg-slate-900 text-white"
-                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-              }`}
-            >
-              All Team
-            </button>
-            {skills.map((skill) => (
-              <button
-                key={skill.name}
-                onClick={() => setActiveFilter(skill.name)}
-                className={`px-6 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${
-                  activeFilter === skill.name
-                    ? "bg-slate-900 text-white"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                }`}
-              >
-                {skill.icon}
-                {skill.name}
-              </button>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Team Grid */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[300px] flex items-center justify-center">
-          {loading ? (
-            <div className="text-center py-12 sm:py-20">
-              <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-slate-900 mx-auto mb-4"></div>
-              <p className="text-slate-600 text-base sm:text-lg">Loading team members...</p>
-            </div>
-          ) : error ? (
+      {/* Team Carousel */}
+      <section className="py-12 sm:py-16 lg:py-24 bg-white">
+        <div className=" w-full min-h-[300px] px-3 sm:px-5 lg:px-8">
+          {error ? (
             <div className="text-center py-12 sm:py-20">
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 sm:p-6 max-w-md mx-auto">
                 <p className="text-red-800 text-sm sm:text-lg mb-4">{error}</p>
@@ -302,7 +270,7 @@ const Team = () => {
                 </button>
               </div>
             </div>
-          ) : filteredMembers.length === 0 ? (
+          ) : teamMembers.length === 0 ? (
             <div className="text-center py-12 sm:py-20">
               <p className="text-slate-600 text-base sm:text-lg mb-4">No team members found.</p>
               <button
@@ -313,128 +281,112 @@ const Team = () => {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-              {filteredMembers.map((member, index) => {
-                const roles = Array.isArray(member.role) ? member.role : [member.role];
-                const primaryRole = roles[0] || '';
-                const secondaryRole = roles.length > 1 ? roles.slice(1).join(', ') : (member.expertise && member.expertise.length > 0 ? member.expertise[0] : 'Software Engineer');
-                
-                return (
-                  <motion.div
-                    key={member._id}
-                    {...stagger(index * 0.1)}
-                    className="bg-slate-50 rounded-3xl overflow-hidden hover:bg-slate-100 transition-colors duration-300"
-                  >
-                    <div className="p-6">
-                      <div 
-                        onClick={() => router.push(`/team/${member._id}`)}
-                        className="cursor-pointer"
+            <motion.div {...fadeUp(0.15)}>
+              {/* Carousel — active card ~72% width, next card peeks on the right */}
+              <div ref={carouselRef} className="overflow-hidden">
+                <div
+                  ref={trackRef}
+                  className="flex gap-5 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                  style={{
+                    transform: `translateX(-${activeIndex * slideStep}px)`,
+                  }}
+                >
+                  {teamMembers.map((member) => {
+                    const primaryRole = getPrimaryRole(member);
+                    const hasImage =
+                      member.image &&
+                      (member.image.startsWith("http") ||
+                        member.image.startsWith("/"));
+
+                    return (
+                      <article
+                        key={member._id}
+                        className="relative flex-shrink-0 aspect-[16/9] min-h-[200px] max-h-[600px] sm:min-h-[260px] lg:min-h-[300px] rounded-[32px] sm:rounded-[40px] overflow-hidden bg-black"
+                        style={
+                          cardWidth > 0 ? { width: cardWidth } : { width: `${CARD_WIDTH_RATIO * 100}%` }
+                        }
                       >
-                        {/* Profile Picture */}
-                        <div className="flex justify-center mb-6">
-                          <motion.div
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            whileInView={{ scale: 1, opacity: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.5, delay: index * 0.15 }}
-                            whileHover={{ scale: 1.05 }}
-                            className="relative"
-                          >
-                            <div className="w-32 h-32 rounded-full flex items-center justify-center overflow-hidden">
-                              {member.image && (member.image.startsWith('http') || member.image.startsWith('/')) ? (
-                                <motion.img
-                                  src={member.image}
-                                  alt={member.name}
-                                  className="w-full h-full rounded-full object-cover"
-                                  whileHover={{ scale: 1.1 }}
-                                  transition={{ duration: 0.3 }}
-                                />
-                              ) : (
-                                <div className="w-full h-full bg-slate-200 rounded-full flex items-center justify-center text-6xl">
-                                  {member.image || '👨‍💼'}
-                                </div>
-                              )}
+                          {hasImage ? (
+                            <img
+                              src={member.image}
+                              alt={member.name}
+                              className="absolute inset-0 h-full w-full object-cover object-center"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center text-7xl sm:text-8xl">
+                              {member.image || "👨‍💼"}
                             </div>
-                          </motion.div>
-                        </div>
-
-                        {/* Name */}
-                        <h3 className="text-2xl font-bold text-slate-900 mb-2 text-center">
-                          {member.name}
-                        </h3>
-
-                        {/* Primary Role */}
-                        <p className="text-slate-700 text-sm font-medium text-center mb-1">
-                          {primaryRole}
-                        </p>
-
-                        {/* Secondary Role/Specialization */}
-                        <p className="text-slate-500 text-xs text-center mb-4">
-                          {secondaryRole}
-                        </p>
-
-                        {/* Skills/Technologies */}
-                        {member.skills && member.skills.length > 0 && (
-                          <div className="flex flex-wrap justify-center gap-2 mb-6">
-                            {member.skills.slice(0, 3).map((skill, idx) => (
-                              <span
-                                key={idx}
-                                className="px-3 py-1 bg-white text-slate-700 text-xs font-medium rounded-full"
-                              >
-                                {skill}
-                              </span>
-                            ))}
-                            {member.skills.length > 3 && (
-                              <span className="px-3 py-1 bg-white text-slate-700 text-xs font-medium rounded-full">
-                                +{member.skills.length - 3} more
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Footer with Icons and View Profile */}
-                      <div className="flex items-center justify-between pt-4 border-t border-slate-200">
-                        <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
-                          {member.email && (
-                            <motion.a
-                              href={`mailto:${member.email}`}
-                              whileHover={{ scale: 1.2 }}
-                              whileTap={{ scale: 0.9 }}
-                              className="text-slate-400 hover:text-slate-700 transition-colors"
-                              aria-label={`Email ${member.name}`}
-                            >
-                              <Mail className="w-5 h-5" />
-                            </motion.a>
                           )}
-                          {member.linkedin && (
-                            <motion.a
-                              href={member.linkedin}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              whileHover={{ scale: 1.2 }}
-                              whileTap={{ scale: 0.9 }}
-                              className="text-slate-400 hover:text-blue-600 transition-colors"
-                              aria-label={`${member.name}'s LinkedIn`}
-                            >
-                              <Linkedin className="w-5 h-5" />
-                            </motion.a>
-                          )}
-                        </div>
-                        <motion.div 
-                          onClick={() => router.push(`/team/${member._id}`)}
-                          whileHover={{ x: 5 }}
-                          className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors text-sm font-semibold cursor-pointer"
-                        >
-                          View Profile
-                          <ArrowRight className="w-4 h-4" />
-                        </motion.div>
-                      </div>
-                    </div>
+
+                          <div className="absolute inset-0 bg-gradient-to-r from-black/45 via-black/10 to-transparent" />
+
+                          <h2 className="absolute left-6 sm:left-10 lg:left-12 top-1/2 z-10 max-w-[50%] -translate-y-1/2 text-2xl sm:text-4xl lg:text-5xl font-bold leading-tight tracking-tight text-white">
+                            {primaryRole}
+                          </h2>
+
+                          <button
+                            type="button"
+                            onClick={() => router.push(`/team/${member._id}`)}
+                            className="absolute bottom-6 right-6 sm:bottom-8 sm:right-8 flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm text-white transition-all hover:bg-white/40 hover:scale-105"
+                            aria-label={`View ${member.name}'s profile`}
+                          >
+                            <Play className="h-4 w-4 sm:h-5 sm:w-5 fill-current ml-0.5" />
+                          </button>
+                      </article>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Info + navigation */}
+              {activeMember && (
+                <div className="mt-4 sm:mt-2 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+                  <motion.div
+                    key={activeMember._id}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, ease }}
+                    className="max-w-2xl"
+                  >
+                    <h3 className="text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
+                      {getPrimaryRole(activeMember)}
+                    </h3>
+                    {activeMember.bio && (
+                      <p className="mt-1 text-base sm:text-lg text-neutral-600 leading-relaxed">
+                        {activeMember.bio}
+                      </p>
+                    )}
                   </motion.div>
-                );
-              })}
-            </div>
+
+                  <div className="flex items-center gap-3 self-start md:self-auto">
+                    <span className="text-sm text-neutral-400 tabular-nums">
+                      {String(activeIndex + 1).padStart(2, "0")} /{" "}
+                      {String(teamMembers.length).padStart(2, "0")}
+                    </span>
+                    <div className="inline-flex items-center rounded-full bg-neutral-100 p-1.5">
+                      <button
+                        type="button"
+                        onClick={goToPrev}
+                        disabled={teamMembers.length <= 1}
+                        className="flex h-10 w-10 items-center justify-center rounded-full text-neutral-700 transition-colors hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed"
+                        aria-label="Previous team member"
+                      >
+                        <ChevronLeft className="h-5 w-5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={goToNext}
+                        disabled={teamMembers.length <= 1}
+                        className="flex h-10 w-10 items-center justify-center rounded-full text-neutral-700 transition-colors hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed"
+                        aria-label="Next team member"
+                      >
+                        <ChevronRight className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </motion.div>
           )}
         </div>
       </section>
