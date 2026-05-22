@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, useInView, useScroll, useTransform } from 'framer-motion';
+import { motion, useInView, useScroll, useTransform, easeInOut } from 'framer-motion';
 import { useSettings } from '@/context/SettingsContext';
 import {
   Code2, Cloud, Smartphone, CheckCircle2, Shield, Award, TrendingUp,
   Phone, Mail, MapPin, Globe2, Target, Rocket, Layers, Cpu, Lock, BarChart3
 } from 'lucide-react';
 
-const ease = [0.16, 1, 0.3, 1];
+const ease = easeInOut;
 
 const AnimatedCounter = ({ value }: { value: string }) => {
   const [count, setCount] = useState(0);
@@ -95,12 +95,10 @@ const SoftwareConsulting: React.FC = () => {
     { icon: <Globe2 className="w-6 h-6" />, title: 'Global Reach', description: 'Projects delivered across 30+ countries' },
   ];
 
-  const heroWords = ["We Build", "Digital", "Excellence"];
-
   return (
     <div className="relative">
       {/* Hero */}
-      <section ref={heroRef} className="relative w-full min-h-screen flex items-center justify-center overflow-hidden bg-slate-950">
+      <section ref={heroRef} className="relative w-full min-h-screen flex items-end justify-center  overflow-hidden bg-slate-950">
         <motion.video
           autoPlay loop muted playsInline
           style={{ scale: videoScale }}
@@ -110,52 +108,21 @@ const SoftwareConsulting: React.FC = () => {
         </motion.video>
         <motion.div style={{ opacity: overlayOpacity }} className="absolute inset-0 bg-slate-950/60" />
         <div className="relative z-20 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-20 text-center">
-          <div className="space-y-10">
-            <h1 className="text-[clamp(3rem,10vw,8rem)] font-bold text-white leading-[0.85] tracking-[-0.04em]">
-              {heroWords.map((word, i) => (
-                <motion.span
-                  key={word}
-                  initial={{ opacity: 0, y: 80 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 1, delay: i * 0.2, ease }}
-                  className="block"
-                >
-                  {word}
-                </motion.span>
-              ))}
-              <motion.span
-                initial={{ opacity: 0, y: 80 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 0.6, ease }}
-                className="block mt-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-300"
-              >
-                Together
-              </motion.span>
-            </h1>
-            <motion.p
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.9, ease }}
-              className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed text-balance"
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+          >
+            <motion.a
+              href="/portfolio"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="px-8 py-4 bg-white text-slate-900 font-semibold rounded-full text-base hover:bg-white/90 transition-colors"
             >
-              We transform ideas into powerful software. Expert consulting, custom development, and cutting-edge technology.
-            </motion.p>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 1.1, ease }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4"
-            >
-              <motion.a
-                href="/portfolio"
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                className="px-8 py-4 bg-white text-slate-900 font-semibold rounded-full text-base hover:bg-white/90 transition-colors"
-              >
-                View Our Work
-              </motion.a>
-            </motion.div>
-          </div>
+              View Our Work
+            </motion.a>
+          </motion.div>
         </div>
       </section>
 
