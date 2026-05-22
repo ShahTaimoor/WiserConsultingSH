@@ -161,7 +161,7 @@ const SoftwareConsulting: React.FC = () => {
           playsInline
           className="absolute inset-0 w-full h-full object-cover"
         >
-          <source src="/Software_House_Banner_Video_Creation (1).mp4" type="video/mp4" />
+          <source src="/WISERBANNER.mp4" type="video/mp4" />
         </video>
         {/* Overlay for better text readability */}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900/80 via-slate-800/80 to-slate-900/80"></div>
