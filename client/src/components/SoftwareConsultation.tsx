@@ -86,7 +86,7 @@ const SoftwareConsultation: React.FC = () => {
   };
 
   const stats = [
-    { value: '100+', label: 'Projects Delivered', icon: <CheckCircle2 className="w-6 h-6" /> },
+    { value: '5+', label: 'Projects Delivered', icon: <CheckCircle2 className="w-6 h-6" /> },
     { value: '98%', label: 'Client Satisfaction', icon: <TrendingUp className="w-6 h-6" /> },
     { value: '5+', label: 'Years Experience', icon: <Award className="w-6 h-6" /> },
     { value: '24/7', label: 'Support Available', icon: <Shield className="w-6 h-6" /> },

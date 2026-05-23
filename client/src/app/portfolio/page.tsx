@@ -100,7 +100,7 @@ const Portfolio = () => {
 
   const stats = [
     {
-      number: "100+",
+      number: "5+",
       label: "Projects Delivered",
       icon: <Briefcase className="w-6 h-6" />,
     },

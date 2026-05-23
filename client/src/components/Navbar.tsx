@@ -3,13 +3,70 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
 import { logout } from "@/redux/slices/auth/authSlice";
 import { Menu, X, ChevronDown, Search, X as XIcon, ArrowRight, ExternalLink, LogIn, User, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSettings } from "@/context/SettingsContext";
+
+/** Single continuous zigzag: right → up → down → up → down (repeats) */
+const ZIGZAG_PATH =
+  "M0 14 L16 4 L32 24 L48 4 L64 24 L80 4 L96 24 L112 4 L128 14";
+
+const NavbarOuterZigzag = ({ side }: { side: "left" | "right" }) => (
+  <div
+    className={`hidden lg:flex flex-1 items-center min-w-[80px] max-w-[240px] h-10 pointer-events-none ${
+      side === "left" ? "justify-end pr-2" : "justify-start pl-2"
+    }`}
+    aria-hidden
+  >
+    <div
+      className={`w-full h-full ${
+        side === "left"
+          ? "[mask-image:linear-gradient(to_right,transparent,black_15%,black)]"
+          : "[mask-image:linear-gradient(to_left,transparent,black_15%,black)]"
+      }`}
+    >
+      <svg
+        viewBox="0 0 132 28"
+        className="w-full h-full text-slate-400"
+        fill="none"
+        preserveAspectRatio="none"
+      >
+        {/* One unbroken zigzag line */}
+        <path
+          d={ZIGZAG_PATH}
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
+          className="opacity-65"
+        />
+        {/* Arrow moves along the single path: up → down → up → down, left to right */}
+        <g className="text-slate-700 motion-reduce:hidden">
+          <path
+            d="M-5 0 L5 0 M0 -4 L5 0 L0 4"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+          />
+          <animateMotion
+            dur="3.5s"
+            repeatCount="indefinite"
+            path={ZIGZAG_PATH}
+            rotate="auto"
+            calcMode="linear"
+          />
+        </g>
+      </svg>
+    </div>
+  </div>
+);
 
 const Navbar = () => {
   const { settings } = useSettings();
@@ -32,8 +89,14 @@ const Navbar = () => {
   const [searchableContent, setSearchableContent] = useState<any[]>(staticPages);
 
   const router = useRouter();
+  const pathname = usePathname();
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
+
+  const isActive = (href: string) => {
+    if (href === "/") return pathname === "/";
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
 
   // Prevent hydration mismatch by only rendering user-dependent content on client
   useEffect(() => {
@@ -47,10 +110,15 @@ const Navbar = () => {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
         // Fetch services, team, and portfolios in parallel
+        const fetchJson = (url: string) =>
+          fetch(url)
+            .then((res) => (res.ok ? res.json() : null))
+            .catch(() => null);
+
         const [servicesRes, teamRes, portfoliosRes] = await Promise.all([
-          fetch(`${API_URL}/services`).then(res => res.ok ? res.json() : null),
-          fetch(`${API_URL}/team?isActive=true`).then(res => res.ok ? res.json() : null),
-          fetch(`${API_URL}/portfolios?isActive=true`).then(res => res.ok ? res.json() : null),
+          fetchJson(`${API_URL}/services`),
+          fetchJson(`${API_URL}/team?isActive=true`),
+          fetchJson(`${API_URL}/portfolios?isActive=true`),
         ]);
 
         const dynamicContent: any[] = [...staticPages];
@@ -105,8 +173,8 @@ const Navbar = () => {
         }
 
         setSearchableContent(dynamicContent);
-      } catch (err) {
-        console.error("Error loading searchable content:", err);
+      } catch {
+        // API unavailable — static pages remain searchable
       }
     };
 
@@ -152,23 +220,28 @@ const Navbar = () => {
   // Live dynamic searchableContent loaded on mount
 
   return (
-    <nav
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isScrolled
-          ? "bg-white/95 backdrop-blur-md border-b border-slate-200"
-          : "bg-white border-b border-slate-200"
+    <header className="fixed inset-x-0 top-0 z-50 pointer-events-none">
+      <div
+        className={`mx-auto px-2 sm:px-4 pt-2 sm:pt-3 transition-all duration-500 ${
+          isScrolled ? "max-w-6xl xl:max-w-7xl" : "max-w-7xl xl:max-w-[88rem]"
         }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
-          {/* Logo */}
-          <Link
-            href="/"
-            className="flex items-center space-x-2 group"
+      >
+        <div className="flex items-center w-full gap-2 lg:gap-3">
+          <NavbarOuterZigzag side="left" />
+
+          <nav
+            className={`relative pointer-events-auto flex items-center justify-between gap-2 sm:gap-3 h-12 sm:h-[3rem] px-2.5 sm:px-3.5 rounded-2xl border transition-all duration-500 w-full lg:justify-start lg:w-auto lg:flex-1 lg:min-w-0 lg:max-w-5xl lg:mx-auto ${
+              isScrolled
+                ? "bg-white/95 backdrop-blur-xl border-slate-200/90 shadow-lg shadow-slate-900/5"
+                : "bg-white/80 backdrop-blur-lg border-slate-200/60 shadow-sm shadow-slate-900/[0.03]"
+            }`}
           >
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden group-hover:opacity-90 transition-opacity bg-slate-100">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 shrink-0 group min-w-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center overflow-hidden ring-1 ring-slate-200/80 group-hover:ring-slate-300 transition-all">
               <Image
                 src={settings?.logoUrl || "/logo.png"}
-                alt="Wiser Consulting Logo"
+                alt="Wiser Consulting"
                 width={40}
                 height={40}
                 className="object-contain w-full h-full"
@@ -176,69 +249,72 @@ const Navbar = () => {
                 unoptimized
               />
             </div>
-            <div className="flex flex-col">
-              <span className="text-xl font-bold text-slate-900 leading-tight">
-                WISER CONSULTING
+            <div className="hidden sm:flex flex-col min-w-0">
+              <span className="text-sm font-bold text-slate-900 tracking-tight leading-none truncate">
+                Wiser Consulting
               </span>
-              <span className="text-xs text-slate-600 leading-tight">
-                SOFTWARE HOUSE
+              <span className="font-mono text-[10px] tracking-[0.15em] uppercase text-slate-400 mt-0.5">
+                Software House
               </span>
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-1">
+          {/* Desktop Navigation — centered in remaining space */}
+          <div className="hidden lg:flex flex-1 justify-center min-w-0">
+            <div className="flex items-center rounded-full bg-slate-100/90 p-0.5 ring-1 ring-slate-200/50">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                className={`relative px-3 py-1 text-sm font-medium rounded-full transition-all duration-300 ${
+                  isActive(link.href)
+                    ? "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
               >
                 {link.label}
               </Link>
             ))}
+            </div>
           </div>
 
-          {/* Search Section - Desktop */}
-          <div className="hidden lg:flex items-center space-x-4">
-            {/* Search Button */}
+          {/* Desktop actions */}
+          <div className="hidden lg:flex items-center gap-0.5 shrink-0 ml-auto">
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="p-2 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+              className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors"
               aria-label="Search"
             >
-              <Search className="w-5 h-5" />
+              <Search className="w-[18px] h-[18px]" />
             </button>
-            {/* Login Button - Show when user is not logged in */}
             {isMounted && !user && (
               <Link
                 href="/login"
-                className="p-2 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors"
                 aria-label="Login"
               >
-                <LogIn className="w-5 h-5" />
+                <LogIn className="w-[18px] h-[18px]" />
               </Link>
             )}
             {isMounted && user && (
               <div className="relative">
                 <button
                   onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-                  className="flex items-center space-x-3 px-4 py-2 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+                  className="flex items-center gap-2 pl-1.5 pr-3 py-1.5 hover:bg-slate-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400/30"
                   aria-label="User menu"
                   aria-expanded={isUserDropdownOpen}
                 >
-                  <div className="w-8 h-8 bg-slate-900 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs font-semibold">
+                  <div className="w-7 h-7 bg-slate-900 rounded-full flex items-center justify-center">
+                    <span className="text-white text-[10px] font-semibold">
                       {user.name?.charAt(0).toUpperCase()}
                     </span>
                   </div>
-                  <span className="text-sm font-medium text-slate-700">
-                    {user.name}
-                  </span>
-                  <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${isUserDropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-200 ${
+                      isUserDropdownOpen ? "rotate-180" : ""
+                    }`}
+                  />
                 </button>
-
-                {/* Dropdown Menu */}
                 {isUserDropdownOpen && (
                   <>
                     <div
@@ -246,10 +322,10 @@ const Navbar = () => {
                       onClick={() => setIsUserDropdownOpen(false)}
                       aria-hidden="true"
                     />
-                    <div className="absolute right-0 mt-2 w-56 z-20 bg-white rounded-lg border border-slate-200 shadow-lg py-1">
-                      <div className="px-4 py-3 border-b border-slate-200">
-                        <p className="text-sm font-medium text-slate-900">{user.name || 'User'}</p>
-                        <p className="text-xs text-slate-500 mt-0.5">{user.email || 'user@example.com'}</p>
+                    <div className="absolute right-0 mt-2 w-56 z-20 bg-white rounded-2xl border border-slate-200 shadow-xl py-1 overflow-hidden">
+                      <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/50">
+                        <p className="text-sm font-medium text-slate-900 truncate">{user.name || "User"}</p>
+                        <p className="text-xs text-slate-500 mt-0.5 truncate">{user.email || "user@example.com"}</p>
                       </div>
                       <div className="py-1">
                         {isAdmin(user.role) && (
@@ -258,7 +334,7 @@ const Navbar = () => {
                             onClick={() => setIsUserDropdownOpen(false)}
                             className="w-full flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-green-50 hover:text-green-700 transition-colors"
                           >
-                            <span className="mr-3 w-2 h-2 rounded-full bg-green-600"></span>
+                            <span className="mr-3 w-2 h-2 rounded-full bg-green-600" />
                             <span>Admin</span>
                           </Link>
                         )}
@@ -270,7 +346,7 @@ const Navbar = () => {
                           <span>Profile</span>
                         </button>
                       </div>
-                      <div className="border-t border-slate-200 py-1">
+                      <div className="border-t border-slate-100 py-1">
                         <button
                           onClick={() => {
                             setIsUserDropdownOpen(false);
@@ -287,16 +363,26 @@ const Navbar = () => {
                 )}
               </div>
             )}
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-1 ml-0.5 px-3 py-1.5 text-xs sm:text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-full transition-colors"
+            >
+              Start project
+              <ArrowRight className="w-3 h-3" />
+            </Link>
           </div>
 
-          {/* Mobile menu button */}
+          {/* Mobile menu button — right side */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="lg:hidden p-2 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+            className="lg:hidden ml-auto p-2 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors shrink-0"
             aria-label="Toggle menu"
           >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
+            {isOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
+          </nav>
+
+          <NavbarOuterZigzag side="right" />
         </div>
       </div>
 
@@ -304,23 +390,35 @@ const Navbar = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="lg:hidden bg-white border-t border-slate-200 max-h-[calc(100vh-80px)] overflow-y-auto"
+            className="lg:hidden pointer-events-auto mx-2 sm:mx-4 mt-1.5 rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-xl shadow-xl overflow-hidden max-h-[calc(100vh-5.5rem)] overflow-y-auto"
           >
-            <div className="px-4 py-6 space-y-4">
+            <div className="px-4 py-5 space-y-1">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
                   onClick={() => setIsOpen(false)}
-                  className="block px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors"
+                  className={`block px-4 py-3 text-sm font-medium rounded-xl transition-colors ${
+                    isActive(link.href)
+                      ? "bg-slate-900 text-white"
+                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-50"
+                  }`}
                 >
                   {link.label}
                 </Link>
               ))}
+              <Link
+                href="/contact"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center justify-center gap-2 mt-3 px-4 py-3 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors"
+              >
+                Start project
+                <ArrowRight className="w-4 h-4" />
+              </Link>
 
               {/* Mobile Search */}
               <div className="pt-4 border-t border-slate-200">
@@ -404,7 +502,7 @@ const Navbar = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm pointer-events-auto"
             onClick={() => setIsSearchOpen(false)}
           >
             <motion.div
@@ -412,7 +510,7 @@ const Navbar = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               onClick={(e) => e.stopPropagation()}
-              className="absolute top-20 left-1/2 transform -translate-x-1/2 w-full max-w-2xl mx-4"
+              className="absolute top-[4.5rem] sm:top-24 left-1/2 transform -translate-x-1/2 w-full max-w-2xl mx-4 pointer-events-auto"
             >
               <div className="bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden">
                 <form onSubmit={handleSearch} className="relative">
@@ -522,7 +620,7 @@ const Navbar = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </nav>
+    </header>
   );
 };
 

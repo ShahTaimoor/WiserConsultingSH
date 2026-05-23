@@ -66,9 +66,9 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
       } else {
         throw new Error(data.message || 'Failed to parse site settings');
       }
-    } catch (err: any) {
-      console.error('Error fetching settings:', err);
-      setError(err.message || 'An error occurred while loading settings');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'An error occurred while loading settings';
+      setError(message);
       // Set some fallback settings to avoid UI breaking if API is down
       setSettings({
         logoUrl: '/logo.png',

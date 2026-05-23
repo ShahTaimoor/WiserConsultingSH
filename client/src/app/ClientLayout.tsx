@@ -38,7 +38,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     >
       <LenisScrollHandler>
         {!isAdminRoute && <Navbar />}
-        <main className={!isAdminRoute ? "min-h-[calc(100vh-160px)] mt-20" : ""}>
+        <main className={!isAdminRoute ? "relative min-h-[calc(100vh-160px)] pt-[4.25rem] sm:pt-20" : "relative"}>
           {children}
         </main>
         {!isAdminRoute && <Footer />}
