@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, Play } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -94,10 +94,10 @@ const Team = () => {
       setLoading(true);
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
       const url = `${API_URL}/team?isActive=true`;
-      
+
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
-      
+
       const res = await fetch(url, {
         method: 'GET',
         headers: {
@@ -123,12 +123,12 @@ const Team = () => {
 
       const data = await res.json();
       console.log('Team members response:', data);
-      
+
       const sortTeamMembers = (members: TeamMember[]): TeamMember[] => {
         return members.sort((a, b) => {
           const rolesA = Array.isArray(a.role) ? a.role.map(r => String(r).toLowerCase()) : [String(a.role || '').toLowerCase()];
           const rolesB = Array.isArray(b.role) ? b.role.map(r => String(r).toLowerCase()) : [String(b.role || '').toLowerCase()];
-          
+
           const getPriority = (roles: string[]) => {
             for (const role of roles) {
               if (role.includes('ceo')) return 1;
@@ -137,21 +137,21 @@ const Team = () => {
             }
             return 4;
           };
-          
+
           const priorityA = getPriority(rolesA);
           const priorityB = getPriority(rolesB);
-          
+
           if (priorityA !== priorityB) {
             return priorityA - priorityB;
           }
-          
+
           if (a.order !== b.order) {
             return a.order - b.order;
           }
           return a.name.localeCompare(b.name);
         });
       };
-      
+
       if (data.success) {
         let members: TeamMember[] = [];
         if (Array.isArray(data.data)) {
@@ -170,7 +170,7 @@ const Team = () => {
       }
     } catch (error: any) {
       console.error('Error fetching team members:', error);
-      
+
       let errorMessage = 'Failed to load team members. ';
       if (error.name === 'AbortError') {
         errorMessage += 'Request timed out. Please check your connection and try again.';
@@ -181,7 +181,7 @@ const Team = () => {
       } else {
         errorMessage += 'Please try again later.';
       }
-      
+
       setError(errorMessage);
       setTeamMembers([]);
     } finally {
@@ -280,37 +280,24 @@ const Team = () => {
                     return (
                       <article
                         key={member._id}
-                        className="relative flex-shrink-0 aspect-[16/9] min-h-[200px] max-h-[600px] sm:min-h-[260px] lg:min-h-[300px] rounded-[32px] sm:rounded-[40px] overflow-hidden bg-black"
-                        style={
-                          cardWidth > 0 ? { width: cardWidth } : { width: `${CARD_WIDTH_RATIO * 100}%` }
-                        }
+                        onClick={() => router.push(`/team/${member._id}`)}
+                        className="relative flex-shrink-0 aspect-[1792/1024] min-h-[200px] max-h-[600px] sm:min-h-[260px] lg:min-h-[300px] rounded-[32px] sm:rounded-[40px] overflow-hidden bg-black cursor-pointer transition-all duration-300 hover:scale-[1.01]"
+                        style={{
+                          width: cardWidth > 0 ? cardWidth : `${CARD_WIDTH_RATIO * 100}%`,
+                          aspectRatio: "1792 / 1024"
+                        }}
                       >
-                          {hasImage ? (
-                            <img
-                              src={member.image}
-                              alt={member.name}
-                              className="absolute inset-0 h-full w-full object-cover object-center"
-                            />
-                          ) : (
-                            <div className="absolute inset-0 flex items-center justify-center text-7xl sm:text-8xl">
-                              {member.image || "👨‍💼"}
-                            </div>
-                          )}
-
-                          <div className="absolute inset-0 bg-gradient-to-r from-black/45 via-black/10 to-transparent" />
-
-                          <h2 className="absolute left-6 sm:left-10 lg:left-12 top-1/2 z-10 max-w-[50%] -translate-y-1/2 text-2xl sm:text-4xl lg:text-5xl font-bold leading-tight tracking-tight text-white">
-                            {primaryRole}
-                          </h2>
-
-                          <button
-                            type="button"
-                            onClick={() => router.push(`/team/${member._id}`)}
-                            className="absolute bottom-6 right-6 sm:bottom-8 sm:right-8 flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm text-white transition-all hover:bg-white/40 hover:scale-105"
-                            aria-label={`View ${member.name}'s profile`}
-                          >
-                            <Play className="h-4 w-4 sm:h-5 sm:w-5 fill-current ml-0.5" />
-                          </button>
+                        {hasImage ? (
+                          <img
+                            src={member.image}
+                            alt={member.name}
+                            className="absolute inset-0 h-full w-full object-cover object-center"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center text-7xl sm:text-8xl">
+                            {member.image || "👨‍💼"}
+                          </div>
+                        )}
                       </article>
                     );
                   })}

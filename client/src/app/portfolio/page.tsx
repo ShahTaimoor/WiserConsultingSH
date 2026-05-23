@@ -105,12 +105,12 @@ const Portfolio = () => {
       icon: <Briefcase className="w-6 h-6" />,
     },
     {
-      number: "200+",
+      number: "5+",
       label: "Happy Clients",
       icon: <Smile className="w-6 h-6" />,
     },
     {
-      number: "10+",
+      number: "4",
       label: "Team Members",
       icon: <UserCheck className="w-6 h-6" />,
     },

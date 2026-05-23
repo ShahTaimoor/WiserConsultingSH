@@ -78,10 +78,9 @@ const teamImageStorage = new CloudinaryStorage({
     allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
     transformation: [
       { 
-        width: 500, 
-        height: 500, 
-        crop: 'fill',
-        gravity: 'face',
+        width: 1792, 
+        height: 1024, 
+        crop: 'limit',
         quality: 'auto',
         fetch_format: 'auto'
       }
