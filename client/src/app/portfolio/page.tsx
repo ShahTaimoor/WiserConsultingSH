@@ -105,80 +105,55 @@ const Portfolio = () => {
               <p className="text-slate-600 text-base sm:text-lg">No projects found.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            <div className="flex flex-col gap-8 sm:gap-12">
               {projects.map((project, index) => (
                 <motion.div
                   key={project._id}
                   {...stagger(index * 0.1)}
                   className="group"
                 >
-                  <Card className="p-0 overflow-hidden rounded-2xl bg-transparent border-0">
-                    <CardContent className="p-0 flex flex-col gap-4">
-                      <div className="relative overflow-hidden rounded-2xl bg-slate-100">
-                        {project.link ? (
-                          <a
-                            href={project.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block"
-                          >
-                            {project.image &&
-                              (project.image.startsWith("http") ||
-                                project.image.startsWith("/")) ? (
-                              <img
-                                src={project.image}
-                                alt={project.title}
-                                width="100%"
-                                height={260}
-                                className="rounded-2xl object-cover w-full h-[260px] transition-transform duration-500 group-hover:scale-105"
-                              />
-                            ) : (
-                              <div className="flex items-center justify-center h-[260px] text-6xl">
-                                {project.image || "🛒"}
-                              </div>
-                            )}
-                          </a>
-                        ) : project.image &&
-                          (project.image.startsWith("http") ||
-                            project.image.startsWith("/")) ? (
-                          <img
-                            src={project.image}
-                            alt={project.title}
-                            width="100%"
-                            height={260}
-                            className="rounded-2xl object-cover w-full h-[260px] transition-transform duration-500 group-hover:scale-105"
-                          />
-                        ) : (
-                          <div className="flex items-center justify-center h-[260px] text-6xl">
-                            {project.image || "🛒"}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-col gap-3">
-                        <h3 className="text-foreground text-xl font-semibold">
+                  <Card className="p-0 overflow-hidden rounded-2xl bg-transparent border-0 shadow-none">
+                    <CardContent className={`p-0 flex flex-col-reverse md:flex-row ${index % 2 === 1 ? 'md:flex-row-reverse' : ''} gap-6 md:gap-8 items-center`}>
+                      <div className="flex-1 flex flex-col gap-3 px-2 md:px-0">
+                        <h3 className="text-foreground text-xl sm:text-2xl font-semibold">
                           {project.title}
                         </h3>
                         {project.description && (
-                          <p className="text-sm text-muted-foreground line-clamp-2">
+                          <p className="text-sm text-muted-foreground leading-relaxed">
                             {project.description}
                           </p>
                         )}
                         {project.technologies && project.technologies.length > 0 && (
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex flex-wrap gap-2 mt-2">
                             {project.technologies.slice(0, 3).map((tech, idx) => (
                               <span
                                 key={idx}
-                                className="inline-flex items-center rounded-full border border-border px-3 py-1 text-xs font-normal h-7 bg-background text-foreground"
+                                className="inline-flex items-center rounded-full border border-border px-3 py-1 text-xs font-normal bg-background text-foreground"
                               >
                                 {tech}
                               </span>
                             ))}
                             {project.technologies.length > 3 && (
-                              <span className="inline-flex items-center rounded-full border border-border px-3 py-1 text-xs font-normal h-7 bg-background text-foreground">
+                              <span className="inline-flex items-center rounded-full border border-border px-3 py-1 text-xs font-normal bg-background text-foreground">
                                 +{project.technologies.length - 3}
                               </span>
                             )}
                           </div>
+                        )}
+                      </div>
+                      <div className="relative w-full md:w-[45%] aspect-[4/3] overflow-hidden rounded-2xl bg-slate-100 shrink-0">
+                        {project.link ? (
+                          <a href={project.link} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
+                            {project.image && (project.image.startsWith("http") || project.image.startsWith("/")) ? (
+                              <img src={project.image} alt={project.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                            ) : (
+                              <div className="flex items-center justify-center w-full h-full text-6xl">{project.image || "🛒"}</div>
+                            )}
+                          </a>
+                        ) : project.image && (project.image.startsWith("http") || project.image.startsWith("/")) ? (
+                          <img src={project.image} alt={project.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                        ) : (
+                          <div className="flex items-center justify-center w-full h-full text-6xl">{project.image || "🛒"}</div>
                         )}
                       </div>
                     </CardContent>
