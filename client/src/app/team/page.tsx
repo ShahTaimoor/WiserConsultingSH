@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Play } from "lucide-react";
 
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -42,12 +41,10 @@ const CARD_WIDTH_RATIO = 2 / 3; // active card 2/3 width → next card shows ~ha
 
 function HoverCard({
   children,
-  onClick,
   cardWidth,
   CARD_WIDTH_RATIO,
 }: {
   children: React.ReactNode;
-  onClick: () => void;
   cardWidth: number;
   CARD_WIDTH_RATIO: number;
 }) {
@@ -64,7 +61,6 @@ function HoverCard({
   return (
     <div
       ref={ref}
-      onClick={onClick}
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
@@ -89,7 +85,6 @@ function HoverCard({
 }
 
 const Team = () => {
-  const router = useRouter();
   const [activeIndex, setActiveIndex] = useState(0);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -328,7 +323,6 @@ const Team = () => {
                     return (
                       <HoverCard
                         key={member._id}
-                        onClick={() => router.push(`/team/${member._id}`)}
                         cardWidth={cardWidth}
                         CARD_WIDTH_RATIO={CARD_WIDTH_RATIO}
                       >
