@@ -8,7 +8,7 @@ interface Portfolio {
   title: string;
   description: string;
   category: string;
-  image: string;
+  images: string[];
   technologies: string[];
   link: string;
   order: number;
@@ -24,15 +24,16 @@ const AdminPortfolio = () => {
     title: '',
     description: '',
     category: 'web',
-    image: '🛒',
+    images: [] as string[],
     technologies: [] as string[],
     link: '',
     order: 0,
     isActive: true,
   });
   const [techInput, setTechInput] = useState('');
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [emojiInput, setEmojiInput] = useState('🛒');
 
   useEffect(() => {
     fetchPortfolios();
@@ -89,12 +90,20 @@ const AdminPortfolio = () => {
         formDataToSend.append(`technologies[${index}]`, tech);
       });
       
-      // Append image file if selected, otherwise append existing image URL or emoji
-      if (imageFile) {
-        formDataToSend.append('image', imageFile);
-      } else if (formData.image && !formData.image.startsWith('http')) {
-        // If it's an emoji or text, send it as a regular field
-        formDataToSend.append('image', formData.image);
+      // Append new image files
+      imageFiles.forEach(file => {
+        formDataToSend.append('images', file);
+      });
+      
+      // Append existing image URLs (non-blob previews that came from server)
+      imagePreviews.forEach((preview) => {
+        if (!preview.startsWith('blob:')) {
+          formDataToSend.append('existingImages[]', preview);
+        }
+      });
+      // If no images at all (neither existing nor new), send the emoji
+      if (imageFiles.length === 0 && imagePreviews.every(p => p.startsWith('blob:'))) {
+        formDataToSend.append('existingImages[]', emojiInput || '🛒');
       }
 
       const res = await fetch(url, {
@@ -163,19 +172,16 @@ const AdminPortfolio = () => {
       title: portfolio.title,
       description: portfolio.description,
       category: portfolio.category,
-      image: portfolio.image,
+      images: portfolio.images,
       technologies: portfolio.technologies,
       link: portfolio.link,
       order: portfolio.order,
       isActive: portfolio.isActive,
     });
-    // Set image preview if it's a URL, otherwise clear it
-    if (portfolio.image && (portfolio.image.startsWith('http') || portfolio.image.startsWith('/'))) {
-      setImagePreview(portfolio.image);
-    } else {
-      setImagePreview(null);
-    }
-    setImageFile(null);
+    // Set image previews for URL-based images
+    const urls = portfolio.images.filter(img => img.startsWith('http') || img.startsWith('/'));
+    setImagePreviews(urls);
+    setImageFiles([]);
     setShowModal(true);
   };
 
@@ -184,7 +190,7 @@ const AdminPortfolio = () => {
       title: '',
       description: '',
       category: 'web',
-      image: '🛒',
+      images: [],
       technologies: [],
       link: '',
       order: 0,
@@ -192,30 +198,58 @@ const AdminPortfolio = () => {
     });
     setEditingPortfolio(null);
     setTechInput('');
-    setImageFile(null);
-    setImagePreview(null);
+    setImageFiles([]);
+    setImagePreviews([]);
+    setEmojiInput('🛒');
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Validate file type
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    const validFiles: File[] = [];
+    const newPreviews: string[] = [];
+    
+    Array.from(files).forEach(file => {
       if (!file.type.startsWith('image/')) {
-        alert('Please select an image file');
+        alert(`"${file.name}" is not an image file`);
         return;
       }
-      // Validate file size (5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert('Image size should be less than 5MB');
+        alert(`"${file.name}" is larger than 5MB`);
         return;
       }
-      setImageFile(file);
-      // Create preview URL
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      validFiles.push(file);
+      newPreviews.push(URL.createObjectURL(file));
+    });
+    
+    setImageFiles(prev => [...prev, ...validFiles]);
+    setImagePreviews(prev => [...prev, ...newPreviews]);
+  };
+
+  const removeImage = (index: number) => {
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+    // If removing from the previews, determine if it was an existing image or a new file
+    const preview = imagePreviews[index];
+    if (preview && preview.startsWith('blob:')) {
+      // It's a locally added file - find and remove it from imageFiles
+      const fileIndex = imageFiles.findIndex((_) => {
+        let localIdx = -1;
+        // Count blob previews before this index
+        for (let i = 0; i <= index; i++) {
+          if (imagePreviews[i]?.startsWith('blob:')) localIdx++;
+        }
+        return localIdx === index;
+      });
+      if (fileIndex >= 0) {
+        setImageFiles(prev => prev.filter((_, i) => i !== fileIndex));
+      }
+    } else {
+      // It's an existing URL - remove it from formData.images
+      setFormData(prev => ({
+        ...prev,
+        images: prev.images.filter(img => img !== preview)
+      }));
     }
   };
 
@@ -268,14 +302,14 @@ const AdminPortfolio = () => {
           <div key={portfolio._id} className="bg-white rounded-lg shadow p-4 border border-gray-200">
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0">
-                {portfolio.image && (portfolio.image.startsWith('http') || portfolio.image.startsWith('/')) ? (
+                {portfolio.images?.[0] && (portfolio.images[0].startsWith('http') || portfolio.images[0].startsWith('/')) ? (
                   <img
-                    src={portfolio.image}
+                    src={portfolio.images[0]}
                     alt={portfolio.title}
                     className="w-16 h-16 object-cover rounded-lg border-2 border-gray-200"
                   />
                 ) : (
-                  <div className="text-3xl w-16 h-16 flex items-center justify-center bg-gray-50 rounded-lg">{portfolio.image || '🛒'}</div>
+                  <div className="text-3xl w-16 h-16 flex items-center justify-center bg-gray-50 rounded-lg">{portfolio.images?.[0] || '🛒'}</div>
                 )}
               </div>
               <div className="flex-1 min-w-0">
@@ -353,14 +387,14 @@ const AdminPortfolio = () => {
             {portfolios.map((portfolio) => (
               <tr key={portfolio._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
-                  {portfolio.image && (portfolio.image.startsWith('http') || portfolio.image.startsWith('/')) ? (
+                  {portfolio.images?.[0] && (portfolio.images[0].startsWith('http') || portfolio.images[0].startsWith('/')) ? (
                     <img
-                      src={portfolio.image}
+                      src={portfolio.images[0]}
                       alt={portfolio.title}
                         className="w-16 h-16 object-cover rounded-lg border-2 border-gray-200"
                     />
                   ) : (
-                      <div className="text-2xl">{portfolio.image || '🛒'}</div>
+                      <div className="text-2xl">{portfolio.images?.[0] || '🛒'}</div>
                   )}
                 </td>
                   <td className="px-6 py-4">
@@ -467,45 +501,41 @@ const AdminPortfolio = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Project Image</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Project Images</label>
                   <input
                     type="file"
                     accept="image/*"
+                    multiple
                     onChange={handleImageChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                   />
-                  {imagePreview && (
-                    <div className="mt-2">
-                      <img
-                        src={imagePreview}
-                        alt="Preview"
-                        className="w-32 h-32 object-cover rounded-lg border border-gray-300"
-                      />
-                    </div>
-                  )}
-                  {!imagePreview && formData.image && !formData.image.startsWith('http') && (
-                    <div className="mt-2 text-4xl">{formData.image}</div>
-                  )}
-                  {!imagePreview && formData.image && formData.image.startsWith('http') && (
-                    <div className="mt-2">
-                      <img
-                        src={formData.image}
-                        alt="Current"
-                        className="w-32 h-32 object-cover rounded-lg border border-gray-300"
-                      />
+                  {imagePreviews.length > 0 && (
+                    <div className="mt-2 grid grid-cols-3 gap-2">
+                      {imagePreviews.map((preview, idx) => (
+                        <div key={idx} className="relative group">
+                          {preview.startsWith('blob:') || preview.startsWith('http') || preview.startsWith('/') ? (
+                            <img src={preview} alt={`Image ${idx + 1}`} className="w-full h-24 object-cover rounded-lg border border-gray-300" />
+                          ) : (
+                            <div className="w-full h-24 flex items-center justify-center text-4xl bg-gray-50 rounded-lg border border-gray-300">{preview}</div>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeImage(idx)}
+                            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   )}
                   <div className="mt-2">
-                    <label className="block text-xs text-gray-500 mb-1">Or use emoji:</label>
+                    <label className="block text-xs text-gray-500 mb-1">Or fallback emoji (used when no images):</label>
                     <input
                       type="text"
-                      value={formData.image && !formData.image.startsWith('http') ? formData.image : ''}
-                      onChange={(e) => {
-                        setFormData({ ...formData, image: e.target.value });
-                        setImageFile(null);
-                        setImagePreview(null);
-                      }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      value={emojiInput}
+                      onChange={(e) => setEmojiInput(e.target.value)}
+                      className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center text-2xl"
                       placeholder="🛒"
                     />
                   </div>

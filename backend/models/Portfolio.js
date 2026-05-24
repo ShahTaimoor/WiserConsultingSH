@@ -18,10 +18,10 @@ const portfolioSchema = new mongoose.Schema(
       enum: ['web', 'mobile', 'enterprise', 'other'],
       default: 'web',
     },
-    image: {
+    images: [{
       type: String,
-      default: '🛒',
-    },
+      trim: true,
+    }],
     technologies: [{
       type: String,
       trim: true,

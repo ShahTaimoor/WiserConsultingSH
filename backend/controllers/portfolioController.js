@@ -8,6 +8,19 @@ class PortfolioController {
   parseFormDataArrays(body) {
     const parsed = { ...body };
     
+    // Parse existing images array if it exists
+    if (body.existingImages) {
+      if (typeof body.existingImages === 'string') {
+        try {
+          parsed.existingImages = JSON.parse(body.existingImages);
+        } catch (e) {
+          parsed.existingImages = [body.existingImages];
+        }
+      } else if (Array.isArray(body.existingImages)) {
+        parsed.existingImages = body.existingImages;
+      }
+    }
+
     // Parse technologies array if it exists
     if (body.technologies) {
       if (typeof body.technologies === 'string') {
@@ -71,13 +84,22 @@ class PortfolioController {
     // Parse FormData arrays and other fields
     const portfolioData = this.parseFormDataArrays(req.body);
     
-    // If an image file was uploaded, use the Cloudinary URL
-    if (req.file && req.file.path) {
-      portfolioData.image = req.file.path; // Cloudinary URL
-    } else if (!portfolioData.image) {
-      // Default to emoji if no image provided
-      portfolioData.image = '🛒';
+    // Collect image URLs from uploaded files
+    const images = [];
+    if (req.files && req.files.length > 0) {
+      req.files.forEach(file => {
+        if (file.path) images.push(file.path);
+      });
     }
+    // Also check for image URLs sent as form fields
+    if (portfolioData.existingImages && Array.isArray(portfolioData.existingImages)) {
+      portfolioData.existingImages.forEach(url => {
+        if (url) images.push(url);
+      });
+    }
+    delete portfolioData.existingImages;
+    
+    portfolioData.images = images.length > 0 ? images : ['🛒'];
     
     const portfolio = await Portfolio.create(portfolioData);
     logger.info(`Portfolio created: ${portfolio._id}`);
@@ -90,14 +112,23 @@ class PortfolioController {
     // Parse FormData arrays and other fields
     const updateData = this.parseFormDataArrays(req.body);
     
-    // If an image file was uploaded, use the Cloudinary URL
-    if (req.file && req.file.path) {
-      updateData.image = req.file.path; // Cloudinary URL
+    // Collect image URLs from uploaded files and existing images
+    const images = [];
+    if (req.files && req.files.length > 0) {
+      req.files.forEach(file => {
+        if (file.path) images.push(file.path);
+      });
     }
-    // If no new image uploaded and image field is empty string, keep existing image
-    // (don't update image field if it's not provided)
-    if (updateData.image === '') {
-      delete updateData.image;
+    // Preserve existing images sent from frontend
+    if (updateData.existingImages && Array.isArray(updateData.existingImages)) {
+      updateData.existingImages.forEach(url => {
+        if (url) images.push(url);
+      });
+    }
+    delete updateData.existingImages;
+    
+    if (images.length > 0) {
+      updateData.images = images;
     }
     
     const portfolio = await Portfolio.findByIdAndUpdate(

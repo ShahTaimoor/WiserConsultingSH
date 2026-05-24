@@ -21,7 +21,7 @@ export interface PortfolioProject {
   title: string;
   category: string;
   description: string;
-  image: string;
+  images: string[];
   technologies: string[];
   link?: string;
   isActive: boolean;

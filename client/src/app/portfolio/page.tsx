@@ -32,7 +32,7 @@ interface PortfolioProject {
   title: string;
   category: string;
   description: string;
-  image: string;
+  images: string[];
   technologies: string[];
   link?: string;
   isActive: boolean;
@@ -141,19 +141,23 @@ const Portfolio = () => {
                           </div>
                         )}
                       </div>
-                      <div className="relative w-full md:w-[45%] aspect-[4/3] overflow-hidden rounded-2xl bg-slate-100 shrink-0">
-                        {project.link ? (
-                          <a href={project.link} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
-                            {project.image && (project.image.startsWith("http") || project.image.startsWith("/")) ? (
-                              <img src={project.image} alt={project.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      <div className="w-full md:w-[45%] shrink-0 flex flex-col gap-4">
+                        {project.images && project.images.length > 0 ? (
+                          project.images.map((img, imgIdx) => (
+                            img.startsWith("http") || img.startsWith("/") ? (
+                              project.link ? (
+                                <a key={imgIdx} href={project.link} target="_blank" rel="noopener noreferrer" className="block rounded-2xl bg-slate-100">
+                                  <img src={img} alt={`${project.title} ${imgIdx + 1}`} className="w-full object-contain transition-transform duration-500 group-hover:scale-105" />
+                                </a>
+                              ) : (
+                                <img key={imgIdx} src={img} alt={`${project.title} ${imgIdx + 1}`} className="w-full object-contain rounded-2xl bg-slate-100" />
+                              )
                             ) : (
-                              <div className="flex items-center justify-center w-full h-full text-6xl">{project.image || "🛒"}</div>
-                            )}
-                          </a>
-                        ) : project.image && (project.image.startsWith("http") || project.image.startsWith("/")) ? (
-                          <img src={project.image} alt={project.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                              <div key={imgIdx} className="flex items-center justify-center h-48 text-6xl rounded-2xl bg-slate-100">{img || "🛒"}</div>
+                            )
+                          ))
                         ) : (
-                          <div className="flex items-center justify-center w-full h-full text-6xl">{project.image || "🛒"}</div>
+                          <div className="flex items-center justify-center h-48 text-6xl rounded-2xl bg-slate-100">🛒</div>
                         )}
                       </div>
                     </CardContent>
