@@ -4,19 +4,11 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  Globe2,
-  Smartphone,
   ShoppingCart,
   Building2,
   GraduationCap,
   Heart,
-  Briefcase,
   Code2,
-  ExternalLink,
-  Github,
-  Smile,
-  Calendar,
-  UserCheck,
 } from "lucide-react";
 
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -114,7 +106,7 @@ const Portfolio = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-              {filteredProjects.map((project, index) => (
+              {projects.map((project, index) => (
                 <motion.div
                   key={project._id}
                   {...stagger(index * 0.1)}
