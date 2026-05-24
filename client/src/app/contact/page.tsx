@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { useSettings } from "@/context/SettingsContext";
 
-const ease = [0.16, 1, 0.3, 1];
+const ease: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 40 },

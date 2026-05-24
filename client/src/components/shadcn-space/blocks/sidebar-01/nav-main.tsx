@@ -205,6 +205,7 @@ function NavMainSubItem({
   const { isMobile, setOpenMobile } = useSidebar();
   const hasChildren = !!item.children?.length;
   const [isOpen, setIsOpen] = React.useState(false);
+  const pathname = usePathname();
 
   // Close sidebar on mobile when sub-navigation item is clicked
   const handleSubNavClick = () => {
@@ -255,7 +256,6 @@ function NavMainSubItem({
   }
 
   if (item.title) {
-    const pathname = usePathname();
     const isChildActive = activeChild === item.title || pathname === item.href;
     return (
       <SidebarMenuSubItem className="w-full">

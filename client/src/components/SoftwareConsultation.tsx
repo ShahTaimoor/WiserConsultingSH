@@ -24,7 +24,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '@/redux/store';
 import { fetchAdminComments } from '@/redux/slices/formSubmission/formSubmissionSlice';
 
-const ease = [0.16, 1, 0.3, 1];
+const ease = [0.16, 1, 0.3, 1] as const;
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 40 },

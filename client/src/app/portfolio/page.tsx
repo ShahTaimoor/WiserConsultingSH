@@ -19,7 +19,7 @@ import {
   UserCheck,
 } from "lucide-react";
 
-const ease = [0.16, 1, 0.3, 1];
+const ease = [0.16, 1, 0.3, 1] as const;
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 40 },

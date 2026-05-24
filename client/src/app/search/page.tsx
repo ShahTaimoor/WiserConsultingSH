@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { Suspense, useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -11,10 +11,10 @@ import {
   Briefcase, 
   Code2,
   ArrowRight,
-  ExternalLink
 } from "lucide-react";
+import { LoadingSpinner } from "@/components/shared";
 
-const SearchPage = () => {
+function SearchContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
   const [searchQuery, setSearchQuery] = useState(query);
@@ -352,4 +352,10 @@ const SearchPage = () => {
   );
 };
 
-export default SearchPage;
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner size="lg" text="Loading search..." className="min-h-screen" />}>
+      <SearchContent />
+    </Suspense>
+  );
+}
