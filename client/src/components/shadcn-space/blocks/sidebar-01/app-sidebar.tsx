@@ -10,7 +10,7 @@ export const navData: NavItem[] = [
   // Main Sectiion
   { label: "Main", isSection: true },
   { title: "Dashboard", icon: PieChart, href: "/admin" },
-  { title: "Portfolio", icon: Briefcase, href: "/admin/portfolio" },
+  { title: "Projects", icon: Briefcase, href: "/admin/portfolio" },
   { title: "Team", icon: Users, href: "/admin/team" },
   { title: "Content", icon: FileText, href: "/admin/content" },
   { title: "Contact Submissions", icon: Mail, href: "/admin/contacts" },

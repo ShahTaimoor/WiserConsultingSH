@@ -109,7 +109,7 @@ const AdminPortfolio = () => {
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to save portfolio');
+        throw new Error(errorData.message || 'Failed to save project');
       }
 
       const data = await res.json();
@@ -118,16 +118,16 @@ const AdminPortfolio = () => {
         setShowModal(false);
         resetForm();
       } else {
-        throw new Error(data.message || 'Failed to save portfolio');
+        throw new Error(data.message || 'Failed to save project');
       }
     } catch (error) {
-      console.error('Error saving portfolio:', error);
-      alert(error instanceof Error ? error.message : 'Failed to save portfolio. Please try again.');
+      console.error('Error saving project:', error);
+      alert(error instanceof Error ? error.message : 'Failed to save project. Please try again.');
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this portfolio item?')) return;
+    if (!confirm('Are you sure you want to delete this project?')) return;
 
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
@@ -142,18 +142,18 @@ const AdminPortfolio = () => {
       });
 
       if (!res.ok) {
-        throw new Error('Failed to delete portfolio');
+        throw new Error('Failed to delete project');
       }
 
       const data = await res.json();
       if (data.success) {
         fetchPortfolios();
       } else {
-        throw new Error(data.message || 'Failed to delete portfolio');
+        throw new Error(data.message || 'Failed to delete project');
       }
     } catch (error) {
-      console.error('Error deleting portfolio:', error);
-      alert(error instanceof Error ? error.message : 'Failed to delete portfolio. Please try again.');
+      console.error('Error deleting project:', error);
+      alert(error instanceof Error ? error.message : 'Failed to delete project. Please try again.');
     }
   };
 
@@ -248,7 +248,7 @@ const AdminPortfolio = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Portfolio Management</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Projects Management</h1>
         <button
           onClick={() => {
             resetForm();
@@ -257,7 +257,7 @@ const AdminPortfolio = () => {
           className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm sm:text-base w-full sm:w-auto justify-center"
         >
           <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-          <span className="hidden sm:inline">Add Portfolio</span>
+          <span className="hidden sm:inline">Add Project</span>
           <span className="sm:hidden">Add</span>
         </button>
       </div>

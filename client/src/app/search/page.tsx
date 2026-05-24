@@ -49,10 +49,10 @@ const SearchPage = () => {
         },
         { 
           type: "page", 
-          title: "Portfolio", 
+          title: "Projects", 
           description: "View our completed projects and case studies",
           href: "/portfolio",
-          keywords: ["portfolio", "projects", "work", "case studies", "examples"]
+          keywords: ["projects", "work", "case studies", "examples"]
         },
         { 
           type: "page", 

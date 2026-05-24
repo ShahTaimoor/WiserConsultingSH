@@ -81,7 +81,7 @@ const Navbar = () => {
   const staticPages = [
     { href: "/", label: "Home", type: "page", keywords: ["home", "main", "landing", "software", "consulting"] },
 
-    { href: "/portfolio", label: "Portfolio", type: "page", keywords: ["portfolio", "projects", "work", "case studies"] },
+    { href: "/portfolio", label: "Projects", type: "page", keywords: ["projects", "work", "case studies"] },
     { href: "/team", label: "Team", type: "page", keywords: ["team", "members", "staff", "experts", "developers"] },
     { href: "/contact", label: "Contact", type: "page", keywords: ["contact", "get in touch", "reach out", "email", "phone"] },
   ];
@@ -202,7 +202,7 @@ const Navbar = () => {
   const navLinks = [
     { href: "/", label: "Home" },
 
-    { href: "/portfolio", label: "Portfolio" },
+    { href: "/portfolio", label: "Projects" },
     { href: "/team", label: "Team" },
     { href: "/contact", label: "Contact" },
   ];
