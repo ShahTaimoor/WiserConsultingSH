@@ -63,12 +63,28 @@ const AdminTeam = () => {
       description: 'Expert in both frontend and backend development technologies' 
     },
     { 
+      value: 'Full Stack Engineer', 
+      description: 'Designs and builds end-to-end web applications and systems' 
+    },
+    { 
+      value: 'MERN Stack Developer', 
+      description: 'Specializes in MongoDB, Express, React, and Node.js development' 
+    },
+    { 
+      value: 'PERN Stack Developer', 
+      description: 'Specializes in PostgreSQL, Express, React, and Node.js development' 
+    },
+    { 
       value: 'Frontend Developer', 
       description: 'Specializes in user interface and user experience development' 
     },
     { 
       value: 'Backend Developer', 
       description: 'Focuses on server-side logic, databases, and API development' 
+    },
+    { 
+      value: 'App Developer', 
+      description: 'Develops cross-platform and native mobile applications' 
     },
     { 
       value: 'Cloud Architecture', 
