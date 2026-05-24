@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   title: "WISER CONSULTING - Software House",
   description:
     "Expert software consulting and development services. Custom software solutions, cloud migration, mobile apps, and enterprise systems. Transform your business with cutting-edge technology.",
+  icons: [{ rel: "icon", url: "/logo.png" }],
 };
 
 export default function RootLayout({
