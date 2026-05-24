@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play } from "lucide-react";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -39,6 +39,56 @@ const getPrimaryRole = (member: TeamMember) => {
 };
 
 const CARD_WIDTH_RATIO = 2 / 3; // active card 2/3 width → next card shows ~half on the right
+
+function HoverCard({
+  children,
+  onClick,
+  cardWidth,
+  CARD_WIDTH_RATIO,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  cardWidth: number;
+  CARD_WIDTH_RATIO: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const [hover, setHover] = useState(false);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    setPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
+
+  return (
+    <div
+      ref={ref}
+      onClick={onClick}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      className="relative flex-shrink-0 aspect-[1792/1024] min-h-[200px] max-h-[600px] sm:min-h-[260px] lg:min-h-[300px] rounded-[32px] sm:rounded-[40px] overflow-hidden bg-black cursor-pointer transition-all duration-300 hover:scale-[1.01]"
+      style={{
+        width: cardWidth > 0 ? cardWidth : `${CARD_WIDTH_RATIO * 100}%`,
+        aspectRatio: "1792 / 1024",
+      }}
+    >
+      {children}
+      {hover && (
+        <div
+          className="pointer-events-none absolute flex flex-col items-center gap-2 text-white -translate-x-1/2 -translate-y-1/2"
+          style={{ left: pos.x, top: pos.y }}
+        >
+          <div className="flex items-center justify-center w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm">
+            <Play className="w-6 h-6 fill-white ml-0.5" />
+          </div>
+          <span className="text-sm font-medium tracking-wide whitespace-nowrap">Watch Video</span>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const Team = () => {
   const router = useRouter();
@@ -278,14 +328,11 @@ const Team = () => {
                         member.image.startsWith("/"));
 
                     return (
-                      <article
+                      <HoverCard
                         key={member._id}
                         onClick={() => router.push(`/team/${member._id}`)}
-                        className="relative flex-shrink-0 aspect-[1792/1024] min-h-[200px] max-h-[600px] sm:min-h-[260px] lg:min-h-[300px] rounded-[32px] sm:rounded-[40px] overflow-hidden bg-black cursor-pointer transition-all duration-300 hover:scale-[1.01]"
-                        style={{
-                          width: cardWidth > 0 ? cardWidth : `${CARD_WIDTH_RATIO * 100}%`,
-                          aspectRatio: "1792 / 1024"
-                        }}
+                        cardWidth={cardWidth}
+                        CARD_WIDTH_RATIO={CARD_WIDTH_RATIO}
                       >
                         {hasImage ? (
                           <img
@@ -298,7 +345,7 @@ const Team = () => {
                             {member.image || "👨‍💼"}
                           </div>
                         )}
-                      </article>
+                      </HoverCard>
                     );
                   })}
                 </div>
