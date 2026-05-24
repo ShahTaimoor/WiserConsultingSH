@@ -47,18 +47,9 @@ interface PortfolioProject {
 }
 
 const Portfolio = () => {
-  const [activeFilter, setActiveFilter] = useState("all");
   const [projects, setProjects] = useState<PortfolioProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const categories = [
-    { id: "all", label: "All Projects" },
-    { id: "web", label: "Web Applications" },
-    { id: "mobile", label: "Mobile Apps" },
-    { id: "enterprise", label: "Enterprise Solutions" },
-    { id: "other", label: "Other Projects" }
-  ];
 
   useEffect(() => {
     fetchPortfolios();
@@ -94,82 +85,11 @@ const Portfolio = () => {
     }
   };
 
-  const filteredProjects = activeFilter === "all"
-    ? projects
-    : projects.filter(project => project.category === activeFilter);
-
-  const stats = [
-    {
-      number: "5+",
-      label: "Projects Delivered",
-      icon: <Briefcase className="w-6 h-6" />,
-    },
-    {
-      number: "5+",
-      label: "Happy Clients",
-      icon: <Smile className="w-6 h-6" />,
-    },
-    {
-      number: "4",
-      label: "Team Members",
-      icon: <UserCheck className="w-6 h-6" />,
-    },
-    {
-      number: "5+",
-      label: "Years Experience",
-      icon: <Calendar className="w-6 h-6" />,
-    }
-  ];
-
   return (
     <div className="min-h-screen bg-white">
 
 
-      {/* Stats */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-            {stats.map((stat, index) => (
-              <motion.div
-                key={index}
-                {...fadeUp(index * 0.1)}
-                whileHover={{ y: -5, scale: 1.02 }}
-                className="bg-white rounded-xl p-6 transition-all group"
-              >
-                <div className="w-14 h-14 bg-slate-50 rounded-xl flex items-center justify-center text-slate-700 mb-4 group-hover:scale-110 transition-transform">
-                  {stat.icon}
-                </div>
-                <div className="text-4xl md:text-5xl font-bold text-slate-900 mb-2 group-hover:text-slate-700 transition-colors">
-                  {stat.number}
-                </div>
-                <div className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
-                  {stat.label}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* Filter Buttons */}
-      <section className="py-12 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap justify-center gap-4">
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => setActiveFilter(category.id)}
-                className={`px-6 py-2 rounded-lg font-semibold transition-all ${activeFilter === category.id
-                    ? "bg-slate-900 text-white"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                  }`}
-              >
-                {category.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Projects Grid */}
       <section className="py-12 sm:py-16 lg:py-20 bg-white">
@@ -188,7 +108,7 @@ const Portfolio = () => {
                 Retry
               </button>
             </div>
-          ) : filteredProjects.length === 0 ? (
+          ) : projects.length === 0 ? (
             <div className="text-center py-12 sm:py-20">
               <p className="text-slate-600 text-base sm:text-lg">No projects found.</p>
             </div>
