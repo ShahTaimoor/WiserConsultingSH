@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   ShoppingCart,
@@ -141,23 +141,11 @@ const Portfolio = () => {
                           </div>
                         )}
                       </div>
-                      <div className="w-full md:w-[45%] shrink-0 flex flex-col gap-4">
+                      <div className="w-full md:w-[45%] shrink-0">
                         {project.images && project.images.length > 0 ? (
-                          project.images.map((img, imgIdx) => (
-                            img.startsWith("http") || img.startsWith("/") ? (
-                              project.link ? (
-                                <a key={imgIdx} href={project.link} target="_blank" rel="noopener noreferrer" className="block rounded-2xl bg-slate-100">
-                                  <img src={img} alt={`${project.title} ${imgIdx + 1}`} className="w-full object-contain transition-transform duration-500 group-hover:scale-105" />
-                                </a>
-                              ) : (
-                                <img key={imgIdx} src={img} alt={`${project.title} ${imgIdx + 1}`} className="w-full object-contain rounded-2xl bg-slate-100" />
-                              )
-                            ) : (
-                              <div key={imgIdx} className="flex items-center justify-center h-48 text-6xl rounded-2xl bg-slate-100">{img || "🛒"}</div>
-                            )
-                          ))
+                          <ImageSlider images={project.images} title={project.title} link={project.link} />
                         ) : (
-                          <div className="flex items-center justify-center h-48 text-6xl rounded-2xl bg-slate-100">🛒</div>
+                          <div className="flex items-center justify-center h-48 sm:h-64 text-6xl rounded-2xl bg-slate-100">🛒</div>
                         )}
                       </div>
                     </CardContent>
@@ -248,6 +236,86 @@ const Portfolio = () => {
           </motion.div>
         </div>
       </section>
+    </div>
+  );
+};
+
+const ImageSlider = ({ images, title, link }: { images: string[]; title: string; link?: string }) => {
+  const [[current, direction], setCurrent] = useState([0, 0]);
+  const [paused, setPaused] = useState(false);
+
+  const goTo = useCallback((index: number) => {
+    setCurrent(([prev]) => [((index % images.length) + images.length) % images.length, index > prev ? 1 : -1]);
+  }, [images.length]);
+
+  const goNext = useCallback(() => goTo(current + 1), [current, goTo]);
+
+  useEffect(() => {
+    if (images.length <= 1 || paused) return;
+    const timer = setInterval(goNext, 4000);
+    return () => clearInterval(timer);
+  }, [images.length, paused, goNext]);
+
+  const img = images[current];
+  const isUrl = img.startsWith("http") || img.startsWith("/");
+
+  return (
+    <div
+      className="relative overflow-hidden rounded-2xl bg-slate-100 select-none"
+      style={{ height: 280 }}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      {/* Background layer — prev slide moves out slowly (parallax) */}
+      <AnimatePresence initial={false} custom={direction}>
+        <motion.div
+          key={current}
+          custom={direction}
+          initial={{ x: direction > 0 ? 300 : -300, scale: 0.85, opacity: 0 }}
+          animate={{ x: 0, scale: 1, opacity: 1 }}
+          exit={{ x: direction > 0 ? -150 : 150, scale: 0.9, opacity: 0.4 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="absolute inset-0"
+        >
+          {isUrl ? (
+            link ? (
+              <a href={link} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
+                <img src={img} alt={`${title} ${current + 1}`} className="w-full h-full object-contain" />
+              </a>
+            ) : (
+              <img src={img} alt={`${title} ${current + 1}`} className="w-full h-full object-contain" />
+            )
+          ) : (
+            <div className="flex items-center justify-center w-full h-full text-6xl">{img || "🛒"}</div>
+          )}
+        </motion.div>
+      </AnimatePresence>
+
+      {images.length > 1 && (
+        <>
+          <button
+            onClick={(e) => { e.stopPropagation(); goTo(current - 1); }}
+            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 backdrop-blur flex items-center justify-center shadow hover:bg-white transition-colors z-10"
+          >
+            ‹
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); goTo(current + 1); }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 backdrop-blur flex items-center justify-center shadow hover:bg-white transition-colors z-10"
+          >
+            ›
+          </button>
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+            {images.map((_, i) => (
+              <button
+                key={i}
+                onClick={(e) => { e.stopPropagation(); goTo(i); }}
+                className={`w-2 h-2 rounded-full transition-all ${i === current ? 'bg-white w-5' : 'bg-white/50'}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 };
