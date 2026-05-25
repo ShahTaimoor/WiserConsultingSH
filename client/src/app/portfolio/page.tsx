@@ -110,10 +110,10 @@ const Portfolio = () => {
                 <motion.div
                   key={project._id}
                   {...stagger(index * 0.1)}
-                  className="group"
+                  className="group pb-8 border-b border-gray-200"
                 >
                   <Card className="p-0 overflow-hidden rounded-2xl bg-transparent border-0 shadow-none">
-                    <CardContent className={`p-0 flex flex-col-reverse md:flex-row ${index % 2 === 1 ? 'md:flex-row-reverse' : ''} gap-6 md:gap-8 items-center`}>
+                    <CardContent className="p-0 flex flex-col-reverse md:flex-row gap-6 md:gap-8 items-center">
                       <div className="flex-1 flex flex-col gap-3 px-2 md:px-0">
                         <h3 className="text-foreground text-xl sm:text-2xl font-semibold">
                           {project.title}
