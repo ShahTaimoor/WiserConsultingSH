@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -243,6 +243,9 @@ const Portfolio = () => {
 const ImageSlider = ({ images, title, link }: { images: string[]; title: string; link?: string }) => {
   const [[current, direction], setCurrent] = useState([0, 0]);
   const [paused, setPaused] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const [hover, setHover] = useState(false);
 
   const goTo = useCallback((index: number) => {
     setCurrent(([prev]) => [((index % images.length) + images.length) % images.length, index > prev ? 1 : -1]);
@@ -259,12 +262,20 @@ const ImageSlider = ({ images, title, link }: { images: string[]; title: string;
   const img = images[current];
   const isUrl = img.startsWith("http") || img.startsWith("/");
 
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    setPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
+
   return (
     <div
+      ref={ref}
       className="relative overflow-hidden rounded-2xl bg-slate-100 select-none"
       style={{ height: 280 }}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      onMouseMove={link ? handleMouseMove : undefined}
+      onMouseEnter={() => { setPaused(true); if (link) setHover(true); }}
+      onMouseLeave={() => { setPaused(false); setHover(false); }}
     >
       {/* Background layer — prev slide moves out slowly (parallax) */}
       <AnimatePresence initial={false} custom={direction}>
@@ -290,6 +301,15 @@ const ImageSlider = ({ images, title, link }: { images: string[]; title: string;
           )}
         </motion.div>
       </AnimatePresence>
+
+      {link && hover && (
+        <div
+          className="pointer-events-none absolute flex items-center gap-3 bg-white rounded-full px-4 py-2 shadow-lg -translate-x-1/2 -translate-y-1/2 z-20"
+          style={{ left: pos.x, top: pos.y }}
+        >
+          <span className="text-sm font-semibold tracking-wide whitespace-nowrap text-black">{link}</span>
+        </div>
+      )}
 
       {images.length > 1 && (
         <>
