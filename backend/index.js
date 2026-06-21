@@ -24,7 +24,7 @@ const logger = require('./utils/logger');
 
 const app = express();
 
-// Middlewares
+// Middleware
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:3000',
   'http://localhost:3001',
@@ -88,8 +88,8 @@ app.get('/', (req, res) => {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'ok', 
+  res.status(200).json({
+    status: 'ok',
     message: 'Backend is running',
     timestamp: new Date().toISOString()
   });
@@ -107,7 +107,7 @@ const startServer = async () => {
     app.listen(PORT, () => {
       logger.info(`✅ Server running on port ${PORT}`);
       logger.info(`✅ Health check available at http://localhost:${PORT}/health`);
-});
+    });
   } catch (error) {
     logger.error('Failed to start server:', error);
     console.error('Full error details:', error);
