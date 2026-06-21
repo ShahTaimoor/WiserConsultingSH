@@ -28,7 +28,10 @@ const app = express();
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:3000',
   'http://localhost:3001',
+  "https://wiserconsulting.info",
+  "https://www.wiserconsulting.info"
 ];
+
 
 const corsOptions = {
   origin: function (origin, callback) {
@@ -39,6 +42,8 @@ const corsOptions = {
     }
   },
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 };
 app.use(cors(corsOptions));
 
