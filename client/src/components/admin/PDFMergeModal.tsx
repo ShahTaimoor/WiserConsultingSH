@@ -54,7 +54,7 @@ const PDFMergeModal: React.FC<PDFMergeModalProps> = ({ isOpen, onClose, submissi
       alert('PDF merged successfully!');
       onClose();
     } catch (error) {
-      console.error('Error merging PDFs:', error);
+
       alert('Failed to merge PDFs. Please try again.');
     } finally {
       setMergeLoading(false);

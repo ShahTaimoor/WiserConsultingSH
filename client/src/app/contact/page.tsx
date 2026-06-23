@@ -88,7 +88,7 @@ const Contact = () => {
         setTimeout(() => setSubmitStatus("idle"), 5000);
       }
     } catch (error) {
-      console.error('Error submitting form:', error);
+
       setIsSubmitting(false);
       setSubmitStatus("error");
       setTimeout(() => setSubmitStatus("idle"), 5000);

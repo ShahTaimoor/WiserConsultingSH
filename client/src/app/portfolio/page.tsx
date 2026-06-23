@@ -69,7 +69,7 @@ const Portfolio = () => {
         throw new Error(data.message || 'Failed to fetch portfolios');
       }
     } catch (error) {
-      console.error('Error fetching portfolios:', error);
+
       setError(error instanceof Error ? error.message : 'Failed to load portfolios');
       setProjects([]);
     } finally {

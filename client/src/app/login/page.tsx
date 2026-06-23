@@ -30,21 +30,17 @@ const Login: React.FC = () => {
       // Handle redirect immediately after successful login
       if (result?.user) {
         const loggedInUser = result.user;
-        console.log('Login successful, user:', loggedInUser);
-        console.log('User role:', loggedInUser.role, 'Is admin:', isAdmin(loggedInUser.role));
         
         // Redirect based on user role
           if (isAdmin(loggedInUser.role)) {
-            console.log('Redirecting to /admin');
           router.push("/admin");
           } else {
-            console.log('Redirecting to /');
           router.push("/");
           }
       }
     } catch (error) {
       // Error is handled by Redux state
-      console.error('Login error:', error);
+
     }
   };
 
@@ -52,13 +48,11 @@ const Login: React.FC = () => {
     // Redirect when user state is available and login is successful
     // This is a fallback in case the handleSubmit redirect doesn't work
     if (user && !loading && !hasRedirected.current) {
-      console.log('useEffect: User logged in, redirecting...', user);
       const redirectPath = isAdmin(user.role) ? "/admin" : "/";
       
       // Only redirect if we're still on login/register page
       if (window.location.pathname === "/login" || window.location.pathname === "/register") {
         hasRedirected.current = true;
-          console.log('useEffect: Redirecting to', redirectPath);
         router.push(redirectPath);
       }
     }

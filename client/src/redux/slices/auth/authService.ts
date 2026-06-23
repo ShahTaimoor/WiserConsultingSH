@@ -87,7 +87,7 @@ export const loginUser = async (email: string, password: string): Promise<LoginR
     // message if the server is truly unreachable.
     const isConnected = await testConnection();
     if (!isConnected) {
-      console.warn('[authService] Health check failed — attempting login anyway.');
+
     }
 
     const response = await fetch(`${API_URL}/login`, {

@@ -48,7 +48,7 @@ const AdminDashboard = () => {
           contacts: contacts.data?.length || 0,
         });
       } catch (error) {
-        console.error('Error fetching stats:', error);
+
       }
     };
 

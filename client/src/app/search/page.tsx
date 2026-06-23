@@ -136,7 +136,7 @@ function SearchContent() {
 
         setAllContent(merged);
       } catch (err) {
-        console.error("Error loading searchable content:", err);
+
         setAllContent(staticPages);
       } finally {
         setLoadingData(false);

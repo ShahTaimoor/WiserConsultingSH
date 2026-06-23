@@ -48,7 +48,7 @@ const AdminContacts = () => {
         setContacts(data.data || []);
       }
     } catch (error) {
-      console.error('Error fetching contacts:', error);
+
       setContacts([]);
     } finally {
       setLoading(false);
@@ -81,7 +81,7 @@ const AdminContacts = () => {
         }
       }
     } catch (error) {
-      console.error('Error updating status:', error);
+
     }
   };
 
@@ -112,7 +112,7 @@ const AdminContacts = () => {
         }
       }
     } catch (error) {
-      console.error('Error deleting contact:', error);
+
     }
   };
 

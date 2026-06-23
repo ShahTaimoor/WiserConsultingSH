@@ -115,10 +115,6 @@ const startServer = async () => {
     });
   } catch (error) {
     logger.error('Failed to start server:', error);
-    console.error('Full error details:', error);
-    if (error.stack) {
-      console.error('Stack trace:', error.stack);
-    }
     process.exit(1);
   }
 };

@@ -3,6 +3,7 @@ const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const logger = require('../utils/logger');
 
 // Configure Cloudinary
 cloudinary.config({
@@ -298,7 +299,7 @@ const uploadLocalToCloudinary = async (filePath, folder = 'form-submissions') =>
     
     return result;
   } catch (error) {
-    console.error('Cloudinary upload error:', error);
+    logger.error('Cloudinary upload error:', error);
     throw error;
   }
 };

@@ -47,7 +47,7 @@ const AdminContent = () => {
         setContents(data.data);
       }
     } catch (error) {
-      console.error('Error fetching content:', error);
+
     } finally {
       setLoading(false);
     }
@@ -64,7 +64,7 @@ const AdminContent = () => {
         setFormData(data.data);
       }
     } catch (error) {
-      console.error('Error loading page content:', error);
+
     }
   };
 
@@ -87,7 +87,7 @@ const AdminContent = () => {
         fetchContent();
       }
     } catch (error) {
-      console.error('Error saving content:', error);
+
       alert('Error saving content');
     }
   };

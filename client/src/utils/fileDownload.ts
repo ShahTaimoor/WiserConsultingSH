@@ -36,7 +36,7 @@ export const downloadFile = async (url: string, filename: string): Promise<void>
     window.URL.revokeObjectURL(downloadUrl);
     document.body.removeChild(anchor);
   } catch (error) {
-    console.error('Error downloading file:', error);
+
     throw error;
   }
 };

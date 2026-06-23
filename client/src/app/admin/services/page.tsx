@@ -45,7 +45,7 @@ const AdminServices = () => {
         setServices(data.data);
       }
     } catch (error) {
-      console.error('Error fetching services:', error);
+
     } finally {
       setLoading(false);
     }
@@ -76,7 +76,7 @@ const AdminServices = () => {
         resetForm();
       }
     } catch (error) {
-      console.error('Error saving service:', error);
+
     }
   };
 
@@ -95,7 +95,7 @@ const AdminServices = () => {
         fetchServices();
       }
     } catch (error) {
-      console.error('Error deleting service:', error);
+
     }
   };
 

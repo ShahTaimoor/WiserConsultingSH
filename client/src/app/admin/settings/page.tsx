@@ -150,7 +150,7 @@ export default function AdminSettingsPage() {
         showAlert("error", "Could not save settings. Please verify admin privileges.");
       }
     } catch (err: any) {
-      console.error(err);
+
       showAlert("error", err.message || "An unexpected error occurred.");
     } finally {
       setSaving(false);

@@ -67,7 +67,6 @@ const TeamMemberPage = () => {
       }
 
       const data = await res.json();
-      console.log('Team member response:', data);
 
       if (data.success && data.data) {
         setMember(data.data);
@@ -75,7 +74,6 @@ const TeamMemberPage = () => {
         throw new Error('Team member not found');
       }
     } catch (error) {
-      console.error('Error fetching team member:', error);
       setError(error instanceof Error ? error.message : 'Failed to load team member');
     } finally {
       setLoading(false);

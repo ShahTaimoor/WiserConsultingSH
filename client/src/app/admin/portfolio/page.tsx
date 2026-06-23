@@ -60,7 +60,7 @@ const AdminPortfolio = () => {
         setPortfolios(data.data);
       }
     } catch (error) {
-      console.error('Error fetching portfolios:', error);
+
     } finally {
       setLoading(false);
     }
@@ -130,7 +130,7 @@ const AdminPortfolio = () => {
         throw new Error(data.message || 'Failed to save project');
       }
     } catch (error) {
-      console.error('Error saving project:', error);
+
       alert(error instanceof Error ? error.message : 'Failed to save project. Please try again.');
     }
   };
@@ -161,7 +161,7 @@ const AdminPortfolio = () => {
         throw new Error(data.message || 'Failed to delete project');
       }
     } catch (error) {
-      console.error('Error deleting project:', error);
+
       alert(error instanceof Error ? error.message : 'Failed to delete project. Please try again.');
     }
   };

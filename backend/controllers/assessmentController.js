@@ -7,6 +7,7 @@ const assessmentService = require('../services/assessmentService');
 const formSubmissionController = require('./formSubmissionController');
 const fs = require('fs');
 const path = require('path');
+const logger = require('../utils/logger');
 
 class AssessmentController {
   /**
@@ -36,12 +37,12 @@ class AssessmentController {
 
       res.download(filePath, fileName, (err) => {
         if (err) {
-          console.error('Error sending file:', err);
+          logger.error('Error sending file:', err);
         }
         // Clean up temporary file
         fs.unlink(filePath, (unlinkErr) => {
           if (unlinkErr) {
-            console.error('Error deleting temporary file:', unlinkErr);
+            logger.error('Error deleting temporary file:', unlinkErr);
           }
         });
       });
@@ -69,13 +70,13 @@ class AssessmentController {
 
       res.download(zipPath, zipFileName, (err) => {
         if (err) {
-          console.error('Error sending ZIP file:', err);
+          logger.error('Error sending ZIP file:', err);
         }
         // Clean up temporary files
         try {
           fs.rmSync(tempDir, { recursive: true, force: true });
         } catch (cleanupErr) {
-          console.error('Error cleaning up temp files:', cleanupErr);
+          logger.error('Error cleaning up temp files:', cleanupErr);
         }
       });
     } catch (error) {

@@ -54,7 +54,7 @@ const CompressPDFModal: React.FC<CompressPDFModalProps> = ({ isOpen, onClose, su
       alert('PDFs compressed successfully!');
       onClose();
     } catch (error) {
-      console.error('Error compressing PDFs:', error);
+
       alert('Failed to compress PDFs. Please try again.');
     } finally {
       setCompressing(false);

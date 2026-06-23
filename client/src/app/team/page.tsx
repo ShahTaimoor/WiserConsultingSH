@@ -154,18 +154,10 @@ const Team = () => {
       clearTimeout(timeoutId);
 
       if (!res.ok) {
-        let errorText = '';
-        try {
-          errorText = await res.text();
-          console.error('API Error Response:', errorText);
-        } catch (e) {
-          console.error('Could not read error response');
-        }
         throw new Error(`Failed to fetch team members: ${res.status} ${res.statusText}`);
       }
 
       const data = await res.json();
-      console.log('Team members response:', data);
 
       const sortTeamMembers = (members: TeamMember[]): TeamMember[] => {
         return members.sort((a, b) => {
@@ -202,18 +194,14 @@ const Team = () => {
         } else if (Array.isArray(data)) {
           members = data;
         } else {
-          console.warn('Unexpected API response format:', data);
           setTeamMembers([]);
           return;
         }
         setTeamMembers(sortTeamMembers(members));
       } else {
-        console.warn('API returned success: false', data);
         setTeamMembers([]);
       }
     } catch (error: any) {
-      console.error('Error fetching team members:', error);
-
       let errorMessage = 'Failed to load team members. ';
       if (error.name === 'AbortError') {
         errorMessage += 'Request timed out. Please check your connection and try again.';

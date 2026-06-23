@@ -1,15 +1,16 @@
 const { cloudinary } = require('../config/cloudinary');
 const fs = require('fs');
 const path = require('path');
+const logger = require('../utils/logger');
 
 // Middleware to delete files from Cloudinary
 const deleteFromCloudinary = async (publicId) => {
   try {
     const result = await cloudinary.uploader.destroy(publicId);
-    console.log('File deleted from Cloudinary:', result);
+    logger.info(`File deleted from Cloudinary: ${result}`);
     return true;
   } catch (error) {
-    console.error('Error deleting from Cloudinary:', error);
+    logger.error('Error deleting from Cloudinary:', error);
     return false;
   }
 };
@@ -19,12 +20,12 @@ const deleteLocalFile = async (filePath) => {
   try {
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
-      console.log('Local file deleted:', filePath);
+      logger.info(`Local file deleted: ${filePath}`);
       return true;
     }
     return false;
   } catch (error) {
-    console.error('Error deleting local file:', error);
+    logger.error('Error deleting local file:', error);
     return false;
   }
 };
@@ -85,7 +86,7 @@ const uploadSingleToCloudinary = async (file, folder = 'form-submissions') => {
     const result = await cloudinary.uploader.upload(file.path, uploadOptions);
     return result;
   } catch (error) {
-    console.error('Cloudinary upload error:', error);
+    logger.error('Cloudinary upload error:', error);
     throw error;
   }
 };
@@ -125,7 +126,7 @@ const uploadLocalToCloudinary = async (filePath, folder = 'form-submissions') =>
     
     return result;
   } catch (error) {
-    console.error('Cloudinary upload error:', error);
+    logger.error('Cloudinary upload error:', error);
     throw error;
   }
 };
@@ -148,7 +149,7 @@ const convertLocalToCloudinary = async (documents) => {
           localPath: undefined // Remove local path
         });
       } catch (error) {
-        console.error(`Error converting ${doc.filename} to Cloudinary:`, error);
+        logger.error(`Error converting ${doc.filename} to Cloudinary:`, error);
         // Keep the original local document if conversion fails
         convertedDocs.push(doc);
       }

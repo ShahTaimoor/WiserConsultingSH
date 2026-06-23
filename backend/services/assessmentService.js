@@ -10,6 +10,7 @@ const { PDFDocument: PDFLibDocument, rgb } = require('pdf-lib');
 const fs = require('fs');
 const path = require('path');
 const archiver = require('archiver');
+const logger = require('../utils/logger');
 
 class AssessmentService {
   /**
@@ -139,7 +140,7 @@ class AssessmentService {
         this.createPlaceholderPage(mergedPdf, document, index);
       }
     } catch (error) {
-      console.error(`Error embedding document ${document.originalname}:`, error);
+      logger.error(`Error embedding document ${document.originalname}:`, error);
       this.createPlaceholderPage(mergedPdf, document, index, 'Error embedding document');
     }
   }
@@ -295,7 +296,7 @@ class AssessmentService {
 
         fs.unlinkSync(tempFilePath);
       } catch (error) {
-        console.error(`Error processing document ${doc.originalname}:`, error);
+        logger.error(`Error processing document ${doc.originalname}:`, error);
       }
     }
 

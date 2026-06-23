@@ -172,7 +172,7 @@ const AdminTeam = () => {
         setMembers(sortedMembers);
       }
     } catch (error) {
-      console.error('Error fetching team members:', error);
+
       setMembers([]);
     } finally {
       setLoading(false);
@@ -255,7 +255,7 @@ const AdminTeam = () => {
         throw new Error(data.message || 'Failed to save team member');
       }
     } catch (error) {
-      console.error('Error saving team member:', error);
+
       alert(error instanceof Error ? error.message : 'Failed to save team member. Please try again.');
     }
   };
@@ -284,7 +284,7 @@ const AdminTeam = () => {
         fetchMembers();
       }
     } catch (error) {
-      console.error('Error deleting team member:', error);
+
       alert('Failed to delete team member. Please try again.');
     }
   };

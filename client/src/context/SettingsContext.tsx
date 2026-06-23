@@ -113,7 +113,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
         throw new Error(data.message || 'Failed to update settings');
       }
     } catch (err: any) {
-      console.error('Error updating settings:', err);
+
       setError(err.message || 'An error occurred while saving settings');
       return false;
     } finally {
