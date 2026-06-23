@@ -1,58 +1,26 @@
 "use client";
 
-import React, { useState, FormEvent, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { resetPassword } from "@/redux/slices/auth/authSlice";
+import React, { Suspense } from "react";
 import { motion } from "framer-motion";
 import { Lock, ArrowLeft, CheckCircle, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { useResetPassword } from "@/hooks/useResetPassword";
 
 function ResetPasswordForm() {
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [localError, setLocalError] = useState<string | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-
-  const dispatch = useAppDispatch();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const { loading, error, success } = useAppSelector((state) => state.auth);
-
-  useEffect(() => {
-    const t = searchParams.get("token");
-    if (!t) {
-      setLocalError("Invalid or missing reset token. Please request a new reset link.");
-    } else {
-      setToken(t);
-    }
-  }, [searchParams]);
-
-  // Redirect to login after success
-  useEffect(() => {
-    if (success) {
-      const timer = setTimeout(() => router.push("/login"), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [success, router]);
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setLocalError(null);
-
-    if (password !== confirmPassword) {
-      setLocalError("Passwords do not match.");
-      return;
-    }
-
-    if (!token) {
-      setLocalError("Invalid reset token.");
-      return;
-    }
-
-    dispatch(resetPassword({ token, password }));
-  };
+  const {
+    password,
+    setPassword,
+    confirmPassword,
+    setConfirmPassword,
+    showPassword,
+    setShowPassword,
+    localError,
+    token,
+    loading,
+    error,
+    success,
+    handleSubmit
+  } = useResetPassword();
 
   // No token — show error state
   if (localError && !token) {

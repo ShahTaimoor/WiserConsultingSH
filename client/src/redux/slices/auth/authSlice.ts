@@ -1,6 +1,7 @@
 // src/features/auth/authSlice.ts
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { loginUser, registerUser, googleLogin, forgotPasswordRequest, resetPasswordRequest, LoginResponse, RegisterResponse, GoogleLoginResponse, ForgotPasswordResponse, ResetPasswordResponse, User } from "./authService";
+import { handleApiError } from "@/utils/apiError";
 
 interface AuthState {
   user: User | null;
@@ -26,8 +27,7 @@ export const login = createAsyncThunk<LoginResponse, { email: string; password: 
     try {
       return await loginUser(email, password);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
-      return thunkAPI.rejectWithValue(errorMessage);
+      return thunkAPI.rejectWithValue(handleApiError(err, 'Login failed'));
     }
   }
 );
@@ -38,8 +38,7 @@ export const register = createAsyncThunk<RegisterResponse, { name: string; email
     try {
       return await registerUser(name, email, password);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
-      return thunkAPI.rejectWithValue(errorMessage);
+      return thunkAPI.rejectWithValue(handleApiError(err, 'Registration failed'));
     }
   }
 );
@@ -50,8 +49,7 @@ export const googleAuth = createAsyncThunk<GoogleLoginResponse, string, { reject
     try {
       return await googleLogin(accessToken);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Google authentication failed';
-      return thunkAPI.rejectWithValue(errorMessage);
+      return thunkAPI.rejectWithValue(handleApiError(err, 'Google authentication failed'));
     }
   }
 );
@@ -62,8 +60,7 @@ export const forgotPassword = createAsyncThunk<ForgotPasswordResponse, string, {
     try {
       return await forgotPasswordRequest(email);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to send reset email';
-      return thunkAPI.rejectWithValue(errorMessage);
+      return thunkAPI.rejectWithValue(handleApiError(err, 'Failed to send reset email'));
     }
   }
 );
@@ -74,8 +71,7 @@ export const resetPassword = createAsyncThunk<ResetPasswordResponse, { token: st
     try {
       return await resetPasswordRequest(token, password);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to reset password';
-      return thunkAPI.rejectWithValue(errorMessage);
+      return thunkAPI.rejectWithValue(handleApiError(err, 'Failed to reset password'));
     }
   }
 );
@@ -103,87 +99,46 @@ const authSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // Login
+    // Fulfilled cases
     builder
-      .addCase(login.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-        state.success = null;
-      })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user || null;
         state.success = "Login successful!";
       })
-      .addCase(login.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Login failed";
-      });
-
-    // Register
-    builder
-      .addCase(register.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-        state.success = null;
-      })
       .addCase(register.fulfilled, (state, action) => {
         state.loading = false;
         state.success = action.payload.message || "Registration successful!";
-      })
-      .addCase(register.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Registration failed";
-      });
-
-    // Google Auth
-    builder
-      .addCase(googleAuth.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-        state.success = null;
       })
       .addCase(googleAuth.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user || null;
         state.success = "Google login successful!";
       })
-      .addCase(googleAuth.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Google authentication failed";
-      });
-
-    // Forgot Password
-    builder
-      .addCase(forgotPassword.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-        state.success = null;
-      })
       .addCase(forgotPassword.fulfilled, (state, action) => {
         state.loading = false;
         state.success = action.payload.message || 'Reset email sent!';
-      })
-      .addCase(forgotPassword.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || 'Failed to send reset email';
-      });
-
-    // Reset Password
-    builder
-      .addCase(resetPassword.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-        state.success = null;
       })
       .addCase(resetPassword.fulfilled, (state, action) => {
         state.loading = false;
         state.success = action.payload.message || 'Password reset successfully!';
       })
-      .addCase(resetPassword.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || 'Failed to reset password';
-      });
+      // Shared Matchers
+      .addMatcher(
+        (action) => action.type.startsWith('auth/') && action.type.endsWith('/pending'),
+        (state) => {
+          state.loading = true;
+          state.error = null;
+          state.success = null;
+        }
+      )
+      .addMatcher(
+        (action) => action.type.startsWith('auth/') && action.type.endsWith('/rejected'),
+        (state, action: import('@reduxjs/toolkit').PayloadAction<string>) => {
+          state.loading = false;
+          state.error = action.payload || "An error occurred";
+        }
+      );
   },
 });
 

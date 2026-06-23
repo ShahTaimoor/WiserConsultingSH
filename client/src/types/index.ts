@@ -82,3 +82,10 @@ export interface PageMeta {
   title: string;
   description: string;
 }
+
+export interface SearchItem {
+  href: string;
+  label: string;
+  type: string;
+  keywords: string[];
+}
