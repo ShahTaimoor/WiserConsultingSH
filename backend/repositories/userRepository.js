@@ -35,6 +35,17 @@ class UserRepository {
   }
 
   /**
+   * Find user by password reset token
+   */
+  async findByResetToken(token) {
+    return await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+      isDeleted: false
+    });
+  }
+
+  /**
    * Find user by email or name (excluding deleted)
    */
   async findByEmailOrName(email, name) {

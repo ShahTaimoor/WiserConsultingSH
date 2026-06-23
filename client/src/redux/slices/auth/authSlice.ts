@@ -1,6 +1,6 @@
 // src/features/auth/authSlice.ts
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { loginUser, registerUser, googleLogin, LoginResponse, RegisterResponse, GoogleLoginResponse, User } from "./authService";
+import { loginUser, registerUser, googleLogin, forgotPasswordRequest, resetPasswordRequest, LoginResponse, RegisterResponse, GoogleLoginResponse, ForgotPasswordResponse, ResetPasswordResponse, User } from "./authService";
 
 interface AuthState {
   user: User | null;
@@ -51,6 +51,30 @@ export const googleAuth = createAsyncThunk<GoogleLoginResponse, string, { reject
       return await googleLogin(accessToken);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Google authentication failed';
+      return thunkAPI.rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const forgotPassword = createAsyncThunk<ForgotPasswordResponse, string, { rejectValue: string }>(
+  "auth/forgotPassword",
+  async (email, thunkAPI) => {
+    try {
+      return await forgotPasswordRequest(email);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to send reset email';
+      return thunkAPI.rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const resetPassword = createAsyncThunk<ResetPasswordResponse, { token: string; password: string }, { rejectValue: string }>(
+  "auth/resetPassword",
+  async ({ token, password }, thunkAPI) => {
+    try {
+      return await resetPasswordRequest(token, password);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to reset password';
       return thunkAPI.rejectWithValue(errorMessage);
     }
   }
@@ -127,6 +151,38 @@ const authSlice = createSlice({
       .addCase(googleAuth.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Google authentication failed";
+      });
+
+    // Forgot Password
+    builder
+      .addCase(forgotPassword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = null;
+      })
+      .addCase(forgotPassword.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = action.payload.message || 'Reset email sent!';
+      })
+      .addCase(forgotPassword.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Failed to send reset email';
+      });
+
+    // Reset Password
+    builder
+      .addCase(resetPassword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = null;
+      })
+      .addCase(resetPassword.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = action.payload.message || 'Password reset successfully!';
+      })
+      .addCase(resetPassword.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Failed to reset password';
       });
   },
 });

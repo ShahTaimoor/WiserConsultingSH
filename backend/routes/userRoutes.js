@@ -13,7 +13,9 @@ const {
   loginSchema,
   updateProfileSchema,
   updateUserRoleSchema,
-  createAdminSchema
+  createAdminSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema
 } = require('../validations/userValidation');
 
 // Signup
@@ -56,6 +58,20 @@ router.post(
   '/create-admin',
   validate(createAdminSchema),
   userController.createAdmin.bind(userController)
+);
+
+// Forgot password - send reset email
+router.post(
+  '/forgot-password',
+  validate(forgotPasswordSchema),
+  userController.forgotPassword.bind(userController)
+);
+
+// Reset password - set new password with token
+router.post(
+  '/reset-password',
+  validate(resetPasswordSchema),
+  userController.resetPassword.bind(userController)
 );
 
 module.exports = router;

@@ -120,6 +120,24 @@ class UserController {
       token
     }, 'Google authentication successful');
   })
+
+  /**
+   * Forgot password - sends reset email
+   */
+  forgotPassword = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+    const result = await userService.forgotPassword(email);
+    return ApiResponse.success(res, null, result.message);
+  })
+
+  /**
+   * Reset password - validates token and sets new password
+   */
+  resetPassword = asyncHandler(async (req, res) => {
+    const { token, password } = req.body;
+    const result = await userService.resetPassword(token, password);
+    return ApiResponse.success(res, null, result.message);
+  })
 }
 
 module.exports = new UserController();
