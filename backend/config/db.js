@@ -19,7 +19,7 @@ const connectDB = async () => {
             socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
         });
 
-        logger.info(`Connected to MongoDB at ${mongoURI}`);
+        logger.info('✅ MongoDB connected successfully');
 
         mongoose.connection.on('connected', () => {
             logger.info(`MongoDB connected to ${mongoose.connection.host}:${mongoose.connection.port}`);
