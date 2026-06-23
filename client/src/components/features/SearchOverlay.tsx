@@ -108,7 +108,12 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                   autoFocus
                 />
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
-                  <button type="button" onClick={() => setQuery("")} className="p-2 text-slate-400 hover:text-slate-600 transition-colors" aria-label="Clear">
+                  <button 
+                    type="button" 
+                    onClick={() => query ? setQuery("") : onClose()} 
+                    className="p-2 text-slate-400 hover:text-slate-600 transition-colors" 
+                    aria-label={query ? "Clear search" : "Close search"}
+                  >
                     <X className="w-5 h-5" />
                   </button>
                   <button type="submit" className="p-2 text-slate-600 hover:text-slate-900 transition-colors" aria-label="Search">

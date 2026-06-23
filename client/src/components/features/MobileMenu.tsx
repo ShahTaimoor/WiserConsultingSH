@@ -51,7 +51,7 @@ export function MobileMenu({ isOpen, onClose, user, navLinks, isActive }: Mobile
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.2 }}
-          className="lg:hidden mx-2 sm:mx-4 mt-1.5 rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-xl shadow-xl overflow-hidden max-h-[calc(100vh-5.5rem)] overflow-y-auto"
+          className="pointer-events-auto lg:hidden mx-2 sm:mx-4 mt-1.5 rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-xl shadow-xl overflow-hidden max-h-[calc(100vh-5.5rem)] overflow-y-auto"
         >
           <div className="px-4 py-5 space-y-1">
             {navLinks.map((link) => (
