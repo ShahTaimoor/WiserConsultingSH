@@ -171,21 +171,21 @@ const Portfolio = () => {
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
-                name: "Sarah Johnson",
-                role: "CEO, TechStart Inc.",
-                content: "WISER CONSULTING transformed our business operations with their custom software solution. The team was professional, responsive, and delivered beyond our expectations.",
+                name: "Dr Muhammad Wahab",
+                role: "Wiser Step Business Suit",
+                content: "TECH WISER CONSULTING transformed our business operations with their custom software solution. The team was professional, responsive, and delivered beyond our expectations.",
                 rating: 5
               },
               {
-                name: "Michael Chen",
-                role: "CTO, HealthCare Plus",
-                content: "Outstanding work on our healthcare management system. The platform is robust, scalable, and has significantly improved our efficiency.",
+                name: "Muhammad Amir",
+                role: "Gultrader",
+                content: "TECH WISER CONSULTING built a seamless, high-performance e-commerce platform for Gultraders. Their solution significantly boosted our online sales and provided an exceptional shopping experience for our customers.",
                 rating: 5
               },
               {
-                name: "Emily Rodriguez",
-                role: "Founder, FitLife App",
-                content: "The mobile app they developed exceeded all our expectations. User feedback has been overwhelmingly positive, and the app has been a huge success.",
+                name: "Waheed Murad",
+                role: "Consultancy",
+                content: "TECH WISER CONSULTING provided exceptional guidance and strategic IT insights for our firm. Their expertise helped us streamline our operations and achieve our business goals much faster than anticipated.",
                 rating: 5
               }
             ].map((testimonial, index) => (

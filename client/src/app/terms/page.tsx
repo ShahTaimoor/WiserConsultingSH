@@ -30,7 +30,7 @@ const TermsOfService = () => {
       icon: <AlertCircle className="w-6 h-6" />,
       title: "Intellectual Property",
       content: [
-        "All content on this website, including text, graphics, logos, and software, is the property of WISER CONSULTING.",
+        "All content on this website, including text, graphics, logos, and software, is the property of TECH WISER CONSULTING.",
         "You may not reproduce, distribute, or create derivative works without our written permission.",
         "Our trademarks and service marks may not be used without our prior written consent."
       ]
@@ -91,7 +91,7 @@ const TermsOfService = () => {
             <div className="mb-12">
               <h2 className="text-2xl font-bold text-slate-900 mb-4">Agreement to Terms</h2>
               <p className="text-slate-600 leading-relaxed mb-4">
-                These Terms of Service ("Terms") govern your access to and use of the WISER CONSULTING website 
+                These Terms of Service ("Terms") govern your access to and use of the TECH WISER CONSULTING website 
                 and services. By accessing or using our services, you agree to be bound by these Terms.
               </p>
               <p className="text-slate-600 leading-relaxed">

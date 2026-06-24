@@ -360,7 +360,7 @@ const SoftwareConsulting: React.FC = () => {
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
           <SectionHeader
             eyebrow="04 — Why us"
-            title="Why Wiser Consulting"
+            title="Why Tech Wiser Consulting"
             subtitle="We combine technical expertise with business acumen."
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">

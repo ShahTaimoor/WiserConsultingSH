@@ -357,7 +357,7 @@ const Contact = () => {
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
                 className="w-full"
-                title="WISER CONSULTING Office Location"
+                title="TECH WISER CONSULTING Office Location"
               ></iframe>
             </div>
             <div className="mt-6 text-center">

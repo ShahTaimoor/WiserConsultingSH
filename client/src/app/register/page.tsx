@@ -87,7 +87,7 @@ const Register: React.FC = () => {
               Create Your Account
             </h2>
             <p className="text-slate-300 text-xs sm:text-sm">
-              Join WISER CONSULTING and start your software journey today
+              Join TECH WISER CONSULTING and start your software journey today
             </p>
           </div>
 

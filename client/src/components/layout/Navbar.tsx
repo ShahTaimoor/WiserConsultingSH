@@ -66,11 +66,11 @@ export function Navbar() {
           }`}>
             <Link href="/" className="flex items-center gap-2 shrink-0 group min-w-0">
               <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center overflow-hidden ring-1 ring-slate-200/80 group-hover:ring-slate-300 transition-all">
-                <Image src={settings?.logoUrl || "/logo.png"} alt="Wiser Consulting" width={40} height={40}
+                <Image src={settings?.logoUrl || "/logo.png"} alt="Tech Wiser Consulting" width={40} height={40}
                   className="object-contain w-full h-full" priority unoptimized />
               </div>
               <div className="hidden sm:flex flex-col min-w-0">
-                <span className="text-sm font-bold text-slate-900 tracking-tight leading-none truncate">Wiser Consulting</span>
+                <span className="text-sm font-bold text-slate-900 tracking-tight leading-none truncate">Tech Wiser Consulting</span>
                 <span className="font-mono text-[10px] tracking-[0.15em] uppercase text-slate-400 mt-0.5">Software House</span>
               </div>
             </Link>

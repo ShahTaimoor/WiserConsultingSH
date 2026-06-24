@@ -36,7 +36,7 @@ function SearchContent() {
         { 
           type: "page", 
           title: "About Us", 
-          description: "Learn about WISER CONSULTING, our story, values, and mission",
+          description: "Learn about TECH WISER CONSULTING, our story, values, and mission",
           href: "/about",
           keywords: ["about", "company", "story", "values", "mission", "team", "history"]
         },
@@ -104,7 +104,7 @@ function SearchContent() {
             merged.push({
               type: "team",
               title: member.name,
-              description: `${roleStr} - ${member.bio || "Expert team member at Wiser Consulting."}`,
+              description: `${roleStr} - ${member.bio || "Expert team member at Tech Wiser Consulting."}`,
               href: `/team/${member._id}`,
               keywords: [
                 member.name.toLowerCase(),

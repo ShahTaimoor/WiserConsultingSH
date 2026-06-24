@@ -33,11 +33,11 @@ export function Footer() {
           <div className="flex flex-col gap-4 sm:gap-5 shrink-0">
             <Link href="/" className="inline-flex items-center gap-2.5 group">
               <div className="relative h-7 w-7 sm:h-8 sm:w-8 overflow-hidden rounded-md">
-                <Image src={settings?.logoUrl || "/logo.png"} alt="Wiser Consulting" width={32} height={32}
+                <Image src={settings?.logoUrl || "/logo.png"} alt="Tech Wiser Consulting" width={32} height={32}
                   className="object-contain w-full h-full" unoptimized />
               </div>
               <span className="text-xs sm:text-sm font-semibold tracking-tight text-neutral-900 group-hover:opacity-70 transition-opacity">
-                Wiser Consulting
+                Tech Wiser Consulting
               </span>
             </Link>
           </div>
@@ -65,9 +65,9 @@ export function Footer() {
         </div>
 
         <div className="mt-14 sm:mt-14 lg:mt-16 overflow-hidden">
-          <p className="font-bold leading-[0.85] tracking-tighter text-neutral-900 select-none whitespace-nowrap"
-            style={{ fontSize: "clamp(2rem, 10vw, 9rem)" }}>
-            WISER CONSULTING
+          <p className="font-bold leading-[0.85] tracking-tighter text-neutral-900 select-none whitespace-nowrap text-center sm:text-left"
+            style={{ fontSize: "clamp(1.8rem, 8vw, 8rem)" }}>
+            TECH WISER CONSULTING
           </p>
         </div>
 
