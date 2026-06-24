@@ -157,9 +157,9 @@ const SoftwareConsulting: React.FC = () => {
   const overlayOpacity = useTransform(heroScrollProgress, [0, 1], [0.6, 0.8]);
 
   const stats = [
-    { value: '5+', label: 'Projects Delivered', icon: <CheckCircle2 className="w-6 h-6" /> },
+    { value: '3', label: 'Projects Delivered', icon: <CheckCircle2 className="w-6 h-6" /> },
     { value: '98%', label: 'Client Satisfaction', icon: <TrendingUp className="w-6 h-6" /> },
-    { value: '5+', label: 'Years Experience', icon: <Award className="w-6 h-6" /> },
+    { value: '4+', label: 'Years Experience', icon: <Award className="w-6 h-6" /> },
     { value: '24/7', label: 'Support Available', icon: <Shield className="w-6 h-6" /> },
   ];
 
@@ -187,7 +187,7 @@ const SoftwareConsulting: React.FC = () => {
     { label: 'Design Excellence', detail: 'Premium UI craft' },
     { label: 'UX & Performance', detail: 'Fast, accessible builds' },
     { label: 'Innovation', detail: 'Modern product delivery' },
-    { label: 'Client Trust', detail: '98% satisfaction rate' },
+    { label: 'Global Reach', detail: 'Clients worldwide' },
   ];
 
   return (
