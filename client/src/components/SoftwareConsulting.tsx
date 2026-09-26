@@ -2,14 +2,13 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { motion, useInView, easeInOut } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
 import { useSettings } from '@/context/SettingsContext';
+import { reveal, TONE, SELECTABLE, Sheet, HeadCell, RowNum, SectionHeader } from '@/components/shared/Sheet';
 import {
   Code2, Cloud, Smartphone, CheckCircle2, Shield, Award, TrendingUp,
   Phone, Mail, MapPin, Globe2, Target, Rocket, Layers, Cpu, Lock, BarChart3, ArrowUpRight
 } from 'lucide-react';
-
-const ease = easeInOut;
 
 const AnimatedCounter = ({ value }: { value: string }) => {
   const [count, setCount] = useState(0);
@@ -39,139 +38,9 @@ const AnimatedCounter = ({ value }: { value: string }) => {
   return <span ref={ref}>{count}{suffix}</span>;
 };
 
-const reveal = (delay = 0) => ({
-  initial: { opacity: 0, y: 16 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: "-40px" },
-  transition: { duration: 0.5, delay, ease },
-});
-
-/* ------------------------------------------------------------------ */
-/* Spreadsheet primitives — matte black / cyan / white paper palette   */
-/* ------------------------------------------------------------------ */
-
-type Tone = 'dark' | 'light';
-
-const TONE: Record<Tone, {
-  frame: string; grid: string; cell: string; head: string;
-  border: string; title: string; body: string; muted: string;
-}> = {
-  dark: {
-    frame: 'bg-[#111214] border-white/10',
-    grid: 'bg-white/[0.08]',
-    cell: 'bg-[#111214]',
-    head: 'bg-[#17181b] text-neutral-500',
-    border: 'border-white/10',
-    title: 'text-white',
-    body: 'text-neutral-400',
-    muted: 'text-neutral-600',
-  },
-  light: {
-    frame: 'bg-white border-neutral-300',
-    grid: 'bg-neutral-200',
-    cell: 'bg-white',
-    head: 'bg-neutral-100 text-neutral-500',
-    border: 'border-neutral-200',
-    title: 'text-neutral-950',
-    body: 'text-neutral-600',
-    muted: 'text-neutral-400',
-  },
-};
-
-// Formula bar text that types itself out the first time the sheet scrolls into view
-const TypedFormula = ({ text, className }: { text: string; className: string }) => {
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: '-40px' });
-  const [shown, setShown] = useState(0);
-
-  useEffect(() => {
-    if (!inView) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setShown(text.length);
-      return;
-    }
-    let i = 0;
-    const id = window.setInterval(() => {
-      i += 1;
-      setShown(i);
-      if (i >= text.length) window.clearInterval(id);
-    }, 22);
-    return () => window.clearInterval(id);
-  }, [inView, text]);
-
-  return (
-    <span ref={ref} className={className} aria-label={text}>
-      {text.slice(0, shown)}
-      <span aria-hidden className="inline-block w-[6px] h-3 -mb-0.5 ml-0.5 bg-cyan-400 animate-pulse" />
-    </span>
-  );
-};
-
-// Excel-style "selected cell" highlight
-const SELECTABLE =
-  'relative transition-[outline-color] outline outline-2 -outline-offset-2 outline-transparent hover:outline-cyan-400 hover:z-10';
-
-const Sheet = ({
-  tone,
-  cellRef,
-  formula,
-  tab,
-  children,
-}: {
-  tone: Tone;
-  cellRef: string;
-  formula: string;
-  tab: string;
-  children: React.ReactNode;
-}) => {
-  const t = TONE[tone];
-  return (
-    <motion.div {...reveal()} className={`border ${t.frame} overflow-hidden`}>
-      {/* Formula bar */}
-      <div className={`flex items-stretch border-b ${t.border} font-mono text-[11px] leading-none`}>
-        <span className={`w-14 sm:w-16 shrink-0 px-2.5 py-2 border-r ${t.border} ${t.head}`}>{cellRef}</span>
-        <span className={`px-2.5 py-2 border-r ${t.border} italic text-cyan-500`}>fx</span>
-        <TypedFormula text={formula} className={`flex-1 min-w-0 px-2.5 py-2 truncate ${t.body}`} />
-      </div>
-      {children}
-      {/* Sheet tabs */}
-      <div className={`flex items-stretch border-t ${t.border} font-mono text-[11px] leading-none ${t.head}`}>
-        <span className={`px-3 py-2 border-r ${t.border} ${t.cell} ${t.title} shadow-[inset_0_2px_0_#22d3ee]`}>
-          {tab}
-        </span>
-        <span className={`px-3 py-2 border-r ${t.border}`}>+</span>
-      </div>
-    </motion.div>
-  );
-};
-
 // Desktop-only table cell styling for rows that collapse into a card on mobile
 const SVC_CELL =
   'md:bg-white md:px-3 md:py-3 md:relative md:outline md:outline-2 md:-outline-offset-2 md:outline-transparent md:hover:outline-cyan-400 md:hover:z-10';
-
-const HeadCell = ({ tone, children, className = '' }: { tone: Tone; children?: React.ReactNode; className?: string }) => (
-  <div className={`${TONE[tone].head} font-mono text-[10px] uppercase tracking-wider px-3 py-1.5 flex items-center justify-center ${className}`}>
-    {children}
-  </div>
-);
-
-const RowNum = ({ tone, n, className = '' }: { tone: Tone; n: number | string; className?: string }) => (
-  <div className={`${TONE[tone].head} font-mono text-[10px] items-center justify-center ${className}`}>{n}</div>
-);
-
-const SectionHeader = ({ index, eyebrow, title, subtitle }: {
-  index: string; eyebrow: string; title: string; subtitle?: string;
-}) => (
-  <motion.div {...reveal()} className="flex flex-col sm:flex-row sm:items-end justify-between gap-1.5 sm:gap-6 mb-3">
-    <div>
-      <p className="font-mono text-[11px] tracking-[0.2em] uppercase text-cyan-400 mb-1">
-        {index} / {eyebrow}
-      </p>
-      <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight">{title}</h2>
-    </div>
-    {subtitle && <p className="text-sm text-neutral-400 max-w-md sm:text-right">{subtitle}</p>}
-  </motion.div>
-);
 
 /* ------------------------------------------------------------------ */
 
