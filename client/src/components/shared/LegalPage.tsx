@@ -21,6 +21,7 @@ export function LegalPage({
   sections,
   contactTitle,
   contactLead,
+  lastUpdated,
 }: {
   eyebrow: string;
   title: string;
@@ -30,6 +31,8 @@ export function LegalPage({
   sections: LegalSection[];
   contactTitle: string;
   contactLead: string;
+  /** Date the policy text last changed — update it whenever the wording changes. */
+  lastUpdated: string;
 }) {
   const { settings } = useSettings();
   const lenis = useLenis();
@@ -61,7 +64,6 @@ export function LegalPage({
     else document.querySelector(target)?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const lastUpdated = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const email = settings?.contactInfo?.email || 'taimour448@gmail.com';
   const address = settings?.contactInfo?.address || 'Deans Trade Center, UG 400, Peshawar, Pakistan';
 

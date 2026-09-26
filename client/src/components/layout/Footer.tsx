@@ -101,8 +101,7 @@ export function Footer() {
             </div>
           )}
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-neutral-400">
-            <Link href="/about" className="hover:text-cyan-400 transition-colors">About</Link>
-            <Link href="/services" className="hover:text-cyan-400 transition-colors">Services</Link>
+            <Link href="/#services" className="hover:text-cyan-400 transition-colors">Services</Link>
             <Link href="/privacy" className="hover:text-cyan-400 transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-cyan-400 transition-colors">Terms</Link>
             <span className="font-mono text-xs text-neutral-600">&copy; {currentYear}</span>

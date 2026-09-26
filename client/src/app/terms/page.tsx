@@ -50,6 +50,7 @@ export default function TermsOfService() {
       eyebrow="Legal / Terms"
       title="Terms of Service"
       subtitle="Please read these terms carefully before using our services. By using our website, you agree to these terms."
+      lastUpdated="September 27, 2026"
       sheetName="Terms"
       intro={{
         title: "Agreement to Terms",

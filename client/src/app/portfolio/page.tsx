@@ -20,7 +20,7 @@ interface PortfolioProject {
 const TESTIMONIALS = [
   {
     name: "Dr Muhammad Wahab",
-    role: "Wiser Step Business Suit",
+    role: "Wiser Step Business Suite",
     content: "TECH WISER CONSULTING transformed our business operations with their custom software solution. The team was professional, responsive, and delivered beyond our expectations.",
     rating: 5,
   },

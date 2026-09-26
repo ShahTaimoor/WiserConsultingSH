@@ -51,6 +51,7 @@ export default function PrivacyPolicy() {
       eyebrow="Legal / Privacy"
       title="Privacy Policy"
       subtitle="Your privacy is important to us. This policy explains how we collect, use, and protect your information."
+      lastUpdated="September 27, 2026"
       sheetName="Privacy"
       intro={{
         title: "Introduction",

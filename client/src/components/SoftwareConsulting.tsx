@@ -2,12 +2,14 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { motion, useInView } from 'framer-motion';
 import { useSettings } from '@/context/SettingsContext';
 import { reveal, TONE, SELECTABLE, Sheet, HeadCell, RowNum, SectionHeader } from '@/components/shared/Sheet';
+import { API_BASE } from '@/constants';
 import {
-  Code2, Cloud, Smartphone, CheckCircle2, Shield, Award, TrendingUp,
-  Phone, Mail, MapPin, Globe2, Target, Rocket, Layers, Cpu, Lock, BarChart3, ArrowUpRight
+  Code2, Cloud, Smartphone, CheckCircle2, Shield, Award, Star, TrendingUp,
+  Phone, Mail, MapPin, Target, Rocket, Layers, Cpu, Lock, BarChart3, ArrowUpRight
 } from 'lucide-react';
 
 const AnimatedCounter = ({ value }: { value: string }) => {
@@ -42,19 +44,30 @@ const AnimatedCounter = ({ value }: { value: string }) => {
 const SVC_CELL =
   'md:bg-white md:px-3 md:py-3 md:relative md:outline md:outline-2 md:-outline-offset-2 md:outline-transparent md:hover:outline-cyan-400 md:hover:z-10';
 
+type LiveProject = { _id: string; title: string; link?: string };
+
+const hostname = (url: string) => {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
+};
+
 /* ------------------------------------------------------------------ */
 
 const PROFILE = {
   name: 'Shah Taimoor Bin Khalid',
+  title: 'CEO & Founder',
   role: 'Full Stack Engineer',
   focus: 'MERN & PERN Stack',
   photo: '/transperent.png',
-  bio: 'Full Stack Engineer specializing in MERN and PERN Stack development. Skilled in React.js, Node.js, Express.js, MongoDB, and PostgreSQL, with experience building scalable web applications, e-commerce platforms, and business management systems.',
+  bio: 'Founder and CEO of Tech Wiser Consulting. A Full Stack Engineer specializing in MERN and PERN Stack development. Skilled in React.js, Node.js, Express.js, MongoDB, and PostgreSQL, with experience building scalable web applications, e-commerce platforms, and business management systems.',
 };
 
 // Edit these rows to keep the profile history current.
 const HISTORY = [
-  { period: 'Present', title: 'Full Stack Engineer — Tech Wiser Consulting', detail: 'Designing, building and deploying scalable web applications for clients.' },
+  { period: 'Present', title: 'CEO & Founder — Tech Wiser Consulting', detail: 'Leading the company and engineering client projects hands-on, from planning to deployment.' },
   { period: '4+ Years', title: 'MERN & PERN Stack Development', detail: 'React.js, Node.js, Express.js, MongoDB and PostgreSQL.' },
   { period: 'Projects', title: 'E-commerce Platforms', detail: 'Scalable storefronts with product management, checkout and admin dashboards.' },
   { period: 'Projects', title: 'Business Management Systems', detail: 'Custom systems that streamline day-to-day operations and reporting.' },
@@ -118,19 +131,29 @@ const TechPane = ({ items, startRow, secondary }: { items: TechItem[]; startRow:
 
 const SoftwareConsulting: React.FC = () => {
   const { settings } = useSettings();
+  const [liveProjects, setLiveProjects] = useState<LiveProject[] | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch(`${API_BASE}/portfolios?isActive=true`, { signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : Promise.reject(res)))
+      .then((data) => setLiveProjects(data?.success ? data.data ?? [] : []))
+      .catch(() => { if (!controller.signal.aborted) setLiveProjects([]); });
+    return () => controller.abort();
+  }, []);
 
   const stats = [
-    { value: '3', label: 'Projects Delivered', icon: <CheckCircle2 className="w-4 h-4" /> },
-    { value: '98%', label: 'Client Satisfaction', icon: <TrendingUp className="w-4 h-4" /> },
+    { value: String(liveProjects?.length || 3), label: 'Projects Delivered', icon: <CheckCircle2 className="w-4 h-4" /> },
+    { value: '5.0', label: 'Client Rating', icon: <Star className="w-4 h-4" /> },
     { value: '4+', label: 'Years Experience', icon: <Award className="w-4 h-4" /> },
     { value: '24/7', label: 'Support Available', icon: <Shield className="w-4 h-4" /> },
   ];
 
-  const recognitions = [
-    { label: 'Design Excellence', detail: 'Premium UI craft' },
-    { label: 'UX & Performance', detail: 'Fast, accessible builds' },
-    { label: 'Innovation', detail: 'Modern product delivery' },
-    { label: 'Global Reach', detail: 'Clients worldwide' },
+  const strengths = [
+    { label: 'Clean, Modern UI', detail: 'Responsive on every device' },
+    { label: 'Fast & Secure', detail: 'Performance and data protection built in' },
+    { label: 'Clear Communication', detail: 'Regular updates, no surprises' },
+    { label: 'Long-term Support', detail: 'Maintenance after launch' },
   ];
 
   const services = [
@@ -147,10 +170,10 @@ const SoftwareConsulting: React.FC = () => {
   ];
 
   const expertise = [
-    { icon: <Cpu className="w-4 h-4" />, title: 'Enterprise Solutions', description: 'Large-scale systems for Fortune 500 companies' },
-    { icon: <Lock className="w-4 h-4" />, title: 'Security First', description: 'Bank-level security and compliance standards' },
-    { icon: <BarChart3 className="w-4 h-4" />, title: 'Data-Driven', description: 'Analytics and insights that drive growth' },
-    { icon: <Globe2 className="w-4 h-4" />, title: 'Global Reach', description: 'Projects delivered across 30+ countries' },
+    { icon: <Cpu className="w-4 h-4" />, title: 'Business Systems', description: 'POS, operations suites and management platforms' },
+    { icon: <Lock className="w-4 h-4" />, title: 'Security First', description: 'Secure authentication, validation and data protection' },
+    { icon: <BarChart3 className="w-4 h-4" />, title: 'Data-Driven', description: 'Dashboards and reports that support decisions' },
+    { icon: <TrendingUp className="w-4 h-4" />, title: 'Built to Scale', description: 'Architecture that grows with your business' },
   ];
 
   const phone = [settings?.contactInfo?.phone, settings?.contactInfo?.phone2].filter(Boolean).join(' | ');
@@ -167,41 +190,65 @@ const SoftwareConsulting: React.FC = () => {
   return (
     <div className="relative bg-[#0a0a0b]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-8 sm:pb-10 space-y-8 sm:space-y-10">
-        {/* Hero — profile + history */}
+        {/* Hero — company first, live client work as proof */}
         <section>
-          <Sheet tone="dark" cellRef="A1" formula={`=PROFILE("${PROFILE.name}")`} tab="Profile">
-            <div className={`grid grid-cols-1 lg:grid-cols-[40px_minmax(0,1fr)_340px] gap-px ${dark.grid}`}>
+          <Sheet tone="dark" cellRef="A1" formula='=COMPANY("Tech Wiser Consulting")' tab="Home">
+            <div className={`grid grid-cols-1 lg:grid-cols-[40px_minmax(0,1.3fr)_minmax(0,1fr)] gap-px ${dark.grid}`}>
               <HeadCell tone="dark" className="hidden lg:flex" />
               <HeadCell tone="dark" className="hidden lg:flex">A</HeadCell>
               <HeadCell tone="dark" className="hidden lg:flex">B</HeadCell>
 
               <RowNum tone="dark" n={1} className="hidden lg:flex" />
-              <motion.div {...reveal()} className={`${dark.cell} p-5 sm:p-8 flex flex-col justify-between gap-6`}>
-                <div>
-                  <p className="font-mono text-[11px] tracking-[0.2em] uppercase text-cyan-400 mb-3">
-                    Tech Wiser Consulting · Peshawar, Pakistan
-                  </p>
+              <div className={`${dark.cell} relative overflow-hidden p-5 sm:p-8 flex flex-col justify-between gap-8 lg:min-h-[440px]`}>
+                <div
+                  aria-hidden
+                  className="absolute inset-0 opacity-40 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:linear-gradient(to_bottom_right,black,transparent_70%)]"
+                />
+                <motion.div
+                  aria-hidden
+                  className="absolute -bottom-32 -left-20 w-[520px] h-[320px] bg-[radial-gradient(ellipse_at_center,rgba(34,211,238,0.28),transparent_70%)]"
+                  animate={{ opacity: [0.6, 1, 0.6] }}
+                  transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+                />
+                <div className="relative">
+                  <motion.p
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="font-mono text-[11px] tracking-[0.2em] uppercase text-cyan-400 mb-4"
+                  >
+                    Software House · Peshawar, Pakistan
+                  </motion.p>
                   <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-white tracking-tight leading-[1.05]">
-                    {['Shah Taimoor', 'Bin Khalid'].map((line, i) => (
+                    {['Custom software,', 'e-commerce &', 'business systems.'].map((line, i) => (
                       <span key={line} className="block overflow-hidden pb-1">
                         <motion.span
                           initial={{ y: '110%' }}
                           animate={{ y: 0 }}
-                          transition={{ duration: 0.8, delay: 0.15 + i * 0.12, ease: [0.16, 1, 0.3, 1] }}
-                          className={`block ${i === 1 ? 'text-neutral-500' : ''}`}
+                          transition={{ duration: 0.8, delay: 0.1 + i * 0.1, ease: [0.16, 1, 0.3, 1] }}
+                          className={`block ${i === 1 ? 'text-neutral-500' : ''} ${i === 2 ? 'text-cyan-400' : ''}`}
                         >
                           {line}
                         </motion.span>
                       </span>
                     ))}
                   </h1>
-                  <p className="mt-4 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-neutral-300">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                    {PROFILE.role} — {PROFILE.focus}
-                  </p>
-                  <p className={`mt-4 text-sm sm:text-base ${dark.body} max-w-xl leading-relaxed`}>{PROFILE.bio}</p>
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.6, delay: 0.45 }}
+                    className={`mt-5 text-sm sm:text-base ${dark.body} max-w-xl leading-relaxed`}
+                  >
+                    We design, build and maintain web platforms, POS and operations software for growing
+                    businesses — from first idea to a live product, with support after launch.
+                  </motion.p>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.55 }}
+                  className="relative flex flex-wrap gap-2"
+                >
                   <a
                     href="/contact"
                     className="group inline-flex items-center gap-2 px-4 py-2.5 bg-cyan-400 text-neutral-950 text-sm font-semibold hover:bg-cyan-300 hover:shadow-[0_0_24px_rgba(34,211,238,0.45)] transition-all"
@@ -212,67 +259,81 @@ const SoftwareConsulting: React.FC = () => {
                     href="/portfolio"
                     className="inline-flex items-center gap-2 px-4 py-2.5 border border-white/15 text-white text-sm font-semibold hover:bg-white/5 transition-colors"
                   >
-                    View Portfolio
+                    View Projects
+                  </a>
+                </motion.div>
+              </div>
+
+              {/* Proof: live client projects */}
+              <div className={`${dark.cell} flex flex-col`}>
+                <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/10">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-neutral-500">Live client projects</span>
+                  <span className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-cyan-400">
+                    <span className="relative flex w-1.5 h-1.5">
+                      <span className="absolute inset-0 rounded-full bg-cyan-400 animate-ping opacity-60" />
+                      <span className="relative w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                    </span>
+                    Online
+                  </span>
+                </div>
+                <div className={`grid grid-cols-[36px_minmax(0,1fr)] gap-px ${dark.grid} flex-1 content-start`}>
+                  {liveProjects === null
+                    ? [0, 1, 2].map((i) => (
+                        <React.Fragment key={i}>
+                          <RowNum tone="dark" n={i + 1} className="flex" />
+                          <div className={`${dark.cell} px-3 py-3.5 space-y-2`}>
+                            <div className="h-3 w-3/4 bg-white/10 animate-pulse" />
+                            <div className="h-2.5 w-1/3 bg-white/5 animate-pulse" />
+                          </div>
+                        </React.Fragment>
+                      ))
+                    : liveProjects.map((project, i) => (
+                        <React.Fragment key={project._id}>
+                          <RowNum tone="dark" n={i + 1} className="flex" />
+                          <motion.a
+                            href={project.link || '/portfolio'}
+                            target={project.link ? '_blank' : undefined}
+                            rel={project.link ? 'noopener noreferrer' : undefined}
+                            initial={{ opacity: 0, x: 12 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.4, delay: 0.3 + i * 0.08 }}
+                            className={`group ${dark.cell} ${SELECTABLE} px-3 py-3`}
+                          >
+                            <span className="block text-sm font-medium text-white leading-snug line-clamp-2 group-hover:text-cyan-300 transition-colors">
+                              {project.title}
+                            </span>
+                            {project.link && (
+                              <span className="mt-1 inline-flex items-center gap-1 font-mono text-[11px] text-neutral-500 group-hover:text-cyan-400 transition-colors">
+                                {hostname(project.link)} <ArrowUpRight className="w-3 h-3" />
+                              </span>
+                            )}
+                          </motion.a>
+                        </React.Fragment>
+                      ))}
+                </div>
+                <div className="grid grid-cols-2 border-t border-white/10">
+                  <div className="px-4 py-3 border-r border-white/10">
+                    <div className="flex gap-0.5 mb-1">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star key={i} className="w-3 h-3 fill-cyan-400 text-cyan-400" />
+                      ))}
+                    </div>
+                    <p className="font-mono text-[10px] uppercase tracking-wider text-neutral-500">5.0 client reviews</p>
+                  </div>
+                  <a href="/portfolio" className="group flex items-center justify-between px-4 py-3 text-sm text-white hover:bg-white/5 transition-colors">
+                    All projects
+                    <ArrowUpRight className="w-4 h-4 text-cyan-400 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </a>
                 </div>
-              </motion.div>
-              <div className="relative overflow-hidden bg-[#111214] min-h-[380px] lg:min-h-[420px]">
-                <div
-                  aria-hidden
-                  className="absolute inset-0 opacity-40 bg-[linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] bg-[size:28px_28px] [mask-image:linear-gradient(to_top,black,transparent_85%)]"
-                />
-                <motion.div
-                  aria-hidden
-                  className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_100%,rgba(34,211,238,0.5),rgba(8,145,178,0.15)_45%,transparent_75%)]"
-                  animate={{ opacity: [0.7, 1, 0.7] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                />
-                <motion.div
-                  className="absolute inset-0"
-                  initial={{ opacity: 0, y: 40 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.9, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <Image
-                    src={PROFILE.photo}
-                    alt={PROFILE.name}
-                    fill
-                    priority
-                    sizes="(min-width: 1024px) 340px, 100vw"
-                    className="object-contain object-bottom pt-6"
-                  />
-                </motion.div>
-                <span className="absolute left-0 bottom-0 bg-neutral-950 text-cyan-400 font-mono text-[10px] uppercase tracking-wider px-2.5 py-1.5">
-                  B1 · {PROFILE.role}
-                </span>
               </div>
-            </div>
-
-            {/* History */}
-            <div className={`grid grid-cols-[36px_84px_minmax(0,1fr)] sm:grid-cols-[40px_120px_minmax(0,1fr)] gap-px ${dark.grid} border-t border-white/10`}>
-              <RowNum tone="dark" n={2} className="flex" />
-              <div className={`${dark.cell} px-3 py-2 text-xs font-semibold text-white`}>Period</div>
-              <div className={`${dark.cell} px-3 py-2 text-xs font-semibold text-white`}>History</div>
-              {HISTORY.map((row, i) => (
-                <React.Fragment key={row.title}>
-                  <RowNum tone="dark" n={i + 3} className="flex" />
-                  <div className={`${dark.cell} ${SELECTABLE} px-3 py-2.5 font-mono text-[11px] uppercase tracking-wide text-cyan-400`}>
-                    {row.period}
-                  </div>
-                  <div className={`${dark.cell} ${SELECTABLE} px-3 py-2.5 sm:flex sm:items-baseline sm:gap-3`}>
-                    <p className="text-sm font-medium text-white">{row.title}</p>
-                    <p className={`text-xs sm:text-sm ${dark.body}`}>{row.detail}</p>
-                  </div>
-                </React.Fragment>
-              ))}
             </div>
           </Sheet>
         </section>
 
         {/* Overview — stats + recognition */}
         <section>
-          <SectionHeader index="00" eyebrow="Overview" title="By the Numbers" />
-          <Sheet tone="dark" cellRef="A2" formula="=SUMMARY(Projects, Satisfaction, Experience, Support)" tab="Overview">
+          <SectionHeader index="00" eyebrow="Overview" title="At a Glance" />
+          <Sheet tone="dark" cellRef="A2" formula="=SUMMARY(Projects, Rating, Experience, Support)" tab="Overview">
             <div className={`grid grid-cols-2 md:grid-cols-[40px_repeat(4,minmax(0,1fr))] gap-px ${dark.grid}`}>
               <HeadCell tone="dark" className="hidden md:flex" />
               {LETTERS.map((l) => <HeadCell key={l} tone="dark" className="hidden md:flex">{l}</HeadCell>)}
@@ -291,9 +352,9 @@ const SoftwareConsulting: React.FC = () => {
               ))}
 
               <RowNum tone="dark" n={2} className="hidden md:flex" />
-              {recognitions.map((item) => (
+              {strengths.map((item) => (
                 <div key={item.label} className={`${dark.cell} ${SELECTABLE} px-4 py-3 flex items-center gap-3`}>
-                  <Award className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-white truncate">{item.label}</p>
                     <p className={`text-xs ${dark.muted} truncate`}>{item.detail}</p>
@@ -305,7 +366,7 @@ const SoftwareConsulting: React.FC = () => {
         </section>
 
         {/* Services */}
-        <section>
+        <section id="services" className="scroll-mt-20">
           <SectionHeader index="01" eyebrow="Services" title="Our Services" subtitle="Comprehensive software solutions tailored to your business." />
           <Sheet tone="light" cellRef="B2" formula='=FILTER(Services, Status = "Available")' tab="Services">
             <div className={`grid grid-cols-1 md:grid-cols-[40px_minmax(0,1fr)_minmax(0,2fr)_110px] gap-px ${light.grid}`}>
@@ -379,7 +440,7 @@ const SoftwareConsulting: React.FC = () => {
         {/* Why us */}
         <section>
           <SectionHeader index="04" eyebrow="Why us" title="Why Tech Wiser Consulting" subtitle="We combine technical expertise with business acumen." />
-          <Sheet tone="dark" cellRef="D2" formula="=AND(Expertise, Security, Data, Reach)" tab="Why Us">
+          <Sheet tone="dark" cellRef="D2" formula="=AND(Systems, Security, Data, Scale)" tab="Why Us">
             <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[40px_repeat(4,minmax(0,1fr))] gap-px ${dark.grid}`}>
               <HeadCell tone="dark" className="hidden lg:flex" />
               {LETTERS.map((l) => <HeadCell key={l} tone="dark" className="hidden lg:flex">{l}</HeadCell>)}
@@ -401,11 +462,110 @@ const SoftwareConsulting: React.FC = () => {
           </Sheet>
         </section>
 
+        {/* Leadership — CEO & Founder profile + history */}
+        <section>
+          <SectionHeader index="05" eyebrow="Leadership" title="Meet the Founder" subtitle="Tech Wiser Consulting is led by its CEO & Founder, who plans and builds every project hands-on." />
+          <Sheet tone="dark" cellRef="A1" formula={`=FOUNDER("${PROFILE.name}")`} tab="Leadership">
+            <div className={`grid grid-cols-1 lg:grid-cols-[40px_minmax(0,1fr)_340px] gap-px ${dark.grid}`}>
+              <HeadCell tone="dark" className="hidden lg:flex" />
+              <HeadCell tone="dark" className="hidden lg:flex">A</HeadCell>
+              <HeadCell tone="dark" className="hidden lg:flex">B</HeadCell>
+
+              <RowNum tone="dark" n={1} className="hidden lg:flex" />
+              <motion.div {...reveal()} className={`${dark.cell} p-5 sm:p-8 flex flex-col justify-between gap-6`}>
+                <div>
+                  <p className="font-mono text-[11px] tracking-[0.2em] uppercase text-cyan-400 mb-3">
+                    {PROFILE.title} · Tech Wiser Consulting
+                  </p>
+                  <motion.h2
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{ once: true, margin: '-40px' }}
+                    className="text-4xl sm:text-5xl font-semibold text-white tracking-tight leading-[1.05]"
+                  >
+                    {['Shah Taimoor', 'Bin Khalid'].map((line, i) => (
+                      <span key={line} className="block overflow-hidden pb-1">
+                        <motion.span
+                          variants={{ hidden: { y: '110%' }, show: { y: 0 } }}
+                          transition={{ duration: 0.8, delay: 0.15 + i * 0.12, ease: [0.16, 1, 0.3, 1] }}
+                          className={`block ${i === 1 ? 'text-neutral-500' : ''}`}
+                        >
+                          {line}
+                        </motion.span>
+                      </span>
+                    ))}
+                  </motion.h2>
+                  <p className="mt-4 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-neutral-300">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                    {PROFILE.role} — {PROFILE.focus}
+                  </p>
+                  <p className={`mt-4 text-sm sm:text-base ${dark.body} max-w-xl leading-relaxed`}>{PROFILE.bio}</p>
+                </div>
+                <Link
+                  href="/team"
+                  className="group self-start inline-flex items-center gap-2 px-4 py-2.5 border border-white/15 text-white text-sm font-semibold hover:bg-white/5 transition-colors"
+                >
+                  Meet the Team <ArrowUpRight className="w-4 h-4 text-cyan-400 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </Link>
+              </motion.div>
+              <div className="relative overflow-hidden bg-[#111214] min-h-[380px] lg:min-h-[420px]">
+                <div
+                  aria-hidden
+                  className="absolute inset-0 opacity-40 bg-[linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] bg-[size:28px_28px] [mask-image:linear-gradient(to_top,black,transparent_85%)]"
+                />
+                <motion.div
+                  aria-hidden
+                  className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_100%,rgba(34,211,238,0.5),rgba(8,145,178,0.15)_45%,transparent_75%)]"
+                  animate={{ opacity: [0.7, 1, 0.7] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                />
+                <motion.div
+                  className="absolute inset-0"
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.9, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <Image
+                    src={PROFILE.photo}
+                    alt={PROFILE.name}
+                    fill
+                    sizes="(min-width: 1024px) 340px, 100vw"
+                    className="object-contain object-bottom pt-6"
+                  />
+                </motion.div>
+                <span className="absolute left-0 bottom-0 bg-neutral-950 text-cyan-400 font-mono text-[10px] uppercase tracking-wider px-2.5 py-1.5">
+                  B1 · {PROFILE.title}
+                </span>
+              </div>
+            </div>
+
+            {/* History */}
+            <div className={`grid grid-cols-[36px_84px_minmax(0,1fr)] sm:grid-cols-[40px_120px_minmax(0,1fr)] gap-px ${dark.grid} border-t border-white/10`}>
+              <RowNum tone="dark" n={2} className="flex" />
+              <div className={`${dark.cell} px-3 py-2 text-xs font-semibold text-white`}>Period</div>
+              <div className={`${dark.cell} px-3 py-2 text-xs font-semibold text-white`}>History</div>
+              {HISTORY.map((row, i) => (
+                <React.Fragment key={row.title}>
+                  <RowNum tone="dark" n={i + 3} className="flex" />
+                  <div className={`${dark.cell} ${SELECTABLE} px-3 py-2.5 font-mono text-[11px] uppercase tracking-wide text-cyan-400`}>
+                    {row.period}
+                  </div>
+                  <div className={`${dark.cell} ${SELECTABLE} px-3 py-2.5 sm:flex sm:items-baseline sm:gap-3`}>
+                    <p className="text-sm font-medium text-white">{row.title}</p>
+                    <p className={`text-xs sm:text-sm ${dark.body}`}>{row.detail}</p>
+                  </div>
+                </React.Fragment>
+              ))}
+            </div>
+          </Sheet>
+        </section>
+
         {/* CTA — cyan card + white card, as in the brand stationery */}
         <motion.section {...reveal()} className="grid md:grid-cols-[1.25fr_1fr] gap-px bg-white/10 border border-white/10">
           <div className="relative flex flex-col justify-between gap-10 p-6 sm:p-8 bg-gradient-to-b from-cyan-300 via-cyan-600 to-[#0a0a0b] min-h-[280px]">
             <div>
-              <p className="font-mono text-[11px] tracking-[0.2em] uppercase text-neutral-900/70 mb-2">05 / Start</p>
+              <p className="font-mono text-[11px] tracking-[0.2em] uppercase text-neutral-900/70 mb-2">06 / Start</p>
               <h2 className="text-3xl sm:text-4xl font-semibold text-neutral-950 tracking-tight">
                 Let&apos;s Build Together
               </h2>
