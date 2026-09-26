@@ -64,11 +64,28 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 lg:mt-12 overflow-hidden border-y border-white/10 py-4">
-          <p className="font-bold leading-[0.85] tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-neutral-700 to-neutral-900 select-none whitespace-nowrap text-center sm:text-left"
-            style={{ fontSize: "clamp(1.8rem, 8vw, 8rem)" }}>
-            TECH WISER CONSULTING
-          </p>
+        {/* SVG wordmark: textLength stretches it to exactly the footer width, whatever the sidebar leaves */}
+        <div className="mt-10 lg:mt-12 border-y border-white/10 py-4">
+          <svg viewBox="0 6 1000 58" className="block w-full h-auto select-none" role="img" aria-label="Tech Wiser Consulting">
+            <defs>
+              <linearGradient id="footer-wordmark" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#404040" />
+                <stop offset="100%" stopColor="#171717" />
+              </linearGradient>
+            </defs>
+            <text
+              x="0"
+              y="60"
+              textLength="1000"
+              lengthAdjust="spacingAndGlyphs"
+              fill="url(#footer-wordmark)"
+              fontSize="72"
+              fontWeight="700"
+              letterSpacing="-2"
+            >
+              TECH WISER CONSULTING
+            </text>
+          </svg>
         </div>
 
         <div className={`mt-6 flex flex-col gap-4 sm:flex-row sm:items-center ${socialLinks.length > 0 ? "sm:justify-between" : "sm:justify-end"}`}>
