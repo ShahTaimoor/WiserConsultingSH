@@ -7,7 +7,7 @@ import { useSettings } from '@/context/SettingsContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Code2, Cloud, Smartphone, CheckCircle2, Shield, Award, TrendingUp,
-  Phone, Mail, MapPin, Globe2, Target, Rocket, Layers, Cpu, Lock, BarChart3
+  Phone, Mail, MapPin, Globe2, Target, Rocket, Layers, Cpu, Lock, BarChart3, ArrowUpRight
 } from 'lucide-react';
 
 const ease = easeInOut;
@@ -40,46 +40,112 @@ const AnimatedCounter = ({ value }: { value: string }) => {
   return <span ref={ref}>{count}{suffix}</span>;
 };
 
-const fadeUp = (delay = 0) => ({
-  initial: { opacity: 0, y: 40 },
+const reveal = (delay = 0) => ({
+  initial: { opacity: 0, y: 16 },
   whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: "-50px" },
-  transition: { duration: 0.8, delay, ease },
+  viewport: { once: true, margin: "-40px" },
+  transition: { duration: 0.5, delay, ease },
 });
 
-const stagger = (delay = 0) => ({
-  initial: { opacity: 0, y: 30 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true },
-  transition: { duration: 0.7, delay, ease },
-});
+/* ------------------------------------------------------------------ */
+/* Spreadsheet primitives — matte black / cyan / white paper palette   */
+/* ------------------------------------------------------------------ */
 
-const SECTION_PAD = 'py-10 sm:py-14';
-const HEADER_MB = 'mb-6 sm:mb-8';
+type Tone = 'dark' | 'light';
 
-const SectionHeader = ({
-  eyebrow,
-  title,
-  subtitle,
+const TONE: Record<Tone, {
+  frame: string; grid: string; cell: string; head: string;
+  border: string; title: string; body: string; muted: string;
+}> = {
+  dark: {
+    frame: 'bg-[#111214] border-white/10',
+    grid: 'bg-white/[0.08]',
+    cell: 'bg-[#111214]',
+    head: 'bg-[#17181b] text-neutral-500',
+    border: 'border-white/10',
+    title: 'text-white',
+    body: 'text-neutral-400',
+    muted: 'text-neutral-600',
+  },
+  light: {
+    frame: 'bg-white border-neutral-300',
+    grid: 'bg-neutral-200',
+    cell: 'bg-white',
+    head: 'bg-neutral-100 text-neutral-500',
+    border: 'border-neutral-200',
+    title: 'text-neutral-950',
+    body: 'text-neutral-600',
+    muted: 'text-neutral-400',
+  },
+};
+
+// Excel-style "selected cell" highlight
+const SELECTABLE =
+  'relative transition-[outline-color] outline outline-2 -outline-offset-2 outline-transparent hover:outline-cyan-400 hover:z-10';
+
+const Sheet = ({
+  tone,
+  cellRef,
+  formula,
+  tab,
+  children,
 }: {
-  eyebrow: string;
-  title: string;
-  subtitle?: string;
+  tone: Tone;
+  cellRef: string;
+  formula: string;
+  tab: string;
+  children: React.ReactNode;
+}) => {
+  const t = TONE[tone];
+  return (
+    <motion.div {...reveal()} className={`border ${t.frame} overflow-hidden`}>
+      {/* Formula bar */}
+      <div className={`flex items-stretch border-b ${t.border} font-mono text-[11px] leading-none`}>
+        <span className={`w-14 sm:w-16 shrink-0 px-2.5 py-2 border-r ${t.border} ${t.head}`}>{cellRef}</span>
+        <span className={`px-2.5 py-2 border-r ${t.border} italic text-cyan-500`}>fx</span>
+        <span className={`flex-1 min-w-0 px-2.5 py-2 truncate ${t.body}`}>{formula}</span>
+      </div>
+      {children}
+      {/* Sheet tabs */}
+      <div className={`flex items-stretch border-t ${t.border} font-mono text-[11px] leading-none ${t.head}`}>
+        <span className={`px-3 py-2 border-r ${t.border} ${t.cell} ${t.title} shadow-[inset_0_2px_0_#22d3ee]`}>
+          {tab}
+        </span>
+        <span className={`px-3 py-2 border-r ${t.border}`}>+</span>
+      </div>
+    </motion.div>
+  );
+};
+
+// Desktop-only table cell styling for rows that collapse into a card on mobile
+const SVC_CELL =
+  'md:bg-white md:px-3 md:py-3 md:relative md:outline md:outline-2 md:-outline-offset-2 md:outline-transparent md:hover:outline-cyan-400 md:hover:z-10';
+
+const HeadCell = ({ tone, children, className = '' }: { tone: Tone; children?: React.ReactNode; className?: string }) => (
+  <div className={`${TONE[tone].head} font-mono text-[10px] uppercase tracking-wider px-3 py-1.5 flex items-center justify-center ${className}`}>
+    {children}
+  </div>
+);
+
+const RowNum = ({ tone, n, className = '' }: { tone: Tone; n: number | string; className?: string }) => (
+  <div className={`${TONE[tone].head} font-mono text-[10px] items-center justify-center ${className}`}>{n}</div>
+);
+
+const SectionHeader = ({ index, eyebrow, title, subtitle }: {
+  index: string; eyebrow: string; title: string; subtitle?: string;
 }) => (
-  <motion.div {...stagger()} className={`text-center ${HEADER_MB}`}>
-    <p className="font-mono text-[11px] sm:text-xs tracking-[0.25em] uppercase text-slate-400 mb-3">
-      {eyebrow}
-    </p>
-    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-3 tracking-tight text-balance">
-      {title}
-    </h2>
-    {subtitle && (
-      <p className="text-base sm:text-lg text-slate-500 max-w-xl mx-auto text-balance leading-relaxed">
-        {subtitle}
+  <motion.div {...reveal()} className="flex flex-col sm:flex-row sm:items-end justify-between gap-1.5 sm:gap-6 mb-3">
+    <div>
+      <p className="font-mono text-[11px] tracking-[0.2em] uppercase text-cyan-400 mb-1">
+        {index} / {eyebrow}
       </p>
-    )}
+      <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight">{title}</h2>
+    </div>
+    {subtitle && <p className="text-sm text-neutral-400 max-w-md sm:text-right">{subtitle}</p>}
   </motion.div>
 );
+
+/* ------------------------------------------------------------------ */
 
 const DESKTOP_BANNER = '/WISERBANNER.mp4';
 const MOBILE_BANNER = '/mobilebanner.mp4';
@@ -102,32 +168,43 @@ const TECHNOLOGIES: TechItem[] = [
   { name: 'Docker & CI/CD Pipelines', category: 'DevOps' },
 ];
 
-const TechCard = ({ tech }: { tech: TechItem }) => (
-  <div className="shrink-0 w-[220px] sm:w-[248px] bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/70 text-center hover:border-blue-200 hover:shadow-md hover:shadow-blue-500/5 transition-all duration-300 group">
-    <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400 mb-2 group-hover:text-blue-500 transition-colors">
-      {tech.category}
-    </p>
-    <h3 className="font-semibold text-slate-900 text-xs sm:text-sm leading-snug">{tech.name}</h3>
-  </div>
-);
+const TECH_SPLIT = Math.ceil(TECHNOLOGIES.length / 2);
 
-const TechMarquee = ({ items }: { items: TechItem[] }) => (
-  <div className="relative overflow-hidden group/marquee -mx-6 sm:-mx-8 lg:-mx-12">
-    <div
-      aria-hidden
-      className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 sm:w-16 bg-gradient-to-r from-slate-50 to-transparent"
-    />
-    <div
-      aria-hidden
-      className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 sm:w-16 bg-gradient-to-l from-slate-50 to-transparent"
-    />
-    <div className="flex w-max gap-3 sm:gap-4 animate-tech-marquee group-hover/marquee:[animation-play-state:paused] motion-reduce:animate-none motion-reduce:overflow-x-auto motion-reduce:w-full motion-reduce:pb-2">
-      {[...items, ...items].map((tech, i) => (
-        <TechCard key={`${tech.category}-${tech.name}-${i}`} tech={tech} />
+const TechPane = ({ items, startRow, secondary }: { items: TechItem[]; startRow: number; secondary?: boolean }) => {
+  const t = TONE.light;
+  // The second pane repeats the header only on desktop, where it sits beside the first.
+  const headVis = secondary ? 'hidden lg:flex' : 'flex';
+  const fillers = TECH_SPLIT - items.length;
+  return (
+    <div className={`grid grid-cols-[36px_104px_minmax(0,1fr)] sm:grid-cols-[40px_140px_minmax(0,1fr)] gap-px ${t.grid}`}>
+      <HeadCell tone="light" className={headVis} />
+      <HeadCell tone="light" className={headVis}>A</HeadCell>
+      <HeadCell tone="light" className={headVis}>B</HeadCell>
+
+      <RowNum tone="light" n={1} className={headVis} />
+      <div className={`${headVis} ${t.cell} px-3 py-2 text-xs font-semibold ${t.title} items-center`}>Category</div>
+      <div className={`${headVis} ${t.cell} px-3 py-2 text-xs font-semibold ${t.title} items-center`}>Technologies</div>
+
+      {items.map((tech, i) => (
+        <React.Fragment key={tech.category}>
+          <RowNum tone="light" n={startRow + i} className="flex" />
+          <div className={`${t.cell} ${SELECTABLE} px-3 py-2 font-mono text-[11px] uppercase tracking-wide text-cyan-600`}>
+            {tech.category}
+          </div>
+          <div className={`${t.cell} ${SELECTABLE} px-3 py-2 text-sm ${t.title}`}>{tech.name}</div>
+        </React.Fragment>
+      ))}
+
+      {Array.from({ length: fillers }).map((_, i) => (
+        <React.Fragment key={`filler-${i}`}>
+          <RowNum tone="light" n={startRow + items.length + i} className="hidden lg:flex" />
+          <div className={`hidden lg:block ${t.cell}`} />
+          <div className={`hidden lg:block ${t.cell}`} />
+        </React.Fragment>
       ))}
     </div>
-  </div>
-);
+  );
+};
 
 const SoftwareConsulting: React.FC = () => {
   const { settings } = useSettings();
@@ -157,30 +234,10 @@ const SoftwareConsulting: React.FC = () => {
   const overlayOpacity = useTransform(heroScrollProgress, [0, 1], [0.6, 0.8]);
 
   const stats = [
-    { value: '3', label: 'Projects Delivered', icon: <CheckCircle2 className="w-6 h-6" /> },
-    { value: '98%', label: 'Client Satisfaction', icon: <TrendingUp className="w-6 h-6" /> },
-    { value: '4+', label: 'Years Experience', icon: <Award className="w-6 h-6" /> },
-    { value: '24/7', label: 'Support Available', icon: <Shield className="w-6 h-6" /> },
-  ];
-
-  const services = [
-    { icon: <Code2 className="w-8 h-8" />, title: 'Custom Software Development', description: 'Tailored software solutions built to your exact specifications. From web applications to enterprise systems, we deliver scalable and maintainable code.', color: 'from-blue-500 to-cyan-500' },
-    { icon: <Cloud className="w-8 h-8" />, title: 'Cloud Solutions & Migration', description: 'Modernize your infrastructure with cloud-native solutions. We help you migrate, optimize, and scale on AWS, Azure, and Google Cloud.', color: 'from-purple-500 to-pink-500' },
-    { icon: <Smartphone className="w-8 h-8" />, title: 'Mobile App Development', description: 'Native and cross-platform mobile applications for iOS and Android. We create intuitive, high-performance apps that users love.', color: 'from-green-500 to-emerald-500' },
-  ];
-
-  const processSteps = [
-    { step: '01', title: 'Discovery & Planning', description: 'We analyze your requirements, understand your business goals, and create a comprehensive project roadmap.', icon: <Target className="w-8 h-8" /> },
-    { step: '02', title: 'Design & Architecture', description: 'Our architects design scalable solutions with modern best practices, ensuring security and performance.', icon: <Layers className="w-8 h-8" /> },
-    { step: '03', title: 'Development & Testing', description: 'Agile development with continuous integration, automated testing, and regular progress updates.', icon: <Code2 className="w-8 h-8" /> },
-    { step: '04', title: 'Deployment & Support', description: 'Smooth deployment to production with ongoing maintenance, monitoring, and 24/7 support.', icon: <Rocket className="w-8 h-8" /> },
-  ];
-
-  const expertise = [
-    { icon: <Cpu className="w-6 h-6" />, title: 'Enterprise Solutions', description: 'Large-scale systems for Fortune 500 companies' },
-    { icon: <Lock className="w-6 h-6" />, title: 'Security First', description: 'Bank-level security and compliance standards' },
-    { icon: <BarChart3 className="w-6 h-6" />, title: 'Data-Driven', description: 'Analytics and insights that drive growth' },
-    { icon: <Globe2 className="w-6 h-6" />, title: 'Global Reach', description: 'Projects delivered across 30+ countries' },
+    { value: '3', label: 'Projects Delivered', icon: <CheckCircle2 className="w-4 h-4" /> },
+    { value: '98%', label: 'Client Satisfaction', icon: <TrendingUp className="w-4 h-4" /> },
+    { value: '4+', label: 'Years Experience', icon: <Award className="w-4 h-4" /> },
+    { value: '24/7', label: 'Support Available', icon: <Shield className="w-4 h-4" /> },
   ];
 
   const recognitions = [
@@ -190,10 +247,41 @@ const SoftwareConsulting: React.FC = () => {
     { label: 'Global Reach', detail: 'Clients worldwide' },
   ];
 
+  const services = [
+    { icon: <Code2 className="w-4 h-4" />, title: 'Custom Software Development', description: 'Tailored software solutions built to your exact specifications. From web applications to enterprise systems, we deliver scalable and maintainable code.' },
+    { icon: <Cloud className="w-4 h-4" />, title: 'Cloud Solutions & Migration', description: 'Modernize your infrastructure with cloud-native solutions. We help you migrate, optimize, and scale on AWS, Azure, and Google Cloud.' },
+    { icon: <Smartphone className="w-4 h-4" />, title: 'Mobile App Development', description: 'Native and cross-platform mobile applications for iOS and Android. We create intuitive, high-performance apps that users love.' },
+  ];
+
+  const processSteps = [
+    { step: '01', title: 'Discovery & Planning', description: 'We analyze your requirements, understand your business goals, and create a comprehensive project roadmap.', icon: <Target className="w-4 h-4" /> },
+    { step: '02', title: 'Design & Architecture', description: 'Our architects design scalable solutions with modern best practices, ensuring security and performance.', icon: <Layers className="w-4 h-4" /> },
+    { step: '03', title: 'Development & Testing', description: 'Agile development with continuous integration, automated testing, and regular progress updates.', icon: <Code2 className="w-4 h-4" /> },
+    { step: '04', title: 'Deployment & Support', description: 'Smooth deployment to production with ongoing maintenance, monitoring, and 24/7 support.', icon: <Rocket className="w-4 h-4" /> },
+  ];
+
+  const expertise = [
+    { icon: <Cpu className="w-4 h-4" />, title: 'Enterprise Solutions', description: 'Large-scale systems for Fortune 500 companies' },
+    { icon: <Lock className="w-4 h-4" />, title: 'Security First', description: 'Bank-level security and compliance standards' },
+    { icon: <BarChart3 className="w-4 h-4" />, title: 'Data-Driven', description: 'Analytics and insights that drive growth' },
+    { icon: <Globe2 className="w-4 h-4" />, title: 'Global Reach', description: 'Projects delivered across 30+ countries' },
+  ];
+
+  const phone = [settings?.contactInfo?.phone, settings?.contactInfo?.phone2].filter(Boolean).join(' | ');
+  const contactRows = [
+    { key: 'Email', value: settings?.contactInfo?.email || 'taimour448@gmail.com', icon: <Mail className="w-3.5 h-3.5" /> },
+    ...(phone ? [{ key: 'Phone', value: phone, icon: <Phone className="w-3.5 h-3.5" /> }] : []),
+    { key: 'Address', value: settings?.contactInfo?.address || 'Peshawar, Pakistan', icon: <MapPin className="w-3.5 h-3.5" /> },
+  ];
+
+  const dark = TONE.dark;
+  const light = TONE.light;
+  const LETTERS = ['A', 'B', 'C', 'D'];
+
   return (
-    <div className="relative">
+    <div className="relative bg-[#0a0a0b]">
       {/* Hero */}
-      <section ref={heroRef} className="relative w-full min-h-screen flex items-end justify-center  overflow-hidden bg-slate-950">
+      <section ref={heroRef} className="relative w-full min-h-screen flex items-end justify-center overflow-hidden bg-[#0a0a0b] border-b border-cyan-400/30">
         {bannerSrc && (
           <motion.video
             key={bannerSrc}
@@ -208,221 +296,182 @@ const SoftwareConsulting: React.FC = () => {
             className="absolute inset-0 w-full h-full object-cover"
           />
         )}
-        <motion.div style={{ opacity: overlayOpacity }} className="absolute inset-0 bg-slate-950/60" />
-        <div className="relative z-20 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-20 text-center">
-        </div>
+        <motion.div style={{ opacity: overlayOpacity }} className="absolute inset-0 bg-[#0a0a0b]/60" />
       </section>
 
-      {/* Stats */}
-      <section className={`${SECTION_PAD} bg-white border-b border-slate-100`}>
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-          <motion.p
-            {...stagger()}
-            className="font-mono text-[11px] sm:text-xs tracking-[0.25em] uppercase text-slate-400 text-center mb-8 sm:mb-10"
-          >
-            By the numbers
-          </motion.p>
-          <div className="grid grid-cols-2 md:grid-cols-4 md:divide-x md:divide-slate-100">
-            {stats.map((stat, index) => (
-              <motion.div
-                key={index}
-                {...fadeUp(index * 0.08)}
-                whileHover={{ y: -4 }}
-                className="text-center group px-4 sm:px-6 py-2 md:py-0"
-              >
-                <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-2xl mb-4 text-blue-600 bg-blue-50 ring-1 ring-blue-100/80 group-hover:bg-blue-100 group-hover:ring-blue-200 transition-all duration-300">
-                  {stat.icon}
-                </div>
-                <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-1.5 tracking-tight tabular-nums">
-                  <AnimatedCounter value={stat.value} />
-                </div>
-                <div className="text-xs sm:text-sm text-slate-500 font-medium">{stat.label}</div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8 sm:space-y-10">
+        {/* Overview — stats + recognition */}
+        <section>
+          <SectionHeader index="00" eyebrow="Overview" title="By the Numbers" />
+          <Sheet tone="dark" cellRef="A2" formula="=SUMMARY(Projects, Satisfaction, Experience, Support)" tab="Overview">
+            <div className={`grid grid-cols-2 md:grid-cols-[40px_repeat(4,minmax(0,1fr))] gap-px ${dark.grid}`}>
+              <HeadCell tone="dark" className="hidden md:flex" />
+              {LETTERS.map((l) => <HeadCell key={l} tone="dark" className="hidden md:flex">{l}</HeadCell>)}
 
-      {/* Recognition — award-style trust strip */}
-      <section className="py-6 sm:py-8 bg-slate-950 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-            {recognitions.map((item, index) => (
-              <motion.div
-                key={item.label}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.08, ease }}
-                className="text-center lg:text-left border-l border-slate-800 pl-0 lg:pl-6 first:lg:border-l-0 first:lg:pl-0"
-              >
-                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/10 text-amber-400 mb-3">
-                  <Award className="w-4 h-4" />
-                </div>
-                <p className="text-sm sm:text-base font-semibold text-white tracking-tight">
-                  {item.label}
-                </p>
-                <p className="text-xs text-slate-500 mt-1">{item.detail}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Services */}
-      <section className={`${SECTION_PAD} bg-slate-50`}>
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-          <SectionHeader
-            eyebrow="01 — Services"
-            title="Our Services"
-            subtitle="Comprehensive software solutions tailored to your business."
-          />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
-            {services.map((service, index) => (
-              <motion.div
-                key={index}
-                {...fadeUp(index * 0.1)}
-                whileHover={{ y: -6 }}
-                className="relative bg-white p-7 sm:p-9 rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-xl hover:border-slate-300/90 transition-all duration-500 group cursor-default overflow-hidden"
-              >
-                <span className="absolute top-6 right-7 font-mono text-xs text-slate-300 group-hover:text-slate-400 transition-colors">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <div className={`w-14 h-14 bg-gradient-to-br ${service.color} rounded-2xl flex items-center justify-center mb-6 text-white group-hover:scale-105 transition-transform duration-500 shadow-lg shadow-slate-200/50`}>
-                  {service.icon}
-                </div>
-                <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-3 pr-8">{service.title}</h3>
-                <p className="text-slate-500 leading-relaxed text-sm">{service.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Process */}
-      <section className={`${SECTION_PAD} bg-white`}>
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-          <SectionHeader
-            eyebrow="02 — Process"
-            title="How We Work"
-            subtitle="A proven methodology that ensures quality and transparency."
-          />
-          <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
-            <div
-              className="hidden lg:block absolute top-[4.5rem] left-[12%] right-[12%] h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent"
-              aria-hidden
-            />
-            {processSteps.map((step, index) => (
-              <motion.div
-                key={index}
-                {...fadeUp(index * 0.08)}
-                className="relative"
-              >
-                <div className="p-6 sm:p-7 rounded-3xl border border-transparent hover:border-slate-100 hover:bg-slate-50/80 transition-all duration-300 h-full">
-                  <div className="flex items-start justify-between mb-5">
-                    <div className="text-5xl sm:text-6xl font-bold text-slate-100 leading-none select-none">
-                      {step.step}
-                    </div>
-                    <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0">
-                      {step.icon}
-                    </div>
+              <RowNum tone="dark" n={1} className="hidden md:flex" />
+              {stats.map((stat, i) => (
+                <motion.div key={stat.label} {...reveal(i * 0.05)} className={`${dark.cell} ${SELECTABLE} px-4 py-4 sm:py-5`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`font-mono text-[10px] uppercase tracking-wider ${dark.muted}`}>{stat.label}</span>
+                    <span className="text-cyan-400">{stat.icon}</span>
                   </div>
-                  <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-2">{step.title}</h3>
-                  <p className="text-slate-500 text-sm leading-relaxed">{step.description}</p>
+                  <div className="text-3xl sm:text-4xl font-semibold text-white tracking-tight tabular-nums font-mono">
+                    <AnimatedCounter value={stat.value} />
+                  </div>
+                </motion.div>
+              ))}
+
+              <RowNum tone="dark" n={2} className="hidden md:flex" />
+              {recognitions.map((item) => (
+                <div key={item.label} className={`${dark.cell} ${SELECTABLE} px-4 py-3 flex items-center gap-3`}>
+                  <Award className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-white truncate">{item.label}</p>
+                    <p className={`text-xs ${dark.muted} truncate`}>{item.detail}</p>
+                  </div>
                 </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Technologies */}
-      <section className={`${SECTION_PAD} bg-slate-50`}>
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-          <SectionHeader
-            eyebrow="03 — Stack"
-            title="Technologies"
-            subtitle="Modern tools to build scalable applications."
-          />
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, ease }}
-          >
-            <TechMarquee items={TECHNOLOGIES} />
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Expertise */}
-      <section className={`${SECTION_PAD} bg-white border-t border-slate-100`}>
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-          <SectionHeader
-            eyebrow="04 — Why us"
-            title="Why Tech Wiser Consulting"
-            subtitle="We combine technical expertise with business acumen."
-          />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
-            {expertise.map((item, index) => (
-              <motion.div
-                key={index}
-                {...fadeUp(index * 0.08)}
-                whileHover={{ y: -4 }}
-                className="p-7 sm:p-8 rounded-3xl text-center border border-slate-100 hover:border-slate-200 hover:bg-slate-50/50 hover:shadow-lg hover:shadow-slate-200/40 transition-all duration-300"
-              >
-                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-blue-50 ring-1 ring-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-5 text-blue-600">
-                  {item.icon}
-                </div>
-                <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-2">{item.title}</h3>
-                <p className="text-slate-500 text-sm leading-relaxed">{item.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-24 sm:py-32 bg-slate-950">
-        <div className="max-w-4xl mx-auto px-6 sm:px-8 lg:px-12 text-center">
-          <motion.div {...stagger()} className="space-y-8">
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white tracking-tight">
-              Let&apos;s Build Together
-            </h2>
-            <p className="text-lg text-slate-400 max-w-xl mx-auto text-balance leading-relaxed">
-              Tell us about your project. We&apos;ll help turn your ideas into reality.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <motion.a
-                href="/contact"
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                className="px-8 py-3.5 bg-white text-slate-900 font-semibold rounded-full text-base hover:bg-white/90 transition-colors"
-              >
-                Start a Project
-              </motion.a>
+              ))}
             </div>
-            <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 pt-8 text-slate-500 text-sm">
-              <div className="flex items-center gap-2">
-                <Mail className="w-4 h-4" />
-                <span>{settings?.contactInfo?.email || "taimour448@gmail.com"}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4" />
-                <span>
-                  {settings?.contactInfo?.phone || ""}
-                  {settings?.contactInfo?.phone && settings?.contactInfo?.phone2 && " | "}
-                  {settings?.contactInfo?.phone2 || ""}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                <span>{settings?.contactInfo?.address || "Peshawar, Pakistan"}</span>
-              </div>
+          </Sheet>
+        </section>
+
+        {/* Services */}
+        <section>
+          <SectionHeader index="01" eyebrow="Services" title="Our Services" subtitle="Comprehensive software solutions tailored to your business." />
+          <Sheet tone="light" cellRef="B2" formula='=FILTER(Services, Status = "Available")' tab="Services">
+            <div className={`grid grid-cols-1 md:grid-cols-[40px_minmax(0,1fr)_minmax(0,2fr)_110px] gap-px ${light.grid}`}>
+              <HeadCell tone="light" className="hidden md:flex" />
+              {['A', 'B', 'C'].map((l) => <HeadCell key={l} tone="light" className="hidden md:flex">{l}</HeadCell>)}
+
+              <RowNum tone="light" n={1} className="hidden md:flex" />
+              {['Service', 'Description', 'Status'].map((h) => (
+                <div key={h} className={`hidden md:flex ${light.cell} px-3 py-2 text-xs font-semibold ${light.title}`}>{h}</div>
+              ))}
+
+              {services.map((service, i) => (
+                <motion.div key={service.title} {...reveal(i * 0.05)} className={`${light.cell} p-4 md:p-0 md:bg-transparent md:contents`}>
+                  <RowNum tone="light" n={i + 2} className="hidden md:flex" />
+                  <div className={`${SVC_CELL} flex items-start gap-2.5`}>
+                    <span className="mt-0.5 inline-flex items-center justify-center w-7 h-7 shrink-0 bg-neutral-950 text-cyan-400">
+                      {service.icon}
+                    </span>
+                    <h3 className={`text-sm font-semibold ${light.title} leading-snug pt-1`}>{service.title}</h3>
+                  </div>
+                  <p className={`${SVC_CELL} mt-2 md:mt-0 text-sm ${light.body} leading-relaxed`}>
+                    {service.description}
+                  </p>
+                  <div className={`${SVC_CELL} mt-3 md:mt-0 flex md:justify-center items-start`}>
+                    <span className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider px-2 py-1 bg-cyan-50 text-cyan-700 ring-1 ring-cyan-200">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" /> Available
+                    </span>
+                  </div>
+                </motion.div>
+              ))}
             </div>
-          </motion.div>
-        </div>
-      </section>
+          </Sheet>
+        </section>
+
+        {/* Process */}
+        <section>
+          <SectionHeader index="02" eyebrow="Process" title="How We Work" subtitle="A proven methodology that ensures quality and transparency." />
+          <Sheet tone="dark" cellRef="A1:D1" formula="=SEQUENCE(Discovery → Design → Development → Deployment)" tab="Process">
+            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[40px_repeat(4,minmax(0,1fr))] gap-px ${dark.grid}`}>
+              <HeadCell tone="dark" className="hidden lg:flex" />
+              {LETTERS.map((l) => <HeadCell key={l} tone="dark" className="hidden lg:flex">{l}</HeadCell>)}
+
+              <RowNum tone="dark" n={1} className="hidden lg:flex" />
+              {processSteps.map((step, i) => (
+                <motion.div key={step.step} {...reveal(i * 0.05)} className={`${dark.cell} ${SELECTABLE} p-4 sm:p-5`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="font-mono text-[11px] tracking-wider text-cyan-400">STEP {step.step}</span>
+                    <span className="inline-flex items-center justify-center w-7 h-7 border border-white/10 text-neutral-300">
+                      {step.icon}
+                    </span>
+                  </div>
+                  <h3 className="text-sm sm:text-base font-semibold text-white mb-1.5">{step.title}</h3>
+                  <p className={`text-sm ${dark.body} leading-relaxed`}>{step.description}</p>
+                </motion.div>
+              ))}
+            </div>
+          </Sheet>
+        </section>
+
+        {/* Technologies */}
+        <section>
+          <SectionHeader index="03" eyebrow="Stack" title="Technologies" subtitle="Modern tools to build scalable applications." />
+          <Sheet tone="light" cellRef="B2" formula="=VLOOKUP(Category, Stack, 2, FALSE)" tab="Stack">
+            <div className={`grid lg:grid-cols-2 gap-px ${light.grid}`}>
+              <TechPane items={TECHNOLOGIES.slice(0, TECH_SPLIT)} startRow={2} />
+              <TechPane items={TECHNOLOGIES.slice(TECH_SPLIT)} startRow={2 + TECH_SPLIT} secondary />
+            </div>
+          </Sheet>
+        </section>
+
+        {/* Why us */}
+        <section>
+          <SectionHeader index="04" eyebrow="Why us" title="Why Tech Wiser Consulting" subtitle="We combine technical expertise with business acumen." />
+          <Sheet tone="dark" cellRef="D2" formula="=AND(Expertise, Security, Data, Reach)" tab="Why Us">
+            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[40px_repeat(4,minmax(0,1fr))] gap-px ${dark.grid}`}>
+              <HeadCell tone="dark" className="hidden lg:flex" />
+              {LETTERS.map((l) => <HeadCell key={l} tone="dark" className="hidden lg:flex">{l}</HeadCell>)}
+
+              <RowNum tone="dark" n={1} className="hidden lg:flex" />
+              {expertise.map((item, i) => (
+                <motion.div key={item.title} {...reveal(i * 0.05)} className={`${dark.cell} ${SELECTABLE} p-4 sm:p-5`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="inline-flex items-center justify-center w-7 h-7 bg-cyan-400 text-neutral-950">
+                      {item.icon}
+                    </span>
+                    <span className="font-mono text-[10px] tracking-wider text-cyan-400">TRUE</span>
+                  </div>
+                  <h3 className="text-sm sm:text-base font-semibold text-white mb-1">{item.title}</h3>
+                  <p className={`text-sm ${dark.body} leading-relaxed`}>{item.description}</p>
+                </motion.div>
+              ))}
+            </div>
+          </Sheet>
+        </section>
+
+        {/* CTA — cyan card + white card, as in the brand stationery */}
+        <motion.section {...reveal()} className="grid md:grid-cols-[1.25fr_1fr] gap-px bg-white/10 border border-white/10">
+          <div className="relative flex flex-col justify-between gap-10 p-6 sm:p-8 bg-gradient-to-b from-cyan-300 via-cyan-600 to-[#0a0a0b] min-h-[280px]">
+            <div>
+              <p className="font-mono text-[11px] tracking-[0.2em] uppercase text-neutral-900/70 mb-2">05 / Start</p>
+              <h2 className="text-3xl sm:text-4xl font-semibold text-neutral-950 tracking-tight">
+                Let&apos;s Build Together
+              </h2>
+              <p className="mt-2 text-sm sm:text-base text-neutral-900/80 max-w-md">
+                Tell us about your project. We&apos;ll help turn your ideas into reality.
+              </p>
+            </div>
+            <a
+              href="/contact"
+              className="self-start inline-flex items-center gap-2 px-5 py-2.5 bg-white text-neutral-950 text-sm font-semibold hover:bg-cyan-50 transition-colors"
+            >
+              Start a Project <ArrowUpRight className="w-4 h-4" />
+            </a>
+          </div>
+
+          <div className="bg-white flex flex-col">
+            <div className="flex items-stretch border-b border-neutral-200 font-mono text-[11px] leading-none">
+              <span className="w-14 sm:w-16 shrink-0 px-2.5 py-2 border-r border-neutral-200 bg-neutral-100 text-neutral-500">A1</span>
+              <span className="px-2.5 py-2 border-r border-neutral-200 italic text-cyan-500">fx</span>
+              <span className="flex-1 px-2.5 py-2 text-neutral-600 truncate">=CONTACT(Tech Wiser)</span>
+            </div>
+            <div className={`grid grid-cols-[36px_84px_minmax(0,1fr)] sm:grid-cols-[40px_96px_minmax(0,1fr)] gap-px ${light.grid} flex-1 content-start`}>
+              {contactRows.map((row, i) => (
+                <React.Fragment key={row.key}>
+                  <RowNum tone="light" n={i + 1} className="flex" />
+                  <div className={`${light.cell} px-3 py-3 flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-neutral-500`}>
+                    <span className="text-cyan-600">{row.icon}</span>{row.key}
+                  </div>
+                  <div className={`${light.cell} ${SELECTABLE} px-3 py-3 text-sm text-neutral-900 break-words`}>{row.value}</div>
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+        </motion.section>
+      </div>
     </div>
   );
 };
