@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { ReactLenis, useLenis } from "lenis/react";
-import Navbar from "@/components/Navbar";
+import { Sidebar } from "@/components/layout/Sidebar";
 import Footer from "@/components/Footer";
 
 function LenisScrollHandler({ children }: { children: React.ReactNode }) {
@@ -37,11 +37,17 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       }}
     >
       <LenisScrollHandler>
-        {!isAdminRoute && <Navbar />}
-        <main className={!isAdminRoute ? "relative min-h-[calc(100vh-160px)] pt-[4.25rem] sm:pt-20" : "relative"}>
-          {children}
-        </main>
-        {!isAdminRoute && <Footer />}
+        {isAdminRoute ? (
+          <main className="relative">{children}</main>
+        ) : (
+          <>
+            <Sidebar />
+            <div className="pt-14 lg:pt-0 lg:pl-[var(--sidebar-w,248px)] transition-[padding] duration-300 ease-out">
+              <main className="relative min-h-screen">{children}</main>
+              <Footer />
+            </div>
+          </>
+        )}
       </LenisScrollHandler>
     </ReactLenis>
   );

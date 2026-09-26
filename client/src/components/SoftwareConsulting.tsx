@@ -78,6 +78,35 @@ const TONE: Record<Tone, {
   },
 };
 
+// Formula bar text that types itself out the first time the sheet scrolls into view
+const TypedFormula = ({ text, className }: { text: string; className: string }) => {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, margin: '-40px' });
+  const [shown, setShown] = useState(0);
+
+  useEffect(() => {
+    if (!inView) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setShown(text.length);
+      return;
+    }
+    let i = 0;
+    const id = window.setInterval(() => {
+      i += 1;
+      setShown(i);
+      if (i >= text.length) window.clearInterval(id);
+    }, 22);
+    return () => window.clearInterval(id);
+  }, [inView, text]);
+
+  return (
+    <span ref={ref} className={className} aria-label={text}>
+      {text.slice(0, shown)}
+      <span aria-hidden className="inline-block w-[6px] h-3 -mb-0.5 ml-0.5 bg-cyan-400 animate-pulse" />
+    </span>
+  );
+};
+
 // Excel-style "selected cell" highlight
 const SELECTABLE =
   'relative transition-[outline-color] outline outline-2 -outline-offset-2 outline-transparent hover:outline-cyan-400 hover:z-10';
@@ -102,7 +131,7 @@ const Sheet = ({
       <div className={`flex items-stretch border-b ${t.border} font-mono text-[11px] leading-none`}>
         <span className={`w-14 sm:w-16 shrink-0 px-2.5 py-2 border-r ${t.border} ${t.head}`}>{cellRef}</span>
         <span className={`px-2.5 py-2 border-r ${t.border} italic text-cyan-500`}>fx</span>
-        <span className={`flex-1 min-w-0 px-2.5 py-2 truncate ${t.body}`}>{formula}</span>
+        <TypedFormula text={formula} className={`flex-1 min-w-0 px-2.5 py-2 truncate ${t.body}`} />
       </div>
       {children}
       {/* Sheet tabs */}
@@ -283,10 +312,19 @@ const SoftwareConsulting: React.FC = () => {
                   <p className="font-mono text-[11px] tracking-[0.2em] uppercase text-cyan-400 mb-3">
                     Tech Wiser Consulting · Peshawar, Pakistan
                   </p>
-                  <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-white tracking-tight leading-[1.02]">
-                    Shah Taimoor
-                    <br />
-                    <span className="text-neutral-500">Bin Khalid</span>
+                  <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-white tracking-tight leading-[1.05]">
+                    {['Shah Taimoor', 'Bin Khalid'].map((line, i) => (
+                      <span key={line} className="block overflow-hidden pb-1">
+                        <motion.span
+                          initial={{ y: '110%' }}
+                          animate={{ y: 0 }}
+                          transition={{ duration: 0.8, delay: 0.15 + i * 0.12, ease: [0.16, 1, 0.3, 1] }}
+                          className={`block ${i === 1 ? 'text-neutral-500' : ''}`}
+                        >
+                          {line}
+                        </motion.span>
+                      </span>
+                    ))}
                   </h1>
                   <p className="mt-4 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-neutral-300">
                     <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
@@ -297,9 +335,9 @@ const SoftwareConsulting: React.FC = () => {
                 <div className="flex flex-wrap gap-2">
                   <a
                     href="/contact"
-                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-cyan-400 text-neutral-950 text-sm font-semibold hover:bg-cyan-300 transition-colors"
+                    className="group inline-flex items-center gap-2 px-4 py-2.5 bg-cyan-400 text-neutral-950 text-sm font-semibold hover:bg-cyan-300 hover:shadow-[0_0_24px_rgba(34,211,238,0.45)] transition-all"
                   >
-                    Start a Project <ArrowUpRight className="w-4 h-4" />
+                    Start a Project <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </a>
                   <a
                     href="/portfolio"
@@ -309,15 +347,32 @@ const SoftwareConsulting: React.FC = () => {
                   </a>
                 </div>
               </motion.div>
-              <div className="relative overflow-hidden bg-[#111214] bg-[radial-gradient(ellipse_at_50%_100%,rgba(34,211,238,0.45),rgba(8,145,178,0.15)_45%,transparent_75%)] min-h-[380px] lg:min-h-[420px]">
-                <Image
-                  src={PROFILE.photo}
-                  alt={PROFILE.name}
-                  fill
-                  priority
-                  sizes="(min-width: 1024px) 340px, 100vw"
-                  className="object-contain object-bottom pt-6"
+              <div className="relative overflow-hidden bg-[#111214] min-h-[380px] lg:min-h-[420px]">
+                <div
+                  aria-hidden
+                  className="absolute inset-0 opacity-40 bg-[linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] bg-[size:28px_28px] [mask-image:linear-gradient(to_top,black,transparent_85%)]"
                 />
+                <motion.div
+                  aria-hidden
+                  className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_100%,rgba(34,211,238,0.5),rgba(8,145,178,0.15)_45%,transparent_75%)]"
+                  animate={{ opacity: [0.7, 1, 0.7] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                />
+                <motion.div
+                  className="absolute inset-0"
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.9, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <Image
+                    src={PROFILE.photo}
+                    alt={PROFILE.name}
+                    fill
+                    priority
+                    sizes="(min-width: 1024px) 340px, 100vw"
+                    className="object-contain object-bottom pt-6"
+                  />
+                </motion.div>
                 <span className="absolute left-0 bottom-0 bg-neutral-950 text-cyan-400 font-mono text-[10px] uppercase tracking-wider px-2.5 py-1.5">
                   B1 · {PROFILE.role}
                 </span>
