@@ -129,7 +129,7 @@ const TermsOfService = () => {
               </p>
               <div className="space-y-2 text-slate-600">
                 <p><strong>Email:</strong> taimour448@gmail.com</p>
-                <p><strong>Address:</strong> Deans Trade Center, UG 390, Peshawar, Pakistan</p>
+                <p><strong>Address:</strong> Deans Trade Center, UG 400, Peshawar, Pakistan</p>
               </div>
             </div>
           </div>

@@ -42,7 +42,7 @@ const settingsSchema = new mongoose.Schema(
       },
       address: {
         type: String,
-        default: 'Deans Trade Center, UG 390, Peshawar, Pakistan',
+        default: 'Deans Trade Center, UG 400, Peshawar, Pakistan',
         trim: true,
       },
       officeHours: {

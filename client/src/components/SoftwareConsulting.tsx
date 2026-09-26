@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, useInView, useMotionValue, useTransform, easeInOut } from 'framer-motion';
-import { useLenis } from 'lenis/react';
+import React, { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
+import { motion, useInView, easeInOut } from 'framer-motion';
 import { useSettings } from '@/context/SettingsContext';
-import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Code2, Cloud, Smartphone, CheckCircle2, Shield, Award, TrendingUp,
   Phone, Mail, MapPin, Globe2, Target, Rocket, Layers, Cpu, Lock, BarChart3, ArrowUpRight
@@ -147,8 +146,21 @@ const SectionHeader = ({ index, eyebrow, title, subtitle }: {
 
 /* ------------------------------------------------------------------ */
 
-const DESKTOP_BANNER = '/WISERBANNER.mp4';
-const MOBILE_BANNER = '/mobilebanner.mp4';
+const PROFILE = {
+  name: 'Shah Taimoor Bin Khalid',
+  role: 'Full Stack Engineer',
+  focus: 'MERN & PERN Stack',
+  photo: '/transperent.png',
+  bio: 'Full Stack Engineer specializing in MERN and PERN Stack development. Skilled in React.js, Node.js, Express.js, MongoDB, and PostgreSQL, with experience building scalable web applications, e-commerce platforms, and business management systems.',
+};
+
+// Edit these rows to keep the profile history current.
+const HISTORY = [
+  { period: 'Present', title: 'Full Stack Engineer — Tech Wiser Consulting', detail: 'Designing, building and deploying scalable web applications for clients.' },
+  { period: '4+ Years', title: 'MERN & PERN Stack Development', detail: 'React.js, Node.js, Express.js, MongoDB and PostgreSQL.' },
+  { period: 'Projects', title: 'E-commerce Platforms', detail: 'Scalable storefronts with product management, checkout and admin dashboards.' },
+  { period: 'Projects', title: 'Business Management Systems', detail: 'Custom systems that streamline day-to-day operations and reporting.' },
+];
 
 type TechItem = { name: string; category: string };
 
@@ -208,30 +220,6 @@ const TechPane = ({ items, startRow, secondary }: { items: TechItem[]; startRow:
 
 const SoftwareConsulting: React.FC = () => {
   const { settings } = useSettings();
-  const isMobile = useIsMobile();
-  const [bannerSrc, setBannerSrc] = useState<string | null>(null);
-
-  useEffect(() => {
-    setBannerSrc(isMobile ? MOBILE_BANNER : DESKTOP_BANNER);
-  }, [isMobile]);
-
-  const handleBannerError = useCallback(() => {
-    setBannerSrc((current) => (current === DESKTOP_BANNER ? current : DESKTOP_BANNER));
-  }, []);
-
-  const heroRef = useRef<HTMLDivElement>(null);
-  const heroScrollProgress = useMotionValue(0);
-
-  useLenis(() => {
-    const el = heroRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const height = rect.height || 1;
-    heroScrollProgress.set(Math.min(1, Math.max(0, -rect.top / height)));
-  });
-
-  const videoScale = useTransform(heroScrollProgress, [0, 1], [1, 1.15]);
-  const overlayOpacity = useTransform(heroScrollProgress, [0, 1], [0.6, 0.8]);
 
   const stats = [
     { value: '3', label: 'Projects Delivered', icon: <CheckCircle2 className="w-4 h-4" /> },
@@ -280,26 +268,83 @@ const SoftwareConsulting: React.FC = () => {
 
   return (
     <div className="relative bg-[#0a0a0b]">
-      {/* Hero */}
-      <section ref={heroRef} className="relative w-full min-h-screen flex items-end justify-center overflow-hidden bg-[#0a0a0b] border-b border-cyan-400/30">
-        {bannerSrc && (
-          <motion.video
-            key={bannerSrc}
-            src={bannerSrc}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            onError={handleBannerError}
-            style={{ scale: videoScale }}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        )}
-        <motion.div style={{ opacity: overlayOpacity }} className="absolute inset-0 bg-[#0a0a0b]/60" />
-      </section>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-8 sm:pb-10 space-y-8 sm:space-y-10">
+        {/* Hero — profile + history */}
+        <section>
+          <Sheet tone="dark" cellRef="A1" formula={`=PROFILE("${PROFILE.name}")`} tab="Profile">
+            <div className={`grid grid-cols-1 lg:grid-cols-[40px_minmax(0,1fr)_340px] gap-px ${dark.grid}`}>
+              <HeadCell tone="dark" className="hidden lg:flex" />
+              <HeadCell tone="dark" className="hidden lg:flex">A</HeadCell>
+              <HeadCell tone="dark" className="hidden lg:flex">B</HeadCell>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8 sm:space-y-10">
+              <RowNum tone="dark" n={1} className="hidden lg:flex" />
+              <motion.div {...reveal()} className={`${dark.cell} p-5 sm:p-8 flex flex-col justify-between gap-6`}>
+                <div>
+                  <p className="font-mono text-[11px] tracking-[0.2em] uppercase text-cyan-400 mb-3">
+                    Tech Wiser Consulting · Peshawar, Pakistan
+                  </p>
+                  <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-white tracking-tight leading-[1.02]">
+                    Shah Taimoor
+                    <br />
+                    <span className="text-neutral-500">Bin Khalid</span>
+                  </h1>
+                  <p className="mt-4 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-neutral-300">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                    {PROFILE.role} — {PROFILE.focus}
+                  </p>
+                  <p className={`mt-4 text-sm sm:text-base ${dark.body} max-w-xl leading-relaxed`}>{PROFILE.bio}</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <a
+                    href="/contact"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-cyan-400 text-neutral-950 text-sm font-semibold hover:bg-cyan-300 transition-colors"
+                  >
+                    Start a Project <ArrowUpRight className="w-4 h-4" />
+                  </a>
+                  <a
+                    href="/portfolio"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 border border-white/15 text-white text-sm font-semibold hover:bg-white/5 transition-colors"
+                  >
+                    View Portfolio
+                  </a>
+                </div>
+              </motion.div>
+              <div className="relative overflow-hidden bg-[#111214] bg-[radial-gradient(ellipse_at_50%_100%,rgba(34,211,238,0.45),rgba(8,145,178,0.15)_45%,transparent_75%)] min-h-[380px] lg:min-h-[420px]">
+                <Image
+                  src={PROFILE.photo}
+                  alt={PROFILE.name}
+                  fill
+                  priority
+                  sizes="(min-width: 1024px) 340px, 100vw"
+                  className="object-contain object-bottom pt-6"
+                />
+                <span className="absolute left-0 bottom-0 bg-neutral-950 text-cyan-400 font-mono text-[10px] uppercase tracking-wider px-2.5 py-1.5">
+                  B1 · {PROFILE.role}
+                </span>
+              </div>
+            </div>
+
+            {/* History */}
+            <div className={`grid grid-cols-[36px_84px_minmax(0,1fr)] sm:grid-cols-[40px_120px_minmax(0,1fr)] gap-px ${dark.grid} border-t border-white/10`}>
+              <RowNum tone="dark" n={2} className="flex" />
+              <div className={`${dark.cell} px-3 py-2 text-xs font-semibold text-white`}>Period</div>
+              <div className={`${dark.cell} px-3 py-2 text-xs font-semibold text-white`}>History</div>
+              {HISTORY.map((row, i) => (
+                <React.Fragment key={row.title}>
+                  <RowNum tone="dark" n={i + 3} className="flex" />
+                  <div className={`${dark.cell} ${SELECTABLE} px-3 py-2.5 font-mono text-[11px] uppercase tracking-wide text-cyan-400`}>
+                    {row.period}
+                  </div>
+                  <div className={`${dark.cell} ${SELECTABLE} px-3 py-2.5 sm:flex sm:items-baseline sm:gap-3`}>
+                    <p className="text-sm font-medium text-white">{row.title}</p>
+                    <p className={`text-xs sm:text-sm ${dark.body}`}>{row.detail}</p>
+                  </div>
+                </React.Fragment>
+              ))}
+            </div>
+          </Sheet>
+        </section>
+
         {/* Overview — stats + recognition */}
         <section>
           <SectionHeader index="00" eyebrow="Overview" title="By the Numbers" />

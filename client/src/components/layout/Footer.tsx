@@ -27,16 +27,16 @@ export function Footer() {
   );
 
   return (
-    <footer className="bg-white text-neutral-900 border-t border-neutral-200">
-      <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 pt-12 sm:pt-16 pb-8 sm:pb-10">
+    <footer className="bg-[#0a0a0b] text-white border-t border-cyan-400/30">
+      <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 pt-10 sm:pt-12 pb-6 sm:pb-8">
         <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex flex-col gap-4 sm:gap-5 shrink-0">
             <Link href="/" className="inline-flex items-center gap-2.5 group">
-              <div className="relative h-7 w-7 sm:h-8 sm:w-8 overflow-hidden rounded-md">
+              <div className="relative h-7 w-7 sm:h-8 sm:w-8 overflow-hidden rounded-md bg-white">
                 <Image src={settings?.logoUrl || "/logo.png"} alt="Tech Wiser Consulting" width={32} height={32}
                   className="object-contain w-full h-full" unoptimized />
               </div>
-              <span className="text-xs sm:text-sm font-semibold tracking-tight text-neutral-900 group-hover:opacity-70 transition-opacity">
+              <span className="text-xs sm:text-sm font-semibold tracking-tight text-white group-hover:opacity-70 transition-opacity">
                 Tech Wiser Consulting
               </span>
             </Link>
@@ -46,7 +46,7 @@ export function Footer() {
             <ul className="space-y-2.5">
               {FOOTER_LINKS.map((link) => (
                 <li key={link.name}>
-                  <Link href={link.href} className="text-sm text-neutral-700 hover:text-neutral-900 transition-colors">
+                  <Link href={link.href} className="text-sm text-neutral-400 hover:text-cyan-400 transition-colors">
                     {link.name}
                   </Link>
                 </li>
@@ -55,7 +55,7 @@ export function Footer() {
             <ul className="space-y-2.5">
               {FOOTER_LINKS_2.map((link) => (
                 <li key={link.name}>
-                  <Link href={link.href} className="text-sm text-neutral-700 hover:text-neutral-900 transition-colors">
+                  <Link href={link.href} className="text-sm text-neutral-400 hover:text-cyan-400 transition-colors">
                     {link.name}
                   </Link>
                 </li>
@@ -64,31 +64,31 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-14 sm:mt-14 lg:mt-16 overflow-hidden">
-          <p className="font-bold leading-[0.85] tracking-tighter text-neutral-900 select-none whitespace-nowrap text-center sm:text-left"
+        <div className="mt-10 lg:mt-12 overflow-hidden border-y border-white/10 py-4">
+          <p className="font-bold leading-[0.85] tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-neutral-700 to-neutral-900 select-none whitespace-nowrap text-center sm:text-left"
             style={{ fontSize: "clamp(1.8rem, 8vw, 8rem)" }}>
             TECH WISER CONSULTING
           </p>
         </div>
 
-        <div className={`mt-10 sm:mt-14 flex flex-col gap-4 sm:flex-row sm:items-center ${socialLinks.length > 0 ? "sm:justify-between" : "sm:justify-end"}`}>
+        <div className={`mt-6 flex flex-col gap-4 sm:flex-row sm:items-center ${socialLinks.length > 0 ? "sm:justify-between" : "sm:justify-end"}`}>
           {socialLinks.length > 0 && (
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
               {socialLinks.map(({ key, label, Icon, href }) => (
                 <a key={key} href={href} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 transition-colors" aria-label={label}>
+                  className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-cyan-400 transition-colors" aria-label={label}>
                   <Icon className="h-4 w-4 shrink-0" aria-hidden />
                   <span>{label}</span>
                 </a>
               ))}
             </div>
           )}
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-neutral-600">
-            <Link href="/about" className="hover:text-neutral-900 transition-colors">About</Link>
-            <Link href="/services" className="hover:text-neutral-900 transition-colors">Services</Link>
-            <Link href="/privacy" className="hover:text-neutral-900 transition-colors">Privacy</Link>
-            <Link href="/terms" className="hover:text-neutral-900 transition-colors">Terms</Link>
-            <span className="text-neutral-400">&copy; {currentYear}</span>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-neutral-400">
+            <Link href="/about" className="hover:text-cyan-400 transition-colors">About</Link>
+            <Link href="/services" className="hover:text-cyan-400 transition-colors">Services</Link>
+            <Link href="/privacy" className="hover:text-cyan-400 transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-cyan-400 transition-colors">Terms</Link>
+            <span className="font-mono text-xs text-neutral-600">&copy; {currentYear}</span>
           </div>
         </div>
       </div>

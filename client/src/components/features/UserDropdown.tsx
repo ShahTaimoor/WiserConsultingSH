@@ -29,14 +29,14 @@ export function UserDropdown({ user }: UserDropdownProps) {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 pl-1.5 pr-3 py-1.5 hover:bg-slate-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400/30"
+        className="flex items-center gap-2 pl-1.5 pr-3 py-1.5 hover:bg-white/10 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-400/40"
         aria-label="User menu"
         aria-expanded={open}
       >
-        <div className="w-7 h-7 bg-slate-900 rounded-full flex items-center justify-center">
-          <span className="text-white text-[10px] font-semibold">{user.name?.charAt(0).toUpperCase()}</span>
+        <div className="w-7 h-7 bg-cyan-400 rounded-full flex items-center justify-center">
+          <span className="text-neutral-950 text-[10px] font-semibold">{user.name?.charAt(0).toUpperCase()}</span>
         </div>
-        <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+        <ChevronDown className={`w-3.5 h-3.5 text-neutral-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
         <>
