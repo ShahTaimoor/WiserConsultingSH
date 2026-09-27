@@ -22,8 +22,12 @@ type Props = {
 export function ImageCropper({ src, output = 800, round = true, onCancel, onDone }: Props) {
   const [img, setImg] = useState<HTMLImageElement | null>(null);
   const [error, setError] = useState(false);
-  const [zoom, setZoom] = useState(1);
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  // zoom + offset live in one state object, mirrored in a ref so rapid wheel/pinch
+  // events always build on the latest value instead of a stale render
+  const [view, setView] = useState({ zoom: 1, x: 0, y: 0 });
+  const viewState = useRef(view);
+  const { zoom } = view;
+  const offset = { x: view.x, y: view.y };
   const [saving, setSaving] = useState(false);
   const viewRef = useRef<HTMLDivElement>(null);
   const drag = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
@@ -45,46 +49,68 @@ export function ImageCropper({ src, output = 800, round = true, onCancel, onDone
 
   // Keep the image covering the whole viewport (no empty edges)
   const clamp = useCallback(
-    (x: number, y: number, z = zoom) => {
+    (x: number, y: number, z: number) => {
       if (!img) return { x, y };
       const s = baseScale * z;
       const maxX = Math.max(0, (img.naturalWidth * s - VIEW) / 2);
       const maxY = Math.max(0, (img.naturalHeight * s - VIEW) / 2);
       return { x: Math.min(maxX, Math.max(-maxX, x)), y: Math.min(maxY, Math.max(-maxY, y)) };
     },
-    [img, baseScale, zoom]
+    [img, baseScale]
   );
 
-  const applyZoom = useCallback(
-    (next: number) => {
-      const z = Math.min(MAX_ZOOM, Math.max(1, next));
-      setZoom(z);
-      setOffset((o) => clamp(o.x, o.y, z));
+  const commit = useCallback((next: { zoom: number; x: number; y: number }) => {
+    viewState.current = next;
+    setView(next);
+  }, []);
+
+  /**
+   * Zoom to `nextZoom`, keeping the image point under (px, py) fixed.
+   * px/py are relative to the viewport centre; omit them to zoom around the centre.
+   */
+  const zoomTo = useCallback(
+    (nextZoom: number, px = 0, py = 0) => {
+      const cur = viewState.current;
+      const z = Math.min(MAX_ZOOM, Math.max(1, nextZoom));
+      const ratio = z / cur.zoom;
+      const pos = clamp(px - (px - cur.x) * ratio, py - (py - cur.y) * ratio, z);
+      commit({ zoom: z, ...pos });
     },
-    [clamp]
+    [clamp, commit]
   );
 
-  // Mouse wheel zoom (native listener so we can preventDefault page scroll)
+  // Pointer position relative to the viewport centre
+  const fromCenter = (clientX: number, clientY: number) => {
+    const r = viewRef.current!.getBoundingClientRect();
+    return { px: clientX - r.left - r.width / 2, py: clientY - r.top - r.height / 2 };
+  };
+
+  // Wheel / trackpad zoom, proportional to scroll distance so both a mouse wheel
+  // (big steps) and a trackpad (many tiny steps) feel smooth
   useEffect(() => {
     const el = viewRef.current;
     if (!el) return;
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
-      applyZoom(zoom * (e.deltaY < 0 ? 1.08 : 1 / 1.08));
+      const delta = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY; // lines → px
+      const factor = Math.exp(-delta * (e.ctrlKey ? 0.01 : 0.002)); // ctrlKey = trackpad pinch
+      const { px, py } = fromCenter(e.clientX, e.clientY);
+      zoomTo(viewState.current.zoom * factor, px, py);
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
-  }, [applyZoom, zoom]);
+  }, [zoomTo, img]);
 
   const onPointerDown = (e: React.PointerEvent) => {
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    e.currentTarget.setPointerCapture(e.pointerId);
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const cur = viewState.current;
     if (pointers.current.size === 2) {
       const [a, b] = [...pointers.current.values()];
-      pinch.current = { dist: Math.hypot(a.x - b.x, a.y - b.y), zoom };
+      pinch.current = { dist: Math.hypot(a.x - b.x, a.y - b.y), zoom: cur.zoom };
       drag.current = null;
     } else {
-      drag.current = { x: e.clientX, y: e.clientY, ox: offset.x, oy: offset.y };
+      drag.current = { x: e.clientX, y: e.clientY, ox: cur.x, oy: cur.y };
     }
   };
 
@@ -93,10 +119,12 @@ export function ImageCropper({ src, output = 800, round = true, onCancel, onDone
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pinch.current && pointers.current.size === 2) {
       const [a, b] = [...pointers.current.values()];
-      applyZoom(pinch.current.zoom * (Math.hypot(a.x - b.x, a.y - b.y) / pinch.current.dist));
+      const { px, py } = fromCenter((a.x + b.x) / 2, (a.y + b.y) / 2);
+      zoomTo(pinch.current.zoom * (Math.hypot(a.x - b.x, a.y - b.y) / pinch.current.dist), px, py);
     } else if (drag.current) {
       const d = drag.current;
-      setOffset(clamp(d.ox + e.clientX - d.x, d.oy + e.clientY - d.y));
+      const z = viewState.current.zoom;
+      commit({ zoom: z, ...clamp(d.ox + e.clientX - d.x, d.oy + e.clientY - d.y, z) });
     }
   };
 
@@ -181,7 +209,7 @@ export function ImageCropper({ src, output = 800, round = true, onCancel, onDone
             </div>
 
             <div className="flex w-full max-w-[300px] items-center gap-3">
-              <button type="button" onClick={() => applyZoom(zoom / 1.2)} className="text-slate-500 hover:text-slate-900" aria-label="Zoom out">
+              <button type="button" onClick={() => zoomTo(zoom / 1.2)} className="text-slate-500 hover:text-slate-900" aria-label="Zoom out">
                 <ZoomOut className="h-4 w-4" />
               </button>
               <input
@@ -190,18 +218,17 @@ export function ImageCropper({ src, output = 800, round = true, onCancel, onDone
                 max={MAX_ZOOM}
                 step={0.01}
                 value={zoom}
-                onChange={(e) => applyZoom(parseFloat(e.target.value))}
+                onChange={(e) => zoomTo(parseFloat(e.target.value))}
                 className="flex-1 accent-cyan-600"
                 aria-label="Zoom"
               />
-              <button type="button" onClick={() => applyZoom(zoom * 1.2)} className="text-slate-500 hover:text-slate-900" aria-label="Zoom in">
+              <button type="button" onClick={() => zoomTo(zoom * 1.2)} className="text-slate-500 hover:text-slate-900" aria-label="Zoom in">
                 <ZoomIn className="h-4 w-4" />
               </button>
               <button
                 type="button"
                 onClick={() => {
-                  setZoom(1);
-                  setOffset({ x: 0, y: 0 });
+                  commit({ zoom: 1, x: 0, y: 0 });
                 }}
                 className="ml-1 text-slate-500 hover:text-slate-900"
                 aria-label="Reset"
