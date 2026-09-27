@@ -16,6 +16,9 @@ const logger = require('./utils/logger');
 
 const app = express();
 
+// Running behind Nginx: trust the first proxy so req.ip (and rate limiting) uses the real client IP
+app.set('trust proxy', 1);
+
 // Middleware
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:3000',

@@ -15,6 +15,14 @@ export async function adminFetch<T = unknown>(path: string, init: RequestInit = 
   });
 
   const data = await res.json().catch(() => null);
+
+  // Session is gone (expired or signed with an old secret): drop the stale local login and go to the login page
+  if (res.status === 401 && typeof window !== "undefined") {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+  }
+
   if (!res.ok || (data && data.success === false)) {
     throw new Error(data?.message || `Request failed (${res.status})`);
   }

@@ -29,8 +29,14 @@ const isAuthorized = async (req, res, next) => {
         req.user = user;
         next();
     } catch (error) {
-        logger.error('Error in isAuthorized middleware:', error.message);
-        return res.status(401).json({ success: false, message: 'Invalid or expired token.' });
+        // Expected for old/expired tokens (e.g. after JWT_SECRET changed) — clear the cookie so the browser stops sending it
+        logger.warn(`Rejected auth token: ${error.message}`);
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax'
+        });
+        return res.status(401).json({ success: false, message: 'Your session has expired. Please log in again.' });
     }
 };
 
