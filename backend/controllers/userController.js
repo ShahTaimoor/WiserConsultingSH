@@ -5,21 +5,10 @@
  */
 
 const userService = require('../services/userService');
-const { getPaginationParams, getPaginationMeta } = require('../utils/pagination');
 const asyncHandler = require('../utils/asyncHandler');
 const ApiResponse = require('../utils/apiResponse');
 
 class UserController {
-  /**
-   * Sign up new user
-   */
-  signup = asyncHandler(async (req, res) => {
-    const { name, email, password } = req.body;
-    const result = await userService.signup(name, email, password);
-
-    return ApiResponse.success(res, result, 'User created successfully', 201);
-  })
-
   /**
    * Login user
    */
@@ -53,17 +42,6 @@ class UserController {
   }
 
   /**
-   * Get all users (with pagination)
-   */
-  getAllUsers = asyncHandler(async (req, res) => {
-    const { skip, limit, page } = getPaginationParams(req);
-    const { users, total } = await userService.getAllUsers(skip, limit);
-    const meta = getPaginationMeta(page, limit, total);
-
-    return ApiResponse.paginated(res, { users }, meta, 'Users retrieved successfully');
-  })
-
-  /**
    * Update user profile
    */
   updateProfile = asyncHandler(async (req, res) => {
@@ -76,27 +54,6 @@ class UserController {
     const result = await userService.updateProfile(userId, updateData);
 
     return ApiResponse.success(res, result, 'Profile updated successfully');
-  })
-
-  /**
-   * Update user role (Admin only)
-   */
-  updateUserRole = asyncHandler(async (req, res) => {
-    const { userId } = req.params;
-    const { role } = req.body;
-    const result = await userService.updateUserRole(userId, role);
-
-    return ApiResponse.success(res, result, 'User role updated successfully');
-  })
-
-  /**
-   * Create admin user
-   */
-  createAdmin = asyncHandler(async (req, res) => {
-    const { name, email, password } = req.body;
-    const result = await userService.createAdmin(name, email, password);
-
-    return ApiResponse.success(res, result, 'Admin user created successfully', 201);
   })
 
   /**

@@ -1,7 +1,23 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Plus, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Briefcase, ExternalLink, ImageIcon, Pencil, Plus, Search, Trash2, Upload, X } from "lucide-react";
+import { adminFetch, isImageUrl } from "@/lib/adminApi";
+import { cn } from "@/lib/utils";
+import {
+  Badge,
+  Button,
+  EmptyState,
+  Field,
+  FormDrawer,
+  FormSection,
+  PageHeader,
+  PageLoader,
+  Switch,
+  TagInput,
+  inputClass,
+  useFeedback,
+} from "@/components/admin/ui";
 
 interface Portfolio {
   _id: string;
@@ -15,622 +31,370 @@ interface Portfolio {
   isActive: boolean;
 }
 
-const AdminPortfolio = () => {
-  const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingPortfolio, setEditingPortfolio] = useState<Portfolio | null>(null);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    category: 'web',
-    images: [] as string[],
-    technologies: [] as string[],
-    link: '',
-    order: 0,
-    isActive: true,
-  });
-  const [techInput, setTechInput] = useState('');
-  const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [emojiInput, setEmojiInput] = useState('🛒');
+const CATEGORIES = [
+  { value: "web", label: "Web" },
+  { value: "mobile", label: "Mobile" },
+  { value: "enterprise", label: "Enterprise" },
+  { value: "other", label: "Other" },
+];
+
+type ImageItem = { url: string; file?: File };
+
+const emptyForm = {
+  title: "",
+  description: "",
+  category: "web",
+  technologies: [] as string[],
+  link: "",
+  order: 0,
+  isActive: true,
+};
+
+export default function AdminPortfolio() {
+  const { toast, confirm } = useFeedback();
+  const [projects, setProjects] = useState<Portfolio[] | null>(null);
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("all");
+
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [editing, setEditing] = useState<Portfolio | null>(null);
+  const [form, setForm] = useState(emptyForm);
+  const [images, setImages] = useState<ImageItem[]>([]);
+  const [saving, setSaving] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const load = async () => {
+    try {
+      setProjects(await adminFetch<Portfolio[]>("/portfolios"));
+    } catch (err) {
+      setProjects([]);
+      toast("error", err instanceof Error ? err.message : "Could not load projects");
+    }
+  };
 
   useEffect(() => {
-    fetchPortfolios();
+    load();
+    if (new URLSearchParams(window.location.search).get("new")) openCreate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fetchPortfolios = async () => {
-    try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/portfolios`, {
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
-        },
-        credentials: 'include',
-      });
-      
-      if (!res.ok) {
-        throw new Error('Failed to fetch portfolios');
-      }
-      
-      const data = await res.json();
-      if (data.success) {
-        setPortfolios(data.data);
-      }
-    } catch (error) {
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return (projects ?? []).filter(
+      (p) =>
+        (category === "all" || p.category === category) &&
+        (!q || p.title.toLowerCase().includes(q) || p.technologies.some((t) => t.toLowerCase().includes(q)))
+    );
+  }, [projects, query, category]);
 
-    } finally {
-      setLoading(false);
-    }
+  const openCreate = () => {
+    setEditing(null);
+    setForm(emptyForm);
+    setImages([]);
+    setDrawerOpen(true);
+  };
+
+  const openEdit = (p: Portfolio) => {
+    setEditing(p);
+    setForm({
+      title: p.title,
+      description: p.description,
+      category: p.category,
+      technologies: p.technologies ?? [],
+      link: p.link ?? "",
+      order: p.order ?? 0,
+      isActive: p.isActive,
+    });
+    setImages(p.images.filter(isImageUrl).map((url) => ({ url })));
+    setDrawerOpen(true);
+  };
+
+  const addFiles = (files: FileList | null) => {
+    if (!files) return;
+    const next: ImageItem[] = [];
+    Array.from(files).forEach((file) => {
+      if (!file.type.startsWith("image/")) return toast("error", `${file.name} is not an image`);
+      if (file.size > 5 * 1024 * 1024) return toast("error", `${file.name} is larger than 5 MB`);
+      next.push({ url: URL.createObjectURL(file), file });
+    });
+    setImages((prev) => [...prev, ...next].slice(0, 10));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSaving(true);
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-      const token = localStorage.getItem('token');
-      const url = editingPortfolio
-        ? `${API_URL}/admin/portfolios/${editingPortfolio._id}`
-        : `${API_URL}/admin/portfolios`;
-      const method = editingPortfolio ? 'PUT' : 'POST';
+      const body = new FormData();
+      body.append("title", form.title);
+      body.append("description", form.description);
+      body.append("category", form.category);
+      body.append("link", form.link);
+      body.append("order", String(form.order || 0));
+      body.append("isActive", String(form.isActive));
+      form.technologies.forEach((t, i) => body.append(`technologies[${i}]`, t));
+      images.forEach((img) => (img.file ? body.append("images", img.file) : body.append("existingImages[]", img.url)));
 
-      // Create FormData for file upload
-      const formDataToSend = new FormData();
-      formDataToSend.append('title', formData.title);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('category', formData.category);
-      formDataToSend.append('link', formData.link || '');
-      formDataToSend.append('order', formData.order.toString());
-      formDataToSend.append('isActive', formData.isActive.toString());
-      
-      // Append technologies array
-      formData.technologies.forEach((tech, index) => {
-        formDataToSend.append(`technologies[${index}]`, tech);
+      await adminFetch(editing ? `/admin/portfolios/${editing._id}` : "/admin/portfolios", {
+        method: editing ? "PUT" : "POST",
+        body,
       });
-      
-      // Append new image files
-      imageFiles.forEach(file => {
-        formDataToSend.append('images', file);
-      });
-      
-      // Append existing image URLs (non-blob previews that came from server)
-      imagePreviews.forEach((preview) => {
-        if (!preview.startsWith('blob:')) {
-          formDataToSend.append('existingImages[]', preview);
-        }
-      });
-      // If no images at all (neither existing nor new), send the emoji
-      if (imageFiles.length === 0 && imagePreviews.every(p => p.startsWith('blob:'))) {
-        formDataToSend.append('existingImages[]', emojiInput || '🛒');
-      }
-
-      const res = await fetch(url, {
-        method,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          // Don't set Content-Type header, let browser set it with boundary for FormData
-        },
-        credentials: 'include',
-        body: formDataToSend,
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to save project');
-      }
-
-      const data = await res.json();
-      if (data.success) {
-        fetchPortfolios();
-        setShowModal(false);
-        resetForm();
-      } else {
-        throw new Error(data.message || 'Failed to save project');
-      }
-    } catch (error) {
-
-      alert(error instanceof Error ? error.message : 'Failed to save project. Please try again.');
+      toast("success", editing ? "Project updated" : "Project added");
+      setDrawerOpen(false);
+      load();
+    } catch (err) {
+      toast("error", err instanceof Error ? err.message : "Could not save project");
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this project?')) return;
-
+  const handleDelete = async (p: Portfolio) => {
+    const ok = await confirm({
+      title: "Delete project?",
+      description: `"${p.title}" will be removed from the website.`,
+    });
+    if (!ok) return;
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/admin/portfolios/${id}`, {
-        method: 'DELETE',
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
-        },
-        credentials: 'include',
-      });
-
-      if (!res.ok) {
-        throw new Error('Failed to delete project');
-      }
-
-      const data = await res.json();
-      if (data.success) {
-        fetchPortfolios();
-      } else {
-        throw new Error(data.message || 'Failed to delete project');
-      }
-    } catch (error) {
-
-      alert(error instanceof Error ? error.message : 'Failed to delete project. Please try again.');
+      await adminFetch(`/admin/portfolios/${p._id}`, { method: "DELETE" });
+      setProjects((list) => list?.filter((x) => x._id !== p._id) ?? null);
+      toast("success", "Project deleted");
+    } catch (err) {
+      toast("error", err instanceof Error ? err.message : "Could not delete project");
     }
   };
 
-  const handleEdit = (portfolio: Portfolio) => {
-    setEditingPortfolio(portfolio);
-    setFormData({
-      title: portfolio.title,
-      description: portfolio.description,
-      category: portfolio.category,
-      images: portfolio.images,
-      technologies: portfolio.technologies,
-      link: portfolio.link,
-      order: portfolio.order,
-      isActive: portfolio.isActive,
-    });
-    // Set image previews for URL-based images
-    const urls = portfolio.images.filter(img => img.startsWith('http') || img.startsWith('/'));
-    setImagePreviews(urls);
-    setImageFiles([]);
-    setShowModal(true);
-  };
-
-  const resetForm = () => {
-    setFormData({
-      title: '',
-      description: '',
-      category: 'web',
-      images: [],
-      technologies: [],
-      link: '',
-      order: 0,
-      isActive: true,
-    });
-    setEditingPortfolio(null);
-    setTechInput('');
-    setImageFiles([]);
-    setImagePreviews([]);
-    setEmojiInput('🛒');
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-    
-    const validFiles: File[] = [];
-    const newPreviews: string[] = [];
-    
-    Array.from(files).forEach(file => {
-      if (!file.type.startsWith('image/')) {
-        alert(`"${file.name}" is not an image file`);
-        return;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        alert(`"${file.name}" is larger than 5MB`);
-        return;
-      }
-      validFiles.push(file);
-      newPreviews.push(URL.createObjectURL(file));
-    });
-    
-    setImageFiles(prev => [...prev, ...validFiles]);
-    setImagePreviews(prev => [...prev, ...newPreviews]);
-  };
-
-  const removeImage = (index: number) => {
-    setImagePreviews(prev => prev.filter((_, i) => i !== index));
-    // If removing from the previews, determine if it was an existing image or a new file
-    const preview = imagePreviews[index];
-    if (preview && preview.startsWith('blob:')) {
-      // It's a locally added file - find and remove it from imageFiles
-      const fileIndex = imageFiles.findIndex((_) => {
-        let localIdx = -1;
-        // Count blob previews before this index
-        for (let i = 0; i <= index; i++) {
-          if (imagePreviews[i]?.startsWith('blob:')) localIdx++;
-        }
-        return localIdx === index;
-      });
-      if (fileIndex >= 0) {
-        setImageFiles(prev => prev.filter((_, i) => i !== fileIndex));
-      }
-    } else {
-      // It's an existing URL - remove it from formData.images
-      setFormData(prev => ({
-        ...prev,
-        images: prev.images.filter(img => img !== preview)
-      }));
-    }
-  };
-
-  const addTechnology = () => {
-    if (techInput.trim()) {
-      setFormData({
-        ...formData,
-        technologies: [...formData.technologies, techInput.trim()],
-      });
-      setTechInput('');
-    }
-  };
-
-  const removeTechnology = (index: number) => {
-    setFormData({
-      ...formData,
-      technologies: formData.technologies.filter((_, i) => i !== index),
-    });
-  };
-
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
-      </div>
-    );
-  }
+  if (!projects) return <PageLoader />;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Projects Management</h1>
-        <button
-          onClick={() => {
-            resetForm();
-            setShowModal(true);
-          }}
-          className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm sm:text-base w-full sm:w-auto justify-center"
-        >
-          <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-          <span className="hidden sm:inline">Add Project</span>
-          <span className="sm:hidden">Add</span>
-        </button>
-      </div>
+      <PageHeader
+        title="Projects"
+        description="Case studies shown on the portfolio page."
+        actions={
+          <Button onClick={openCreate}>
+            <Plus /> Add project
+          </Button>
+        }
+      />
 
-      {/* Mobile Card View */}
-      <div className="block md:hidden space-y-4">
-        {portfolios.map((portfolio) => (
-          <div key={portfolio._id} className="bg-white rounded-lg shadow p-4 border border-gray-200">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
-                {portfolio.images?.[0] && (portfolio.images[0].startsWith('http') || portfolio.images[0].startsWith('/')) ? (
-                  <img
-                    src={portfolio.images[0]}
-                    alt={portfolio.title}
-                    className="w-16 h-16 object-cover rounded-lg border-2 border-gray-200"
-                  />
-                ) : (
-                  <div className="text-3xl w-16 h-16 flex items-center justify-center bg-gray-50 rounded-lg">{portfolio.images?.[0] || '🛒'}</div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-base font-semibold text-gray-900 truncate">{portfolio.title}</h3>
-                <p className="text-sm text-gray-500 line-clamp-2 mt-1">{portfolio.description}</p>
-                <div className="flex items-center gap-2 mt-2 flex-wrap">
-                  <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-                    {portfolio.category}
-                  </span>
-                  {portfolio.isActive ? (
-                    <span className="flex items-center gap-1 text-green-600 text-xs">
-                      <Eye className="w-3 h-3" />
-                      Active
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1 text-gray-400 text-xs">
-                      <EyeOff className="w-3 h-3" />
-                      Inactive
-                    </span>
-                  )}
-                </div>
-                {portfolio.technologies.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {portfolio.technologies.slice(0, 3).map((tech, idx) => (
-                      <span key={idx} className="px-2 py-0.5 text-xs bg-gray-100 rounded text-gray-700">
-                        {tech}
-                      </span>
-                    ))}
-                    {portfolio.technologies.length > 3 && (
-                      <span className="px-2 py-0.5 text-xs bg-gray-100 rounded text-gray-700">
-                        +{portfolio.technologies.length - 3}
-                      </span>
-                    )}
-                  </div>
-                )}
-                <div className="flex items-center gap-3 mt-3">
-                  <button
-                    onClick={() => handleEdit(portfolio)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-colors"
-                    aria-label="Edit"
-                  >
-                    <Edit className="w-4 h-4" />
-                    <span>Edit</span>
-                  </button>
-                  <button
-                    onClick={() => handleDelete(portfolio._id)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-red-600 hover:text-red-900 hover:bg-red-50 rounded-lg transition-colors"
-                    aria-label="Delete"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    <span>Delete</span>
-                  </button>
-                </div>
-              </div>
+      {projects.length === 0 ? (
+        <EmptyState
+          icon={Briefcase}
+          title="No projects yet"
+          description="Add your first project to show it on the website."
+          action={
+            <Button onClick={openCreate}>
+              <Plus /> Add project
+            </Button>
+          }
+        />
+      ) : (
+        <>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search by title or technology"
+                className={cn(inputClass, "pl-9")}
+              />
             </div>
+            <select value={category} onChange={(e) => setCategory(e.target.value)} className={cn(inputClass, "sm:w-44")}>
+              <option value="all">All categories</option>
+              {CATEGORIES.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
           </div>
-        ))}
-      </div>
 
-      {/* Desktop Table View */}
-      <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
-        <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Image</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Technologies</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {portfolios.map((portfolio) => (
-              <tr key={portfolio._id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                  {portfolio.images?.[0] && (portfolio.images[0].startsWith('http') || portfolio.images[0].startsWith('/')) ? (
-                    <img
-                      src={portfolio.images[0]}
-                      alt={portfolio.title}
-                        className="w-16 h-16 object-cover rounded-lg border-2 border-gray-200"
-                    />
-                  ) : (
-                      <div className="text-2xl">{portfolio.images?.[0] || '🛒'}</div>
-                  )}
-                </td>
-                  <td className="px-6 py-4">
-                  <div className="text-sm font-medium text-gray-900">{portfolio.title}</div>
-                    <div className="text-sm text-gray-500 line-clamp-1">{portfolio.description}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-                      {portfolio.category}
-                    </span>
-                </td>
-                  <td className="px-6 py-4">
-                  <div className="flex flex-wrap gap-1">
-                    {portfolio.technologies.slice(0, 3).map((tech, idx) => (
-                      <span key={idx} className="px-2 py-1 text-xs bg-gray-100 rounded">
-                        {tech}
-                      </span>
-                    ))}
-                    {portfolio.technologies.length > 3 && (
-                      <span className="px-2 py-1 text-xs bg-gray-100 rounded">
-                        +{portfolio.technologies.length - 3}
-                      </span>
+          {visible.length === 0 ? (
+            <p className="py-12 text-center text-sm text-slate-500">No projects match your search.</p>
+          ) : (
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              {visible.map((p) => (
+                <article key={p._id} className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs">
+                  <div className="relative aspect-[16/10] bg-slate-100">
+                    {isImageUrl(p.images?.[0]) ? (
+                       
+                      <img src={p.images[0]} alt={p.title} className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full items-center justify-center">
+                        <ImageIcon className="h-8 w-8 text-slate-300" />
+                      </div>
                     )}
-                  </div>
-                </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                  {portfolio.isActive ? (
-                    <span className="flex items-center gap-1 text-green-600">
-                      <Eye className="w-4 h-4" />
-                        <span>Active</span>
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1 text-gray-400">
-                      <EyeOff className="w-4 h-4" />
-                        <span>Inactive</span>
-                    </span>
-                  )}
-                </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleEdit(portfolio)}
-                      className="text-blue-600 hover:text-blue-900 p-1"
-                      aria-label="Edit"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(portfolio._id)}
-                      className="text-red-600 hover:text-red-900 p-1"
-                      aria-label="Delete"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        </div>
-      </div>
-
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-          <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto mx-2">
-            <h2 className="text-xl sm:text-2xl font-bold mb-4">
-              {editingPortfolio ? 'Edit Portfolio' : 'Add Portfolio'}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-base"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-base"
-                  rows={3}
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  >
-                    <option value="web">Web</option>
-                    <option value="mobile">Mobile</option>
-                    <option value="enterprise">Enterprise</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Project Images</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  />
-                  {imagePreviews.length > 0 && (
-                    <div className="mt-2 grid grid-cols-3 gap-2">
-                      {imagePreviews.map((preview, idx) => (
-                        <div key={idx} className="relative group">
-                          {preview.startsWith('blob:') || preview.startsWith('http') || preview.startsWith('/') ? (
-                            <img src={preview} alt={`Image ${idx + 1}`} className="w-full h-24 object-cover rounded-lg border border-gray-300" />
-                          ) : (
-                            <div className="w-full h-24 flex items-center justify-center text-4xl bg-gray-50 rounded-lg border border-gray-300">{preview}</div>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => removeImage(idx)}
-                            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
+                    <div className="absolute left-3 top-3">
+                      <Badge tone={p.isActive ? "green" : "neutral"}>{p.isActive ? "Published" : "Hidden"}</Badge>
                     </div>
-                  )}
-                  <div className="mt-2">
-                    <label className="block text-xs text-gray-500 mb-1">Or fallback emoji (used when no images):</label>
-                    <input
-                      type="text"
-                      value={emojiInput}
-                      onChange={(e) => setEmojiInput(e.target.value)}
-                      className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center text-2xl"
-                      placeholder="🛒"
-                    />
                   </div>
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Link</label>
-                <input
-                  type="url"
-                  value={formData.link}
-                  onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Technologies</label>
-                <div className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={techInput}
-                    onChange={(e) => setTechInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTechnology())}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
-                    placeholder="Add technology"
-                  />
-                  <button
-                    type="button"
-                    onClick={addTechnology}
-                    className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
-                  >
-                    Add
-                  </button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {formData.technologies.map((tech, idx) => (
-                    <span
-                      key={idx}
-                      className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm flex items-center gap-2"
-                    >
-                      {tech}
-                      <button
-                        type="button"
-                        onClick={() => removeTechnology(idx)}
-                        className="text-blue-600 hover:text-blue-800"
+                  <div className="flex flex-1 flex-col p-4">
+                    <div className="flex-1 pb-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="font-medium text-slate-900">{p.title}</h3>
+                      <span className="shrink-0 text-xs font-medium capitalize text-slate-500">{p.category}</span>
+                    </div>
+                    <p className="mt-1 line-clamp-2 text-sm text-slate-500">{p.description}</p>
+                    {p.technologies.length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-1">
+                        {p.technologies.slice(0, 4).map((t) => (
+                          <span key={t} className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
+                            {t}
+                          </span>
+                        ))}
+                        {p.technologies.length > 4 && (
+                          <span className="px-1 py-0.5 text-xs text-slate-400">+{p.technologies.length - 4}</span>
+                        )}
+                      </div>
+                    )}
+                    </div>
+                    <div className="flex items-center gap-1 border-t border-slate-100 pt-3">
+                      <Button variant="secondary" size="sm" onClick={() => openEdit(p)}>
+                        <Pencil /> Edit
+                      </Button>
+                      {p.link && (
+                        <a
+                          href={p.link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                          aria-label="Open project link"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="ml-auto hover:text-red-600"
+                        onClick={() => handleDelete(p)}
+                        aria-label="Delete project"
                       >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Order</label>
-                  <input
-                    type="number"
-                    value={formData.order}
-                    onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  />
-                </div>
-                <div className="flex items-center gap-2 mt-6">
-                  <input
-                    type="checkbox"
-                    checked={formData.isActive}
-                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                    className="w-4 h-4"
-                  />
-                  <label className="text-sm font-medium text-gray-700">Active</label>
-                </div>
-              </div>
-              <div className="flex justify-end gap-2 pt-4">
+                        <Trash2 />
+                      </Button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      <FormDrawer
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        title={editing ? "Edit project" : "Add project"}
+        description="Details shown on the public portfolio page."
+        onSubmit={handleSubmit}
+        submitLabel={editing ? "Save changes" : "Add project"}
+        saving={saving}
+      >
+        <FormSection title="Project details">
+          <Field label="Title" required>
+            <input className={inputClass} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+          </Field>
+          <Field label="Description" required>
+            <textarea
+              className={cn(inputClass, "min-h-24 resize-y")}
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              required
+            />
+          </Field>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Category">
+              <select className={inputClass} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
+                {CATEGORIES.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Live link">
+              <input
+                type="url"
+                className={inputClass}
+                placeholder="https://"
+                value={form.link}
+                onChange={(e) => setForm({ ...form, link: e.target.value })}
+              />
+            </Field>
+          </div>
+          <Field label="Technologies" hint="Press Enter after each one.">
+            <TagInput
+              values={form.technologies}
+              onChange={(technologies) => setForm({ ...form, technologies })}
+              placeholder="e.g. React, Node.js"
+            />
+          </Field>
+        </FormSection>
+
+        <FormSection title="Images" description="The first image is used as the cover. Up to 10 images, 5 MB each.">
+          <div className="grid grid-cols-3 gap-3">
+            {images.map((img, i) => (
+              <div key={img.url} className="group relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+                { }
+                <img src={img.url} alt="" className="h-full w-full object-cover" />
+                {i === 0 && (
+                  <span className="absolute bottom-1.5 left-1.5 rounded bg-slate-900/80 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                    Cover
+                  </span>
+                )}
                 <button
                   type="button"
-                  onClick={() => {
-                    setShowModal(false);
-                    resetForm();
-                  }}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  onClick={() => setImages((prev) => prev.filter((_, j) => j !== i))}
+                  className="absolute right-1.5 top-1.5 rounded-full bg-white/90 p-1 text-slate-600 opacity-0 shadow transition-opacity hover:text-red-600 group-hover:opacity-100 focus:opacity-100"
+                  aria-label="Remove image"
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                >
-                  {editingPortfolio ? 'Update' : 'Create'}
+                  <X className="h-3.5 w-3.5" />
                 </button>
               </div>
-            </form>
+            ))}
+            {images.length < 10 && (
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                className="flex aspect-square flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed border-slate-300 text-slate-500 transition-colors hover:border-cyan-500 hover:text-cyan-700"
+              >
+                <Upload className="h-5 w-5" />
+                <span className="text-xs font-medium">Upload</span>
+              </button>
+            )}
           </div>
-        </div>
-      )}
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={(e) => {
+              addFiles(e.target.files);
+              e.target.value = "";
+            }}
+          />
+        </FormSection>
+
+        <FormSection title="Visibility">
+          <Switch
+            checked={form.isActive}
+            onChange={(isActive) => setForm({ ...form, isActive })}
+            label="Published"
+            description="Show this project on the website."
+          />
+          <Field label="Display order" hint="Lower numbers appear first.">
+            <input
+              type="number"
+              min={0}
+              className={cn(inputClass, "w-32")}
+              value={form.order}
+              onChange={(e) => setForm({ ...form, order: parseInt(e.target.value) || 0 })}
+            />
+          </Field>
+        </FormSection>
+      </FormDrawer>
     </div>
   );
-};
-
-export default AdminPortfolio;
+}

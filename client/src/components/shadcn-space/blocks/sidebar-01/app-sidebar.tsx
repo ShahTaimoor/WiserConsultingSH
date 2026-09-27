@@ -1,55 +1,125 @@
 "use client";
 
-import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import Logo from "@/assets/logo/logo";
-import { NavItem, NavMain } from "@/components/shadcn-space/blocks/sidebar-01/nav-main";
-import { PieChart, Briefcase, Users, FileText, Mail, User, Settings } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Briefcase, ExternalLink, LayoutDashboard, LogOut, Mail, Settings, Users } from "lucide-react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from "@/components/ui/sidebar";
 
-export const navData: NavItem[] = [
-  // Main Sectiion
-  { label: "Main", isSection: true },
-  { title: "Dashboard", icon: PieChart, href: "/admin" },
+export const navData = [
+  { title: "Dashboard", icon: LayoutDashboard, href: "/admin" },
   { title: "Projects", icon: Briefcase, href: "/admin/portfolio" },
   { title: "Team", icon: Users, href: "/admin/team" },
-  { title: "Content", icon: FileText, href: "/admin/content" },
-  { title: "Contact Submissions", icon: Mail, href: "/admin/contacts" },
-  { title: "Users", icon: User, href: "/admin/users" },
+  { title: "Messages", icon: Mail, href: "/admin/contacts" },
   { title: "Settings", icon: Settings, href: "/admin/settings" },
 ];
 
-export function AppSidebar() {
+export function AppSidebar({
+  user,
+  onLogout,
+}: {
+  user: { name?: string; email?: string } | null;
+  onLogout: () => void;
+}) {
+  const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
+  const closeOnMobile = () => isMobile && setOpenMobile(false);
 
-  const handleLogoClick = () => {
-    if (isMobile) {
-      setOpenMobile(false);
-    }
-  };
+  const isActive = (href: string) =>
+    href === "/admin" ? pathname === "/admin" : pathname === href || pathname.startsWith(`${href}/`);
 
   return (
-    <Sidebar className="px-0 h-full [&_[data-slot=sidebar-inner]]:h-full">
-      <div className="flex flex-col gap-6">
-        {/* ---------------- Header ---------------- */}
-        <SidebarHeader className="px-2 sm:px-4">
+    <Sidebar className="border-r border-slate-200">
+      <SidebarHeader className="border-b border-slate-200 px-4 py-4">
+        <Link href="/admin" onClick={closeOnMobile} className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-white ring-1 ring-slate-200">
+            { }
+            <img src="/logo.png" alt="" className="h-full w-full object-contain" />
+          </div>
+          <div className="leading-tight">
+            <p className="text-sm font-semibold text-slate-900">Tech Wiser</p>
+            <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">Admin Console</p>
+          </div>
+        </Link>
+      </SidebarHeader>
+
+      <SidebarContent className="px-2 py-3">
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-[11px] font-medium uppercase tracking-wider text-slate-400">
+            Manage
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu className="gap-0.5">
+              {navData.map((item) => {
+                const active = isActive(item.href);
+                return (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={active}
+                      tooltip={item.title}
+                      className={
+                        active
+                          ? "bg-slate-900! font-medium text-white! hover:bg-slate-900!"
+                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                      }
+                    >
+                      <Link href={item.href} onClick={closeOnMobile}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup className="mt-auto">
           <SidebarMenu>
             <SidebarMenuItem>
-              <a href="/admin" className="w-full h-full" aria-label="Admin Dashboard" onClick={handleLogoClick}>
-                <Logo />
-              </a>
+              <SidebarMenuButton asChild className="text-slate-600 hover:bg-slate-100 hover:text-slate-900">
+                <Link href="/" target="_blank">
+                  <ExternalLink />
+                  <span>View website</span>
+                </Link>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
-        </SidebarHeader>
+        </SidebarGroup>
+      </SidebarContent>
 
-        {/* ---------------- Content ---------------- */}
-        <SidebarContent className="overflow-hidden">
-          <ScrollArea className="h-[calc(100vh-100px)]">
-            <div className="px-2 sm:px-4">
-              <NavMain items={navData} />
-            </div>
-          </ScrollArea>
-        </SidebarContent>
-      </div>
+      <SidebarFooter className="border-t border-slate-200 p-3">
+        <div className="flex items-center gap-3 rounded-lg px-1 py-1">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cyan-600 text-xs font-semibold text-white">
+            {user?.name?.charAt(0)?.toUpperCase() || "A"}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-slate-900">{user?.name || "Admin"}</p>
+            <p className="truncate text-xs text-slate-500">{user?.email}</p>
+          </div>
+          <button
+            onClick={onLogout}
+            title="Log out"
+            aria-label="Log out"
+            className="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-red-600"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        </div>
+      </SidebarFooter>
     </Sidebar>
   );
 }

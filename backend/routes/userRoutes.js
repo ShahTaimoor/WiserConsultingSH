@@ -23,14 +23,6 @@ router.post('/login', authLimiter, validate(loginSchema), userController.login.b
 router.get('/logout', userController.logout.bind(userController));
 router.post('/logout', userController.logout.bind(userController));
 
-// Get all users (Admin only, with pagination)
-router.get(
-  '/all-users',
-  isAuthorized,
-  isAdmin,
-  userController.getAllUsers.bind(userController)
-);
-
 // Update profile (Authorized users)
 router.put(
   '/update-profile',

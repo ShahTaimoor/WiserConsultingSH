@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { API_BASE } from "@/constants";
-import { SearchItem, Service, TeamMember, PortfolioProject } from "@/types";
+import { SearchItem, TeamMember, PortfolioProject } from "@/types";
 
 const STATIC_PAGES: SearchItem[] = [
   { href: "/", label: "Home", type: "page", keywords: ["home", "main", "landing", "software", "consulting"] },
@@ -24,8 +24,7 @@ export function useSearchData(isOpen: boolean) {
           return res.ok ? res.json() : null;
         };
 
-        const [servicesRes, teamRes, projectsRes] = await Promise.all([
-          fetchJson(`${API_BASE}/services`),
+        const [teamRes, projectsRes] = await Promise.all([
           fetchJson(`${API_BASE}/team?isActive=true`),
           fetchJson(`${API_BASE}/portfolios?isActive=true`),
         ]);
@@ -33,21 +32,6 @@ export function useSearchData(isOpen: boolean) {
         if (!isMounted) return;
 
         const dynamic: SearchItem[] = [...STATIC_PAGES];
-
-        if (servicesRes?.success && Array.isArray(servicesRes.data)) {
-          servicesRes.data.forEach((s: Service) => {
-            dynamic.push({
-              href: "/services",
-              label: s.title,
-              type: "service",
-              keywords: [
-                s.title.toLowerCase(),
-                ...(s.description || "").toLowerCase().split(/\s+/),
-                "service",
-              ],
-            });
-          });
-        }
 
         if (teamRes?.success && Array.isArray(teamRes.data)) {
           teamRes.data.forEach((m: TeamMember) => {

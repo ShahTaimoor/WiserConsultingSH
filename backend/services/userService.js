@@ -12,39 +12,6 @@ const { AppError } = require('../middleware/errorHandler');
 
 class UserService {
   /**
-   * Sign up a new user
-   */
-  async signup(name, email, password) {
-    // Check if user already exists
-    const existingUser = await userRepository.findByEmailOrName(email, name);
-    if (existingUser) {
-      throw new AppError('User with this email or name already exists', 400);
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create user
-    const user = await userRepository.create({
-      name,
-      email,
-      password: hashedPassword
-    });
-
-    // Remove password from response
-    user.password = undefined;
-
-    return {
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      }
-    };
-  }
-
-  /**
    * Login user
    */
   async login(email, name, password) {
@@ -87,14 +54,6 @@ class UserService {
   }
 
   /**
-   * Get all users with pagination
-   */
-  async getAllUsers(skip, limit) {
-    const { users, total } = await userRepository.findAll(skip, limit);
-    return { users, total };
-  }
-
-  /**
    * Update user profile
    */
   async updateProfile(userId, updateData) {
@@ -113,67 +72,6 @@ class UserService {
         phone: updatedUser.phone,
         address: updatedUser.address,
         city: updatedUser.city
-      }
-    };
-  }
-
-  /**
-   * Update user role (Admin only)
-   */
-  async updateUserRole(userId, role) {
-    if (role === undefined || role === null) {
-      throw new AppError('Role is required', 400);
-    }
-
-    const user = await userRepository.findById(userId);
-    if (!user) {
-      throw new AppError('User not found', 404);
-    }
-
-    const updatedUser = await userRepository.updateById(userId, { role });
-    updatedUser.password = undefined;
-
-    return {
-      user: {
-        id: updatedUser._id,
-        name: updatedUser.name,
-        role: updatedUser.role,
-        phone: updatedUser.phone,
-        address: updatedUser.address,
-        city: updatedUser.city
-      }
-    };
-  }
-
-  /**
-   * Create admin user
-   */
-  async createAdmin(name, email, password) {
-    // Check if user already exists
-    const existingUser = await userRepository.findByEmailOrName(email, name);
-    if (existingUser) {
-      throw new AppError('User with this email or name already exists', 400);
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create admin user
-    const user = await userRepository.create({
-      name,
-      email,
-      password: hashedPassword,
-      role: 1 // Admin role
-    });
-
-    user.password = undefined;
-
-    return {
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
       }
     };
   }

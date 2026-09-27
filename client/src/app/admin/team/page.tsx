@@ -1,7 +1,23 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Plus, Edit, Trash2, ChevronDown, X } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Check, Github, Linkedin, Mail, Pencil, Plus, Search, Trash2, Twitter, Upload, Users } from "lucide-react";
+import { adminFetch, isImageUrl } from "@/lib/adminApi";
+import { cn } from "@/lib/utils";
+import {
+  Badge,
+  Button,
+  EmptyState,
+  Field,
+  FormDrawer,
+  FormSection,
+  PageHeader,
+  PageLoader,
+  Switch,
+  TagInput,
+  inputClass,
+  useFeedback,
+} from "@/components/admin/ui";
 
 interface TeamMember {
   _id: string;
@@ -21,753 +37,402 @@ interface TeamMember {
   isActive: boolean;
 }
 
-const AdminTeam = () => {
-  const [members, setMembers] = useState<TeamMember[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    role: [] as string[],
-    bio: '',
-    fullBio: '',
-    image: '👨‍💼',
-    skills: [] as string[],
-    email: '',
-    linkedin: '',
-    github: '',
-    twitter: '',
-    expertise: [] as string[],
-    achievements: [] as string[],
-    order: 0,
-    isActive: true,
-  });
-  const [skillInput, setSkillInput] = useState('');
-  const [expertiseInput, setExpertiseInput] = useState('');
-  const [achievementInput, setAchievementInput] = useState('');
+const ROLE_OPTIONS = [
+  "CEO",
+  "Project Manager",
+  "Full Stack Developer",
+  "Full Stack Engineer",
+  "MERN Stack Developer",
+  "PERN Stack Developer",
+  "Frontend Developer",
+  "Backend Developer",
+  "App Developer",
+  "Mobile App Developer",
+  "Cloud Architecture",
+];
+
+const emptyForm = {
+  name: "",
+  role: [] as string[],
+  bio: "",
+  fullBio: "",
+  image: "",
+  skills: [] as string[],
+  expertise: [] as string[],
+  achievements: [] as string[],
+  email: "",
+  linkedin: "",
+  github: "",
+  twitter: "",
+  order: 0,
+  isActive: true,
+};
+
+const rolesOf = (m: TeamMember) => (Array.isArray(m.role) ? m.role : m.role ? [m.role] : []);
+
+// Leadership first, then by display order, then name
+const rolePriority = (roles: string[]) => {
+  const r = roles.map((x) => x.toLowerCase());
+  if (r.some((x) => x.includes("ceo"))) return 1;
+  if (r.some((x) => x.includes("project manager"))) return 2;
+  if (r.some((x) => x.includes("full stack"))) return 3;
+  return 4;
+};
+
+function Avatar({ member, size = "md" }: { member: { name: string; image?: string }; size?: "md" | "lg" }) {
+  const cls = size === "lg" ? "h-20 w-20 text-xl" : "h-12 w-12 text-sm";
+  return isImageUrl(member.image) ? (
+     
+    <img src={member.image} alt={member.name} className={cn(cls, "shrink-0 rounded-full object-cover ring-1 ring-slate-200")} />
+  ) : (
+    <div className={cn(cls, "flex shrink-0 items-center justify-center rounded-full bg-slate-100 font-semibold text-slate-500")}>
+      {member.name?.charAt(0)?.toUpperCase() || "?"}
+    </div>
+  );
+}
+
+export default function AdminTeam() {
+  const { toast, confirm } = useFeedback();
+  const [members, setMembers] = useState<TeamMember[] | null>(null);
+  const [query, setQuery] = useState("");
+
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [editing, setEditing] = useState<TeamMember | null>(null);
+  const [form, setForm] = useState(emptyForm);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const [saving, setSaving] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  const roleOptions = [
-    { 
-      value: 'CEO', 
-      description: 'Chief Executive Officer - Strategic leadership and overall company direction' 
-    },
-    { 
-      value: 'Project Manager', 
-      description: 'Oversees project planning, execution, and team coordination' 
-    },
-    { 
-      value: 'Full Stack Developer', 
-      description: 'Expert in both frontend and backend development technologies' 
-    },
-    { 
-      value: 'Full Stack Engineer', 
-      description: 'Designs and builds end-to-end web applications and systems' 
-    },
-    { 
-      value: 'MERN Stack Developer', 
-      description: 'Specializes in MongoDB, Express, React, and Node.js development' 
-    },
-    { 
-      value: 'PERN Stack Developer', 
-      description: 'Specializes in PostgreSQL, Express, React, and Node.js development' 
-    },
-    { 
-      value: 'Frontend Developer', 
-      description: 'Specializes in user interface and user experience development' 
-    },
-    { 
-      value: 'Backend Developer', 
-      description: 'Focuses on server-side logic, databases, and API development' 
-    },
-    { 
-      value: 'App Developer', 
-      description: 'Develops cross-platform and native mobile applications' 
-    },
-    { 
-      value: 'Cloud Architecture', 
-      description: 'Designs and manages cloud infrastructure and solutions' 
-    },
-    { 
-      value: 'Mobile App Developer', 
-      description: 'Develops applications for iOS and Android platforms' 
-    }
-  ];
-
-  useEffect(() => {
-    fetchMembers();
-  }, []);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (roleDropdownOpen && !target.closest('.role-dropdown-container')) {
-        setRoleDropdownOpen(false);
-      }
-    };
-
-    if (roleDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }
-  }, [roleDropdownOpen]);
-
-  const fetchMembers = async () => {
+  const load = async () => {
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/team`, {
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
-        },
-        credentials: 'include',
-      });
-      
-      if (!res.ok) {
-        throw new Error('Failed to fetch team members');
-      }
-      
-      const data = await res.json();
-      if (data.success) {
-        // Sort members: CEO > Project Manager > Full Stack > Others
-        const sortedMembers = (data.data || []).sort((a: TeamMember, b: TeamMember) => {
-          // Handle role as string or array - get the first/highest priority role
-          const rolesA = Array.isArray(a.role) 
-            ? a.role.map(r => String(r).toLowerCase()) 
-            : [String(a.role || '').toLowerCase()];
-          const rolesB = Array.isArray(b.role) 
-            ? b.role.map(r => String(r).toLowerCase()) 
-            : [String(b.role || '').toLowerCase()];
-          
-          // Priority order: CEO > Project Manager > Full Stack > Others
-          const getPriority = (roles: string[]) => {
-            for (const role of roles) {
-              if (role.includes('ceo')) return 1;
-              if (role.includes('project manager')) return 2;
-              if (role.includes('full stack')) return 3;
-            }
-            return 4;
-          };
-          
-          const priorityA = getPriority(rolesA);
-          const priorityB = getPriority(rolesB);
-          
-          if (priorityA !== priorityB) {
-            return priorityA - priorityB;
-          }
-          
-          // If same priority, sort by order field, then by name
-          if (a.order !== b.order) {
-            return a.order - b.order;
-          }
-          return a.name.localeCompare(b.name);
-        });
-        
-        setMembers(sortedMembers);
-      }
-    } catch (error) {
-
+      const data = await adminFetch<TeamMember[]>("/team");
+      data.sort(
+        (a, b) =>
+          rolePriority(rolesOf(a)) - rolePriority(rolesOf(b)) || a.order - b.order || a.name.localeCompare(b.name)
+      );
+      setMembers(data);
+    } catch (err) {
       setMembers([]);
-    } finally {
-      setLoading(false);
+      toast("error", err instanceof Error ? err.message : "Could not load team");
     }
   };
+
+  useEffect(() => {
+    load();
+    if (new URLSearchParams(window.location.search).get("new")) openCreate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return (members ?? []).filter(
+      (m) => !q || m.name.toLowerCase().includes(q) || rolesOf(m).some((r) => r.toLowerCase().includes(q))
+    );
+  }, [members, query]);
+
+  const openCreate = () => {
+    setEditing(null);
+    setForm(emptyForm);
+    setImageFile(null);
+    setImagePreview("");
+    setDrawerOpen(true);
+  };
+
+  const openEdit = (m: TeamMember) => {
+    setEditing(m);
+    setForm({
+      name: m.name,
+      role: rolesOf(m),
+      bio: m.bio ?? "",
+      fullBio: m.fullBio ?? "",
+      image: m.image ?? "",
+      skills: m.skills ?? [],
+      expertise: m.expertise ?? [],
+      achievements: m.achievements ?? [],
+      email: m.email ?? "",
+      linkedin: m.linkedin ?? "",
+      github: m.github ?? "",
+      twitter: m.twitter ?? "",
+      order: m.order ?? 0,
+      isActive: m.isActive,
+    });
+    setImageFile(null);
+    setImagePreview(isImageUrl(m.image) ? m.image : "");
+    setDrawerOpen(true);
+  };
+
+  const pickImage = (file?: File) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return toast("error", "Please choose an image file");
+    if (file.size > 5 * 1024 * 1024) return toast("error", "Image must be smaller than 5 MB");
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const toggleRole = (role: string) =>
+    setForm((f) => ({ ...f, role: f.role.includes(role) ? f.role.filter((r) => r !== role) : [...f.role, role] }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (form.role.length === 0) return toast("error", "Select at least one role");
+    setSaving(true);
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-      const token = localStorage.getItem('token');
-      const url = editingMember
-        ? `${API_URL}/admin/team/${editingMember._id}`
-        : `${API_URL}/admin/team`;
-      const method = editingMember ? 'PUT' : 'POST';
+      const body = new FormData();
+      (["name", "bio", "fullBio", "email", "linkedin", "github", "twitter"] as const).forEach((k) =>
+        body.append(k, form[k])
+      );
+      body.append("order", String(form.order || 0));
+      body.append("isActive", String(form.isActive));
+      form.role.forEach((v, i) => body.append(`role[${i}]`, v));
+      form.skills.forEach((v, i) => body.append(`skills[${i}]`, v));
+      form.expertise.forEach((v, i) => body.append(`expertise[${i}]`, v));
+      form.achievements.forEach((v, i) => body.append(`achievements[${i}]`, v));
+      if (imageFile) body.append("image", imageFile);
+      else if (form.image && !isImageUrl(form.image)) body.append("image", form.image);
 
-      // Validate roles
-      if (formData.role.length === 0) {
-        alert('Please select at least one role');
-        return;
-      }
-
-      // Create FormData for file upload
-      const formDataToSend = new FormData();
-      formDataToSend.append('name', formData.name);
-      formDataToSend.append('bio', formData.bio);
-      formDataToSend.append('fullBio', formData.fullBio);
-      formDataToSend.append('email', formData.email || '');
-      formDataToSend.append('linkedin', formData.linkedin || '');
-      formDataToSend.append('github', formData.github || '');
-      formDataToSend.append('twitter', formData.twitter || '');
-      formDataToSend.append('order', formData.order.toString());
-      formDataToSend.append('isActive', formData.isActive.toString());
-      
-      // Append role array
-      formData.role.forEach((role, index) => {
-        formDataToSend.append(`role[${index}]`, role);
+      await adminFetch(editing ? `/admin/team/${editing._id}` : "/admin/team", {
+        method: editing ? "PUT" : "POST",
+        body,
       });
-      
-      // Append arrays
-      formData.skills.forEach((skill, index) => {
-        formDataToSend.append(`skills[${index}]`, skill);
-      });
-      formData.expertise.forEach((exp, index) => {
-        formDataToSend.append(`expertise[${index}]`, exp);
-      });
-      formData.achievements.forEach((ach, index) => {
-        formDataToSend.append(`achievements[${index}]`, ach);
-      });
-      
-      // Append image file if selected, otherwise append existing image URL or emoji
-      if (imageFile) {
-        formDataToSend.append('image', imageFile);
-      } else if (formData.image && !formData.image.startsWith('http')) {
-        // If it's an emoji or text, send it as a regular field
-        formDataToSend.append('image', formData.image);
-      }
-
-      const res = await fetch(url, {
-        method,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          // Don't set Content-Type header, let browser set it with boundary for FormData
-        },
-        credentials: 'include',
-        body: formDataToSend,
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to save team member');
-      }
-
-      const data = await res.json();
-      if (data.success) {
-        fetchMembers();
-        setShowModal(false);
-        resetForm();
-      } else {
-        throw new Error(data.message || 'Failed to save team member');
-      }
-    } catch (error) {
-
-      alert(error instanceof Error ? error.message : 'Failed to save team member. Please try again.');
+      toast("success", editing ? "Team member updated" : "Team member added");
+      setDrawerOpen(false);
+      load();
+    } catch (err) {
+      toast("error", err instanceof Error ? err.message : "Could not save team member");
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this team member?')) return;
-
+  const handleDelete = async (m: TeamMember) => {
+    const ok = await confirm({
+      title: "Remove team member?",
+      description: `${m.name} will be removed from the team page.`,
+      confirmLabel: "Remove",
+    });
+    if (!ok) return;
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/admin/team/${id}`, {
-        method: 'DELETE',
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
-        },
-        credentials: 'include',
-      });
-
-      if (!res.ok) {
-        throw new Error('Failed to delete team member');
-      }
-
-      const data = await res.json();
-      if (data.success) {
-        fetchMembers();
-      }
-    } catch (error) {
-
-      alert('Failed to delete team member. Please try again.');
+      await adminFetch(`/admin/team/${m._id}`, { method: "DELETE" });
+      setMembers((list) => list?.filter((x) => x._id !== m._id) ?? null);
+      toast("success", "Team member removed");
+    } catch (err) {
+      toast("error", err instanceof Error ? err.message : "Could not remove team member");
     }
   };
 
-  const handleEdit = (member: TeamMember) => {
-    setEditingMember(member);
-    // Convert role to array if it's a string (for backward compatibility)
-    const roles = Array.isArray(member.role) ? member.role : (member.role ? [member.role] : []);
-    setFormData({
-      name: member.name,
-      role: roles,
-      bio: member.bio,
-      fullBio: member.fullBio || '',
-      image: member.image,
-      skills: member.skills,
-      email: member.email || '',
-      linkedin: member.linkedin || '',
-      github: member.github || '',
-      twitter: member.twitter || '',
-      expertise: member.expertise,
-      achievements: member.achievements || [],
-      order: member.order,
-      isActive: member.isActive,
-    });
-    // Set image preview if it's a URL, otherwise clear it
-    if (member.image && (member.image.startsWith('http') || member.image.startsWith('/'))) {
-      setImagePreview(member.image);
-    } else {
-      setImagePreview(null);
-    }
-    setImageFile(null);
-    setShowModal(true);
-  };
-
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      role: [],
-      bio: '',
-      fullBio: '',
-      image: '👨‍💼',
-      skills: [],
-      email: '',
-      linkedin: '',
-      github: '',
-      twitter: '',
-      expertise: [],
-      achievements: [],
-      order: 0,
-      isActive: true,
-    });
-    setEditingMember(null);
-    setSkillInput('');
-    setExpertiseInput('');
-    setAchievementInput('');
-    setImageFile(null);
-    setImagePreview(null);
-    setRoleDropdownOpen(false);
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        alert('Please select an image file');
-        return;
-      }
-      // Validate file size (5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('Image size should be less than 5MB');
-        return;
-      }
-      setImageFile(file);
-      // Create preview URL
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const addItem = (type: 'skills' | 'expertise' | 'achievements') => {
-    const input = type === 'skills' ? skillInput : type === 'expertise' ? expertiseInput : achievementInput;
-    if (input.trim()) {
-      setFormData({
-        ...formData,
-        [type]: [...formData[type], input.trim()],
-      });
-      if (type === 'skills') setSkillInput('');
-      if (type === 'expertise') setExpertiseInput('');
-      if (type === 'achievements') setAchievementInput('');
-    }
-  };
-
-  const removeItem = (type: 'skills' | 'expertise' | 'achievements', index: number) => {
-    setFormData({
-      ...formData,
-      [type]: formData[type].filter((_, i) => i !== index),
-    });
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
-      </div>
-    );
-  }
+  if (!members) return <PageLoader />;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Team Management</h1>
-        <button
-          onClick={() => {
-            resetForm();
-            setShowModal(true);
-          }}
-          className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm sm:text-base w-full sm:w-auto justify-center"
-        >
-          <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-          <span className="hidden sm:inline">Add Team Member</span>
-          <span className="sm:hidden">Add</span>
-        </button>
-      </div>
+      <PageHeader
+        title="Team"
+        description="People shown on the team page."
+        actions={
+          <Button onClick={openCreate}>
+            <Plus /> Add member
+          </Button>
+        }
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {members.map((member) => (
-          <div key={member._id} className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-start gap-4 mb-4">
-              {member.image && (member.image.startsWith('http') || member.image.startsWith('/')) ? (
-                <img
-                  src={member.image}
-                  alt={member.name}
-                  className="w-16 h-16 object-cover rounded-full border-2 border-gray-200"
-                />
-              ) : (
-                <div className="text-5xl">{member.image || '👨‍💼'}</div>
-              )}
-              <div className="flex-1">
-                <h3 className="font-bold text-lg">{member.name}</h3>
-                <div className="text-sm text-gray-600">
-                  {Array.isArray(member.role) 
-                    ? member.role.join(', ') 
-                    : member.role}
-                </div>
-              </div>
-            </div>
-            <p className="text-sm text-gray-700 mb-4 line-clamp-2">{member.bio}</p>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {member.skills.slice(0, 3).map((skill, idx) => (
-                <span key={idx} className="px-2 py-1 text-xs bg-gray-100 rounded">
-                  {skill}
-                </span>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleEdit(member)}
-                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                <Edit className="w-4 h-4" />
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(member._id)}
-                className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
+      {members.length === 0 ? (
+        <EmptyState
+          icon={Users}
+          title="No team members yet"
+          description="Add the people behind your company."
+          action={
+            <Button onClick={openCreate}>
+              <Plus /> Add member
+            </Button>
+          }
+        />
+      ) : (
+        <>
+          <div className="relative max-w-sm">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by name or role"
+              className={cn(inputClass, "pl-9")}
+            />
           </div>
-        ))}
-      </div>
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-          <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-3xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto mx-2">
-            <h2 className="text-xl sm:text-2xl font-bold mb-4">
-              {editingMember ? 'Edit Team Member' : 'Add Team Member'}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-base"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Roles {formData.role.length > 0 && `(${formData.role.length} selected)`}
-                  </label>
-                  <div className="relative role-dropdown-container">
-                    <button
-                      type="button"
-                      onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-left flex items-center justify-between hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
-                    >
-                      <span className="text-sm text-gray-700">
-                        {formData.role.length === 0 
-                          ? 'Select roles...' 
-                          : formData.role.join(', ')}
-                      </span>
-                      <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${roleDropdownOpen ? 'transform rotate-180' : ''}`} />
-                    </button>
-                    {roleDropdownOpen && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-y-auto">
-                        {roleOptions.map((role) => (
-                          <div
-                            key={role.value}
-                            className={`p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 ${
-                              formData.role.includes(role.value) ? 'bg-green-50' : ''
-                            }`}
-                            onClick={() => {
-                              if (formData.role.includes(role.value)) {
-                                setFormData({ ...formData, role: formData.role.filter(r => r !== role.value) });
-                              } else {
-                                setFormData({ ...formData, role: [...formData.role, role.value] });
-                              }
-                            }}
-                          >
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2">
-                                  <input
-                                    type="checkbox"
-                                    checked={formData.role.includes(role.value)}
-                                    onChange={(e) => {
-                                      e.stopPropagation();
-                                      if (e.target.checked) {
-                                        setFormData({ ...formData, role: [...formData.role, role.value] });
-                                      } else {
-                                        setFormData({ ...formData, role: formData.role.filter(r => r !== role.value) });
-                                      }
-                                    }}
-                                    className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500 cursor-pointer"
-                                  />
-                                  <span className="text-sm font-medium text-gray-900">{role.value}</span>
-                                </div>
-                                <p className="text-xs text-gray-500 mt-1 ml-6">{role.description}</p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {visible.map((m) => (
+              <article key={m._id} className="flex flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+                <div className="flex items-start gap-3.5">
+                  <Avatar member={m} />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="truncate font-medium text-slate-900">{m.name}</h3>
+                      {!m.isActive && <Badge>Hidden</Badge>}
+                    </div>
+                    <p className="truncate text-sm text-slate-500">{rolesOf(m).join(" · ")}</p>
                   </div>
-                  {formData.role.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {formData.role.map((role) => (
-                        <span
-                          key={role}
-                          className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded"
-                        >
-                          {role}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setFormData({ ...formData, role: formData.role.filter(r => r !== role) });
-                            }}
-                            className="text-green-600 hover:text-green-800"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  {formData.role.length === 0 && (
-                    <p className="text-xs text-red-600 mt-1">Please select at least one role</p>
-                  )}
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
-                <textarea
-                  value={formData.bio}
-                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-base"
-                  rows={2}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Bio</label>
-                <textarea
-                  value={formData.fullBio}
-                  onChange={(e) => setFormData({ ...formData, fullBio: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-base"
-                  rows={3}
-                />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Profile Picture</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-base"
-                  />
-                  {imagePreview && (
-                    <div className="mt-2">
-                      <img
-                        src={imagePreview}
-                        alt="Preview"
-                        className="w-24 h-24 object-cover rounded-lg border border-gray-300"
-                      />
-                    </div>
-                  )}
-                  {!imagePreview && formData.image && !formData.image.startsWith('http') && (
-                    <div className="mt-2 text-4xl">{formData.image}</div>
-                  )}
-                  {!imagePreview && formData.image && formData.image.startsWith('http') && (
-                    <div className="mt-2">
-                      <img
-                        src={formData.image}
-                        alt="Current"
-                        className="w-24 h-24 object-cover rounded-lg border border-gray-300"
-                      />
-                    </div>
-                  )}
+                <p className="mt-3 line-clamp-2 flex-1 text-sm text-slate-600">{m.bio}</p>
+                <div className="mt-4 flex items-center gap-1 border-t border-slate-100 pt-3">
+                  <Button variant="secondary" size="sm" onClick={() => openEdit(m)}>
+                    <Pencil /> Edit
+                  </Button>
+                  <div className="ml-2 flex gap-1 text-slate-400">
+                    {m.email && <Mail className="h-3.5 w-3.5" aria-label="Has email" />}
+                    {m.linkedin && <Linkedin className="h-3.5 w-3.5" aria-label="Has LinkedIn" />}
+                    {m.github && <Github className="h-3.5 w-3.5" aria-label="Has GitHub" />}
+                    {m.twitter && <Twitter className="h-3.5 w-3.5" aria-label="Has Twitter" />}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="ml-auto hover:text-red-600"
+                    onClick={() => handleDelete(m)}
+                    aria-label="Remove team member"
+                  >
+                    <Trash2 />
+                  </Button>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Order</label>
-                  <input
-                    type="number"
-                    value={formData.order}
-                    onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-base"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-base"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn</label>
-                  <input
-                    type="url"
-                    value={formData.linkedin}
-                    onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-base"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">GitHub</label>
-                  <input
-                    type="url"
-                    value={formData.github}
-                    onChange={(e) => setFormData({ ...formData, github: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-base"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Twitter</label>
-                  <input
-                    type="url"
-                    value={formData.twitter}
-                    onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-base"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Skills</label>
-                <div className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={skillInput}
-                    onChange={(e) => setSkillInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addItem('skills'))}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-base"
-                    placeholder="Add skill"
-                  />
-                  <button type="button" onClick={() => addItem('skills')} className="px-4 py-2 bg-gray-200 rounded-lg">
-                    Add
-                  </button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {formData.skills.map((skill, idx) => (
-                    <span key={idx} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm flex items-center gap-2">
-                      {skill}
-                      <button type="button" onClick={() => removeItem('skills', idx)} className="text-blue-600">×</button>
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Expertise</label>
-                <div className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={expertiseInput}
-                    onChange={(e) => setExpertiseInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addItem('expertise'))}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-base"
-                    placeholder="Add expertise"
-                  />
-                  <button type="button" onClick={() => addItem('expertise')} className="px-4 py-2 bg-gray-200 rounded-lg">
-                    Add
-                  </button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {formData.expertise.map((exp, idx) => (
-                    <span key={idx} className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm flex items-center gap-2">
-                      {exp}
-                      <button type="button" onClick={() => removeItem('expertise', idx)} className="text-green-600">×</button>
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Achievements</label>
-                <div className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={achievementInput}
-                    onChange={(e) => setAchievementInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addItem('achievements'))}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-base"
-                    placeholder="Add achievement"
-                  />
-                  <button type="button" onClick={() => addItem('achievements')} className="px-4 py-2 bg-gray-200 rounded-lg">
-                    Add
-                  </button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {formData.achievements.map((ach, idx) => (
-                    <span key={idx} className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm flex items-center gap-2">
-                      {ach}
-                      <button type="button" onClick={() => removeItem('achievements', idx)} className="text-purple-600">×</button>
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={formData.isActive}
-                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                  className="w-4 h-4"
-                />
-                <label className="text-sm font-medium text-gray-700">Active</label>
-              </div>
-              <div className="flex justify-end gap-2 pt-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowModal(false);
-                    resetForm();
-                  }}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                  {editingMember ? 'Update' : 'Create'}
-                </button>
-              </div>
-            </form>
+              </article>
+            ))}
           </div>
-        </div>
+          {visible.length === 0 && <p className="py-12 text-center text-sm text-slate-500">No team members match.</p>}
+        </>
       )}
+
+      <FormDrawer
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        title={editing ? "Edit team member" : "Add team member"}
+        description="Profile shown on the team page."
+        onSubmit={handleSubmit}
+        submitLabel={editing ? "Save changes" : "Add member"}
+        saving={saving}
+      >
+        <FormSection title="Profile">
+          <div className="flex items-center gap-4">
+            <Avatar member={{ name: form.name || "?", image: imagePreview }} size="lg" />
+            <div>
+              <Button type="button" variant="secondary" size="sm" onClick={() => fileRef.current?.click()}>
+                <Upload /> {imagePreview ? "Change photo" : "Upload photo"}
+              </Button>
+              <p className="mt-1.5 text-xs text-slate-500">Square image, up to 5 MB.</p>
+            </div>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                pickImage(e.target.files?.[0]);
+                e.target.value = "";
+              }}
+            />
+          </div>
+          <Field label="Full name" required>
+            <input className={inputClass} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+          </Field>
+          <div className="space-y-1.5">
+            <span className="text-sm font-medium text-slate-700">
+              Roles<span className="ml-0.5 text-red-500">*</span>
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {ROLE_OPTIONS.map((role) => {
+                const on = form.role.includes(role);
+                return (
+                  <button
+                    key={role}
+                    type="button"
+                    onClick={() => toggleRole(role)}
+                    aria-pressed={on}
+                    className={cn(
+                      "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+                      on
+                        ? "border-cyan-600 bg-cyan-50 text-cyan-800"
+                        : "border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                    )}
+                  >
+                    {on && <Check className="h-3 w-3" />}
+                    {role}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </FormSection>
+
+        <FormSection title="About">
+          <Field label="Short bio" hint="One or two sentences, shown on the team card." required>
+            <textarea
+              className={cn(inputClass, "min-h-20 resize-y")}
+              value={form.bio}
+              onChange={(e) => setForm({ ...form, bio: e.target.value })}
+              required
+            />
+          </Field>
+          <Field label="Full bio" hint="Shown on the member's profile page.">
+            <textarea
+              className={cn(inputClass, "min-h-28 resize-y")}
+              value={form.fullBio}
+              onChange={(e) => setForm({ ...form, fullBio: e.target.value })}
+            />
+          </Field>
+        </FormSection>
+
+        <FormSection title="Skills & experience" description="Press Enter after each item.">
+          <Field label="Skills">
+            <TagInput values={form.skills} onChange={(skills) => setForm({ ...form, skills })} placeholder="e.g. React" />
+          </Field>
+          <Field label="Areas of expertise">
+            <TagInput
+              values={form.expertise}
+              onChange={(expertise) => setForm({ ...form, expertise })}
+              placeholder="e.g. System design"
+            />
+          </Field>
+          <Field label="Achievements">
+            <TagInput
+              values={form.achievements}
+              onChange={(achievements) => setForm({ ...form, achievements })}
+              placeholder="e.g. AWS Certified"
+            />
+          </Field>
+        </FormSection>
+
+        <FormSection title="Contact & social">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Email">
+              <input type="email" className={inputClass} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            </Field>
+            <Field label="LinkedIn">
+              <input type="url" placeholder="https://" className={inputClass} value={form.linkedin} onChange={(e) => setForm({ ...form, linkedin: e.target.value })} />
+            </Field>
+            <Field label="GitHub">
+              <input type="url" placeholder="https://" className={inputClass} value={form.github} onChange={(e) => setForm({ ...form, github: e.target.value })} />
+            </Field>
+            <Field label="Twitter / X">
+              <input type="url" placeholder="https://" className={inputClass} value={form.twitter} onChange={(e) => setForm({ ...form, twitter: e.target.value })} />
+            </Field>
+          </div>
+        </FormSection>
+
+        <FormSection title="Visibility">
+          <Switch
+            checked={form.isActive}
+            onChange={(isActive) => setForm({ ...form, isActive })}
+            label="Show on website"
+            description="Hidden members are kept but not displayed."
+          />
+          <Field label="Display order" hint="Lower numbers appear first within the same role group.">
+            <input
+              type="number"
+              min={0}
+              className={cn(inputClass, "w-32")}
+              value={form.order}
+              onChange={(e) => setForm({ ...form, order: parseInt(e.target.value) || 0 })}
+            />
+          </Field>
+        </FormSection>
+      </FormDrawer>
     </div>
   );
-};
-
-export default AdminTeam;
+}

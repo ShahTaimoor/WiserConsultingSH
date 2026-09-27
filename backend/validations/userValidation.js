@@ -4,14 +4,6 @@
 
 const { z } = require('zod');
 
-const signupSchema = z.object({
-  body: z.object({
-    name: z.string().min(1, 'Name is required').trim(),
-    email: z.string().email('Invalid email format').trim().toLowerCase(),
-    password: z.string().min(6, 'Password must be at least 6 characters')
-  })
-});
-
 const loginSchema = z.object({
   body: z.object({
     email: z.string().email('Invalid email format').trim().toLowerCase().optional(),
@@ -31,23 +23,6 @@ const updateProfileSchema = z.object({
   })
 });
 
-const updateUserRoleSchema = z.object({
-  params: z.object({
-    userId: z.string().min(1, 'User ID is required')
-  }),
-  body: z.object({
-    role: z.number().int().min(0).max(1, 'Role must be 0 or 1')
-  })
-});
-
-const createAdminSchema = z.object({
-  body: z.object({
-    name: z.string().min(1, 'Name is required').trim(),
-    email: z.string().email('Invalid email format').trim().toLowerCase(),
-    password: z.string().min(6, 'Password must be at least 6 characters')
-  })
-});
-
 const forgotPasswordSchema = z.object({
   body: z.object({
     email: z.string().email('Invalid email format').trim().toLowerCase()
@@ -62,11 +37,8 @@ const resetPasswordSchema = z.object({
 });
 
 module.exports = {
-  signupSchema,
   loginSchema,
   updateProfileSchema,
-  updateUserRoleSchema,
-  createAdminSchema,
   forgotPasswordSchema,
   resetPasswordSchema
 };

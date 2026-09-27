@@ -35,20 +35,6 @@ function SearchContent() {
         },
         { 
           type: "page", 
-          title: "About Us", 
-          description: "Learn about TECH WISER CONSULTING, our story, values, and mission",
-          href: "/about",
-          keywords: ["about", "company", "story", "values", "mission", "team", "history"]
-        },
-        { 
-          type: "page", 
-          title: "Services", 
-          description: "Our software development services including custom development, cloud solutions, and mobile apps",
-          href: "/services",
-          keywords: ["services", "development", "software", "cloud", "mobile", "solutions", "consulting"]
-        },
-        { 
-          type: "page", 
           title: "Projects", 
           description: "View our completed projects and case studies",
           href: "/portfolio",
@@ -74,29 +60,12 @@ function SearchContent() {
         setLoadingData(true);
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
         
-        const [servicesRes, teamRes, portfoliosRes] = await Promise.all([
-          fetch(`${API_URL}/services`).then(res => res.ok ? res.json() : null),
+        const [teamRes, portfoliosRes] = await Promise.all([
           fetch(`${API_URL}/team?isActive=true`).then(res => res.ok ? res.json() : null),
           fetch(`${API_URL}/portfolios?isActive=true`).then(res => res.ok ? res.json() : null),
         ]);
 
         const merged: any[] = [...staticPages];
-
-        if (servicesRes && servicesRes.success && Array.isArray(servicesRes.data)) {
-          servicesRes.data.forEach((service: any) => {
-            merged.push({
-              type: "service",
-              title: service.title,
-              description: service.description || "Tailored software solution built to your specifications.",
-              href: `/services`,
-              keywords: [
-                service.title.toLowerCase(),
-                ...(service.description ? service.description.toLowerCase().split(/\s+/) : []),
-                "service", "solutions"
-              ]
-            });
-          });
-        }
 
         if (teamRes && teamRes.success && Array.isArray(teamRes.data)) {
           teamRes.data.forEach((member: any) => {
