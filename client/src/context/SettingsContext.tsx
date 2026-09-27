@@ -76,7 +76,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
         contactInfo: {
           email: 'taimour448@gmail.com',
           phone: '+92 313 0922988',
-          phone2: '+92 3065779097',
+          phone2: '',
           address: 'Deans Trade Center, UG 400, Peshawar, Pakistan',
           officeHours: 'Monday - Saturday: 9:00 AM - 6:00 PM PKT'
         }

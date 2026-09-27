@@ -53,7 +53,7 @@ const Contact = () => {
 
   const emailVal = settings?.contactInfo?.email || "taimour448@gmail.com";
   const phoneVal = settings?.contactInfo?.phone || "+92 313 0922988";
-  const phone2Val = settings?.contactInfo?.phone2 || "+92 3065779097";
+  const phone2Val = settings?.contactInfo?.phone2 || "";
   const addressVal = settings?.contactInfo?.address || "Deans Trade Center, UG 400, Peshawar, Pakistan";
   const officeHoursVal = settings?.contactInfo?.officeHours || "Monday - Saturday: 9:00 AM - 6:00 PM PKT";
   const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(addressVal)}`;

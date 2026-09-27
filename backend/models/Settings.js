@@ -37,7 +37,7 @@ const settingsSchema = new mongoose.Schema(
       },
       phone2: {
         type: String,
-        default: '+92 3065779097',
+        default: '',
         trim: true,
       },
       address: {

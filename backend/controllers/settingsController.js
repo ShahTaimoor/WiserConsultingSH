@@ -53,7 +53,7 @@ class SettingsController {
       updates.contactInfo = {
         email: req.body['contactInfo.email'] !== undefined ? req.body['contactInfo.email'] : (settings?.contactInfo?.email || 'taimour448@gmail.com'),
         phone: req.body['contactInfo.phone'] !== undefined ? req.body['contactInfo.phone'] : (settings?.contactInfo?.phone || '+92 313 0922988'),
-        phone2: req.body['contactInfo.phone2'] !== undefined ? req.body['contactInfo.phone2'] : (settings?.contactInfo?.phone2 || '+92 3065779097'),
+        phone2: req.body['contactInfo.phone2'] !== undefined ? req.body['contactInfo.phone2'] : (settings?.contactInfo?.phone2 || ''),
         address: req.body['contactInfo.address'] !== undefined ? req.body['contactInfo.address'] : (settings?.contactInfo?.address || 'Deans Trade Center, UG 400, Peshawar, Pakistan'),
         officeHours: req.body['contactInfo.officeHours'] !== undefined ? req.body['contactInfo.officeHours'] : (settings?.contactInfo?.officeHours || 'Monday - Saturday: 9:00 AM - 6:00 PM PKT'),
       };
