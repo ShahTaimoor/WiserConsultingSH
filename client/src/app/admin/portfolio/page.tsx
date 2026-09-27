@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Briefcase, ExternalLink, ImageIcon, Pencil, Plus, Search, Trash2, Upload, X } from "lucide-react";
 import { adminFetch, isImageUrl } from "@/lib/adminApi";
+import { IMAGE_SIZES, imageToWebp } from "@/lib/imageToWebp";
 import { cn } from "@/lib/utils";
 import {
   Badge,
@@ -109,14 +110,22 @@ export default function AdminPortfolio() {
     setDrawerOpen(true);
   };
 
-  const addFiles = (files: FileList | null) => {
+  const addFiles = async (files: FileList | null) => {
     if (!files) return;
     const next: ImageItem[] = [];
-    Array.from(files).forEach((file) => {
-      if (!file.type.startsWith("image/")) return toast("error", `${file.name} is not an image`);
-      if (file.size > 5 * 1024 * 1024) return toast("error", `${file.name} is larger than 5 MB`);
+    for (const original of Array.from(files)) {
+      if (!original.type.startsWith("image/")) {
+        toast("error", `${original.name} is not an image`);
+        continue;
+      }
+      // Shrink + convert to WebP in the browser so the upload is small and fast
+      const file = await imageToWebp(original, IMAGE_SIZES.project);
+      if (file.size > 5 * 1024 * 1024) {
+        toast("error", `${original.name} is larger than 5 MB`);
+        continue;
+      }
       next.push({ url: URL.createObjectURL(file), file });
-    });
+    }
     setImages((prev) => [...prev, ...next].slice(0, 10));
   };
 
@@ -332,7 +341,7 @@ export default function AdminPortfolio() {
           </Field>
         </FormSection>
 
-        <FormSection title="Images" description="The first image is used as the cover. Up to 10 images, 5 MB each.">
+        <FormSection title="Images" description="The first image is used as the cover. Up to 10 images — converted to WebP automatically.">
           <div className="grid grid-cols-3 gap-3">
             {images.map((img, i) => (
               <div key={img.url} className="group relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-slate-50">

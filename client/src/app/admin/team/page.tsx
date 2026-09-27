@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, Github, Linkedin, Mail, Pencil, Plus, Search, Trash2, Twitter, Upload, Users } from "lucide-react";
 import { adminFetch, isImageUrl } from "@/lib/adminApi";
+import { IMAGE_SIZES, imageToWebp } from "@/lib/imageToWebp";
 import { cn } from "@/lib/utils";
 import {
   Badge,
@@ -162,9 +163,11 @@ export default function AdminTeam() {
     setDrawerOpen(true);
   };
 
-  const pickImage = (file?: File) => {
-    if (!file) return;
-    if (!file.type.startsWith("image/")) return toast("error", "Please choose an image file");
+  const pickImage = async (original?: File) => {
+    if (!original) return;
+    if (!original.type.startsWith("image/")) return toast("error", "Please choose an image file");
+    // Shrink + convert to WebP in the browser so the upload is small and fast
+    const file = await imageToWebp(original, IMAGE_SIZES.avatar);
     if (file.size > 5 * 1024 * 1024) return toast("error", "Image must be smaller than 5 MB");
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
@@ -315,7 +318,7 @@ export default function AdminTeam() {
               <Button type="button" variant="secondary" size="sm" onClick={() => fileRef.current?.click()}>
                 <Upload /> {imagePreview ? "Change photo" : "Upload photo"}
               </Button>
-              <p className="mt-1.5 text-xs text-slate-500">Square image, up to 5 MB.</p>
+              <p className="mt-1.5 text-xs text-slate-500">Square image works best. Converted to WebP automatically.</p>
             </div>
             <input
               ref={fileRef}

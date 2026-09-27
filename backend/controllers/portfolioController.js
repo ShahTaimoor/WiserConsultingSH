@@ -111,17 +111,17 @@ class PortfolioController {
     // Parse FormData arrays and other fields
     const updateData = this.parseFormDataArrays(req.body);
     
-    // Collect image URLs from uploaded files and existing images
+    // Existing images first (in the order the admin kept them), then newly uploaded ones,
+    // so the cover image doesn't change just because a new photo was added
     const images = [];
-    if (req.files && req.files.length > 0) {
-      req.files.forEach(file => {
-        if (file.path) images.push(file.path);
-      });
-    }
-    // Preserve existing images sent from frontend
     if (updateData.existingImages && Array.isArray(updateData.existingImages)) {
       updateData.existingImages.forEach(url => {
         if (url) images.push(url);
+      });
+    }
+    if (req.files && req.files.length > 0) {
+      req.files.forEach(file => {
+        if (file.path) images.push(file.path);
       });
     }
     delete updateData.existingImages;

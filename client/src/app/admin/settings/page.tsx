@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Facebook, Instagram, Linkedin, Upload } from "lucide-react";
 import { useSettings } from "@/context/SettingsContext";
 import { cn } from "@/lib/utils";
+import { IMAGE_SIZES, imageToWebp } from "@/lib/imageToWebp";
 import { Button, Field, PageHeader, PageLoader, Panel, inputClass, useFeedback } from "@/components/admin/ui";
 
 const emptySocial = { facebook: "", instagram: "", linkedin: "" };
@@ -39,9 +40,11 @@ export default function AdminSettingsPage() {
    
   useEffect(reset, [settings]);
 
-  const pickLogo = (file?: File) => {
-    if (!file) return;
-    if (!file.type.startsWith("image/")) return toast("error", "Please choose an image file");
+  const pickLogo = async (original?: File) => {
+    if (!original) return;
+    if (!original.type.startsWith("image/")) return toast("error", "Please choose an image file");
+    // Convert to WebP in the browser (keeps transparency)
+    const file = await imageToWebp(original, IMAGE_SIZES.logo);
     if (file.size > 2 * 1024 * 1024) return toast("error", "Logo must be smaller than 2 MB");
     setLogoFile(file);
     setLogoPreview(URL.createObjectURL(file));
@@ -141,7 +144,7 @@ export default function AdminSettingsPage() {
           </Panel>
         </div>
 
-        <Panel title="Logo" description="Transparent PNG or SVG, up to 2 MB." className="h-fit lg:sticky lg:top-20">
+        <Panel title="Logo" description="Transparent PNG works best. Converted to WebP automatically." className="h-fit lg:sticky lg:top-20">
           <div
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => {

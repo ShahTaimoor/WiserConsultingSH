@@ -15,15 +15,9 @@ const teamImageStorage = new CloudinaryStorage({
   params: {
     folder: 'team-members',
     allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
-    transformation: [
-      { 
-        width: 1792, 
-        height: 1024, 
-        crop: 'limit',
-        quality: 'auto',
-        fetch_format: 'auto'
-      }
-    ],
+    // Always store as WebP; images are already resized in the browser, this is only a safety limit
+    format: 'webp',
+    transformation: [{ width: 1792, height: 1024, crop: 'limit', quality: 85 }],
     // Generate unique filenames
     public_id: (req, file) => {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -39,15 +33,9 @@ const portfolioImageStorage = new CloudinaryStorage({
   params: {
     folder: 'portfolio-projects',
     allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
-    transformation: [
-      { 
-        width: 1200, 
-        height: 800, 
-        crop: 'limit',
-        quality: 'auto',
-        fetch_format: 'auto'
-      }
-    ],
+    // Always store as WebP; images are already resized in the browser, this is only a safety limit
+    format: 'webp',
+    transformation: [{ width: 1200, height: 800, crop: 'limit', quality: 85 }],
     // Generate unique filenames
     public_id: (req, file) => {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -62,16 +50,10 @@ const logoImageStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'site-logos',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'],
-    transformation: [
-      { 
-        width: 600, 
-        height: 200, 
-        crop: 'limit',
-        quality: 'auto',
-        fetch_format: 'auto'
-      }
-    ],
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+    // Always store as WebP; images are already resized in the browser, this is only a safety limit
+    format: 'webp',
+    transformation: [{ width: 600, height: 200, crop: 'limit', quality: 85 }],
     public_id: (req, file) => {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
       return `logo-${uniqueSuffix}`;
