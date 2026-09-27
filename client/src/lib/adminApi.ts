@@ -5,10 +5,12 @@ export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000
 
 export async function adminFetch<T = unknown>(path: string, init: RequestInit = {}): Promise<T> {
   const isFormData = init.body instanceof FormData;
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const res = await fetch(`${API_URL}${path}`, {
     ...init,
     credentials: "include",
     headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(isFormData || !init.body ? {} : { "Content-Type": "application/json" }),
       ...init.headers,
     },

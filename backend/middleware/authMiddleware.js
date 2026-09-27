@@ -2,13 +2,16 @@ const jwt = require('jsonwebtoken');
 const userRepository = require('../repositories/userRepository');
 const { AppError } = require('../middleware/errorHandler');
 const logger = require('../utils/logger');
+const { authCookieOptions } = require('../utils/cookieOptions');
 
 // Middleware to check if user is authorized
 const isAuthorized = async (req, res, next) => {
     try {
-        // Handle case where cookies might be undefined
-        const cookies = req.cookies || {};
-        const { token } = cookies;
+        // Accept the token from the Authorization header (works when the API is on another
+        // domain and the browser blocks the cookie), falling back to the httpOnly cookie
+        const header = req.headers.authorization || '';
+        const bearer = header.startsWith('Bearer ') ? header.slice(7).trim() : '';
+        const token = (bearer && bearer !== 'null' && bearer !== 'undefined' ? bearer : '') || req.cookies?.token;
 
         if (!token) {
             return res.status(401).json({ success: false, message: 'Please log in first.' });
@@ -31,11 +34,7 @@ const isAuthorized = async (req, res, next) => {
     } catch (error) {
         // Expected for old/expired tokens (e.g. after JWT_SECRET changed) — clear the cookie so the browser stops sending it
         logger.warn(`Rejected auth token: ${error.message}`);
-        res.clearCookie('token', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax'
-        });
+        if (req.cookies?.token) res.clearCookie('token', authCookieOptions(req));
         return res.status(401).json({ success: false, message: 'Your session has expired. Please log in again.' });
     }
 };

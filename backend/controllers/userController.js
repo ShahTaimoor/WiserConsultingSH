@@ -7,6 +7,7 @@
 const userService = require('../services/userService');
 const asyncHandler = require('../utils/asyncHandler');
 const ApiResponse = require('../utils/apiResponse');
+const { authCookieOptions } = require('../utils/cookieOptions');
 
 class UserController {
   /**
@@ -18,9 +19,7 @@ class UserController {
 
     const token = result.token;
     res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      ...authCookieOptions(req),
       maxAge: 365 * 24 * 60 * 60 * 1000
     });
 
@@ -31,12 +30,7 @@ class UserController {
    * Logout user
    */
   logout = (req, res) => {
-    res.cookie('token', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
-      expires: new Date(0)
-    });
+    res.clearCookie('token', authCookieOptions(req));
 
     return ApiResponse.success(res, null, 'Logged out successfully');
   }
