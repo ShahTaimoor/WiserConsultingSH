@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { fetchUsers, updateRole } from '@/redux/slices/admin/adminSlice';
-import { Users, UserCheck, UserX, Shield, Mail, Calendar, Search } from 'lucide-react';
+import { fetchUsers } from '@/redux/slices/admin/adminSlice';
+import { Users, Shield, Mail, Calendar, Search } from 'lucide-react';
 
 const AdminUsers = () => {
   const dispatch = useAppDispatch();
@@ -38,13 +38,6 @@ const AdminUsers = () => {
 
     return filtered;
   }, [users, filterRole, searchQuery]);
-
-  const handleRoleUpdate = async (userId: string, newRole: number) => {
-    if (!confirm(`Are you sure you want to ${newRole === 1 ? 'make this user an admin' : 'remove admin privileges from this user'}?`)) {
-      return;
-    }
-    await dispatch(updateRole({ userId, role: newRole }));
-  };
 
   const stats = useMemo(() => {
     const totalAdmins = users.filter(u => u.role === 1).length;
@@ -85,7 +78,7 @@ const AdminUsers = () => {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Users Management</h1>
-          <p className="text-sm sm:text-base text-gray-600 mt-1">Manage user accounts and permissions</p>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">View user accounts</p>
         </div>
       </div>
 
@@ -190,9 +183,6 @@ const AdminUsers = () => {
                   <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
                     Created
                   </th>
-                  <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -243,31 +233,6 @@ const AdminUsers = () => {
                           day: 'numeric'
                         })}
                       </div>
-                    </td>
-                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
-                      <button
-                        onClick={() => handleRoleUpdate(user._id, user.role === 1 ? 0 : 1)}
-                        className={`inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                          user.role === 1 
-                            ? 'text-red-600 hover:text-red-900 hover:bg-red-50'
-                            : 'text-green-600 hover:text-green-900 hover:bg-green-50'
-                        }`}
-                        title={user.role === 1 ? 'Remove Admin' : 'Make Admin'}
-                      >
-                        {user.role === 1 ? (
-                          <>
-                            <UserX className="w-3.5 h-3.5 mr-1" />
-                            <span className="hidden sm:inline">Remove Admin</span>
-                            <span className="sm:hidden">Remove</span>
-                          </>
-                        ) : (
-                          <>
-                            <UserCheck className="w-3.5 h-3.5 mr-1" />
-                            <span className="hidden sm:inline">Make Admin</span>
-                            <span className="sm:hidden">Admin</span>
-                          </>
-                        )}
-                      </button>
                     </td>
                   </tr>
                 ))}

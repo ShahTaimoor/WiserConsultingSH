@@ -68,7 +68,11 @@ class UserController {
    */
   updateProfile = asyncHandler(async (req, res) => {
     const userId = req.user.id;
-    const updateData = req.body;
+    // Only allow profile fields — never role, email or password
+    const { name, phone, address, city } = req.body;
+    const updateData = Object.fromEntries(
+      Object.entries({ name, phone, address, city }).filter(([, v]) => v !== undefined)
+    );
     const result = await userService.updateProfile(userId, updateData);
 
     return ApiResponse.success(res, result, 'Profile updated successfully');

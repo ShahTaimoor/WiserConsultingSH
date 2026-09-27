@@ -35,24 +35,6 @@ export const fetchAllUsers = async (): Promise<UsersResponse> => {
   };
 };
 
-export const updateUserRole = async (userId: string, role: number): Promise<void> => {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${API_URL}/update-user-role/${userId}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` })
-    },
-    credentials: 'include',
-    body: JSON.stringify({ role })
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Failed to update user role');
-  }
-};
-
 // ============ Form Submissions Service ============
 export interface FormSubmission {
   _id: string;

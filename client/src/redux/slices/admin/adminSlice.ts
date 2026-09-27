@@ -2,7 +2,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import {
   fetchAllUsers,
-  updateUserRole,
   fetchFormSubmissions,
   updateSubmissionStatus,
   saveDocumentComment,
@@ -39,20 +38,6 @@ export const fetchUsers = createAsyncThunk<AdminUser[], void, { rejectValue: str
       return response.users;
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch users';
-      return thunkAPI.rejectWithValue(errorMessage);
-    }
-  }
-);
-
-export const updateRole = createAsyncThunk<void, { userId: string; role: number }, { rejectValue: string }>(
-  'admin/updateRole',
-  async ({ userId, role }, thunkAPI) => {
-    try {
-      await updateUserRole(userId, role);
-      // Refetch users after update
-      thunkAPI.dispatch(fetchUsers());
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update user role';
       return thunkAPI.rejectWithValue(errorMessage);
     }
   }
@@ -191,12 +176,6 @@ const adminSlice = createSlice({
       .addCase(fetchSubmissions.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || 'Failed to fetch submissions';
-      });
-
-    // Update Role
-    builder
-      .addCase(updateRole.rejected, (state, action) => {
-        state.error = action.payload || 'Failed to update user role';
       });
 
     // Update Status

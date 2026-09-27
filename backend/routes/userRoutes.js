@@ -12,7 +12,6 @@ const { authLimiter } = require('../middleware/rateLimiter');
 const {
   loginSchema,
   updateProfileSchema,
-  updateUserRoleSchema,
   forgotPasswordSchema,
   resetPasswordSchema
 } = require('../validations/userValidation');
@@ -38,15 +37,6 @@ router.put(
   isAuthorized,
   validate(updateProfileSchema),
   userController.updateProfile.bind(userController)
-);
-
-// Update user role (Admin only)
-router.put(
-  '/update-user-role/:userId',
-  isAuthorized,
-  isAdmin,
-  validate(updateUserRoleSchema),
-  userController.updateUserRole.bind(userController)
 );
 
 // Forgot password - send reset email
