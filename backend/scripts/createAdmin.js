@@ -1,6 +1,12 @@
 /**
- * Script to create an admin user
- * Usage: node scripts/createAdmin.js
+ * Create an admin user, or reset an existing admin's password.
+ *
+ * Usage (from the backend folder):
+ *   ADMIN_EMAIL=you@site.com ADMIN_PASSWORD='StrongPass123' ADMIN_NAME='Your Name' node scripts/createAdmin.js
+ *   ADMIN_EMAIL=you@site.com ADMIN_PASSWORD='NewStrongPass' node scripts/createAdmin.js --reset
+ *
+ * ADMIN_EMAIL / ADMIN_PASSWORD / ADMIN_NAME can also be put in backend/.env.
+ * --reset  sets a new password for an existing user and makes them an admin.
  */
 
 require('dotenv').config();
@@ -10,64 +16,53 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
 
-const createAdmin = async () => {
+const reset = process.argv.includes('--reset');
+
+const fail = (msg) => {
+  console.error(`❌ ${msg}`);
+  process.exit(1);
+};
+
+const run = async () => {
+  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const password = process.env.ADMIN_PASSWORD;
+  const name = process.env.ADMIN_NAME?.trim() || email?.split('@')[0];
+
+  if (!process.env.MONGODB_URI) fail('MONGODB_URI is not set (check backend/.env)');
+  if (!email || !password) fail('Set ADMIN_EMAIL and ADMIN_PASSWORD (see usage at the top of this file)');
+  if (password.length < 8) fail('ADMIN_PASSWORD must be at least 8 characters');
+
+  await mongoose.connect(process.env.MONGODB_URI);
+  console.log('✅ Connected to MongoDB');
+
   try {
-    // Connect to MongoDB
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✅ Connected to MongoDB');
-
-    // Admin credentials
-    const name = process.env.ADMIN_NAME || 'admin';
-    const email = process.env.ADMIN_EMAIL || 'admin@wiserconsulting.com';
-    const password = process.env.ADMIN_PASSWORD || 'admin123';
-
-    // Check if admin already exists
-    const existingUser = await User.findOne({ 
-      $or: [{ email }, { name }] 
-    });
-
-    if (existingUser) {
-      console.log('⚠️  Admin user already exists:');
-      console.log(`   Email: ${existingUser.email}`);
-      console.log(`   Name: ${existingUser.name}`);
-      console.log(`   Role: ${existingUser.role === 1 ? 'Admin' : 'User'}`);
-      console.log('\n📝 To login, use:');
-      console.log(`   Email: ${existingUser.email}`);
-      console.log(`   Password: (the password you set when creating this user)`);
-      console.log('\n💡 If you forgot the password, you can:');
-      console.log('   1. Use the /api/create-admin endpoint to create a new admin');
-      console.log('   2. Or update the existing user\'s role to admin using the admin panel');
-      process.exit(0);
-    }
-
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
+    const existing = await User.findOne({ email });
 
-    // Create admin user
-    const admin = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      role: 1 // Admin role
-    });
-
-    console.log('✅ Admin user created successfully!');
-    console.log('\n📝 Login credentials:');
-    console.log(`   Email: ${admin.email}`);
-    console.log(`   Password: ${password}`);
-    console.log(`   Name: ${admin.name}`);
-    console.log(`   Role: Admin (${admin.role})`);
-    console.log('\n🔐 Please change the password after first login!');
-
-  } catch (error) {
-    console.error('❌ Error creating admin user:', error.message);
-    if (error.code === 11000) {
-      console.error('   User with this email or name already exists');
+    if (existing) {
+      if (!reset) {
+        console.log(`⚠️  A user with ${email} already exists (role: ${existing.role === 1 ? 'admin' : 'user'}).`);
+        console.log('   Run again with --reset to set a new password and make this user an admin.');
+        return;
+      }
+      existing.password = hashedPassword;
+      existing.role = 1;
+      existing.isDeleted = false;
+      await existing.save();
+      console.log(`✅ Password reset. ${email} is now an admin.`);
+      return;
     }
+
+    if (reset) fail(`No user found with ${email} — run without --reset to create one`);
+
+    await User.create({ name, email, password: hashedPassword, role: 1 });
+    console.log(`✅ Admin created: ${email}`);
+    console.log('   Log in at /login with this email and the password you set.');
+  } catch (error) {
+    fail(`Could not create admin: ${error.message}`);
   } finally {
     await mongoose.connection.close();
-    process.exit(0);
   }
 };
 
-createAdmin();
+run().catch((err) => fail(err.message));
