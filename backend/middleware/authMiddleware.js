@@ -3,6 +3,7 @@ const userRepository = require('../repositories/userRepository');
 const { AppError } = require('../middleware/errorHandler');
 const logger = require('../utils/logger');
 const { authCookieOptions } = require('../utils/cookieOptions');
+const DEPLOY_VERSION = require('../utils/deployVersion');
 
 // Middleware to check if user is authorized
 const isAuthorized = async (req, res, next) => {
@@ -18,6 +19,11 @@ const isAuthorized = async (req, res, next) => {
         }
 
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+        // Tokens issued before the latest deploy are no longer valid
+        if (decodedToken.v !== DEPLOY_VERSION) {
+            throw new Error('token issued before the current deploy');
+        }
 
         const user = await userRepository.findById(decodedToken.id);
         if (!user) {

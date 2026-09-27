@@ -9,6 +9,7 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const userRepository = require('../repositories/userRepository');
 const { AppError } = require('../middleware/errorHandler');
+const DEPLOY_VERSION = require('../utils/deployVersion');
 
 class UserService {
   /**
@@ -81,7 +82,7 @@ class UserService {
    */
   generateToken(userId) {
     return jwt.sign(
-      { id: userId },
+      { id: userId, v: DEPLOY_VERSION },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXP || '365d' }
     );
