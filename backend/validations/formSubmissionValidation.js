@@ -12,6 +12,12 @@ const createSubmissionSchema = z.object({
     formType: z.string().trim().default('contact'),
     subject: z.string().trim().optional(),
     message: z.string().trim().optional(),
+    destinationCountry: z.string().trim().optional(),
+    otherCountry: z.string().trim().optional(),
+    visaType: z.string().trim().optional(),
+    fromDate: z.string().trim().optional(),
+    toDate: z.string().trim().optional(),
+    purpose: z.string().trim().optional(),
     additionalData: z.record(z.any()).optional()
   })
 });

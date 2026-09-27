@@ -14,11 +14,10 @@ class ContactController {
 
   // Get all contact submissions (admin only)
   getAllContacts = asyncHandler(async (req, res) => {
-    const { status, isDeleted } = req.query;
+    const { status } = req.query;
     const filter = { isDeleted: false }; // Default: exclude deleted
     
-    if (status && status !== 'all') filter.status = status;
-    if (isDeleted !== undefined) filter.isDeleted = isDeleted === 'true';
+    if (typeof status === 'string' && status !== 'all') filter.status = status;
     
     const contacts = await Contact.find(filter)
       .sort({ createdAt: -1 });

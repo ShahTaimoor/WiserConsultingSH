@@ -6,11 +6,10 @@ const logger = require('../utils/logger');
 class ServiceController {
   // Get all services
   getAllServices = asyncHandler(async (req, res) => {
-    const { isActive, isDeleted } = req.query;
+    const { isActive } = req.query;
     const filter = { isDeleted: false }; // Default: exclude deleted
     
     if (isActive !== undefined) filter.isActive = isActive === 'true';
-    if (isDeleted !== undefined) filter.isDeleted = isDeleted === 'true';
     
     const services = await Service.find(filter)
       .sort({ order: 1, createdAt: -1 });

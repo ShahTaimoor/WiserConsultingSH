@@ -73,11 +73,10 @@ class TeamController {
 
   // Get all team members
   getAllTeamMembers = asyncHandler(async (req, res) => {
-    const { isActive, isDeleted } = req.query;
+    const { isActive } = req.query;
     const filter = { isDeleted: false }; // Default: exclude deleted
     
     if (isActive !== undefined) filter.isActive = isActive === 'true';
-    if (isDeleted !== undefined) filter.isDeleted = isDeleted === 'true';
     
     const teamMembers = await Team.find(filter)
       .sort({ order: 1, createdAt: -1 });
