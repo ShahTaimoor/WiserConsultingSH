@@ -163,7 +163,7 @@ const AdminUsers = () => {
             <p className="text-gray-600">
               {searchQuery || filterRole !== 'all' 
                 ? 'Try adjusting your search or filter criteria'
-                : 'Users will appear here once they register'}
+                : 'No user accounts found'}
             </p>
           </div>
         ) : (

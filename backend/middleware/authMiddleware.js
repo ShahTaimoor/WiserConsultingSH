@@ -21,6 +21,11 @@ const isAuthorized = async (req, res, next) => {
             return res.status(401).json({ success: false, message: 'User not found.' });
         }
 
+        // Only admins can sign in; reject any older non-admin tokens
+        if (user.role !== 1) {
+            return res.status(401).json({ success: false, message: 'Please log in first.' });
+        }
+
         req.user = user;
         next();
     } catch (error) {

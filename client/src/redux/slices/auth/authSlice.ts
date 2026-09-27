@@ -1,6 +1,6 @@
 // src/features/auth/authSlice.ts
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { loginUser, registerUser, googleLogin, forgotPasswordRequest, resetPasswordRequest, LoginResponse, RegisterResponse, GoogleLoginResponse, ForgotPasswordResponse, ResetPasswordResponse, User } from "./authService";
+import { loginUser, forgotPasswordRequest, resetPasswordRequest, LoginResponse, ForgotPasswordResponse, ResetPasswordResponse, User } from "./authService";
 import { handleApiError } from "@/utils/apiError";
 
 interface AuthState {
@@ -28,28 +28,6 @@ export const login = createAsyncThunk<LoginResponse, { email: string; password: 
       return await loginUser(email, password);
     } catch (err: unknown) {
       return thunkAPI.rejectWithValue(handleApiError(err, 'Login failed'));
-    }
-  }
-);
-
-export const register = createAsyncThunk<RegisterResponse, { name: string; email: string; password: string }, { rejectValue: string }>(
-  "auth/register",
-  async ({ name, email, password }, thunkAPI) => {
-    try {
-      return await registerUser(name, email, password);
-    } catch (err: unknown) {
-      return thunkAPI.rejectWithValue(handleApiError(err, 'Registration failed'));
-    }
-  }
-);
-
-export const googleAuth = createAsyncThunk<GoogleLoginResponse, string, { rejectValue: string }>(
-  "auth/google",
-  async (accessToken, thunkAPI) => {
-    try {
-      return await googleLogin(accessToken);
-    } catch (err: unknown) {
-      return thunkAPI.rejectWithValue(handleApiError(err, 'Google authentication failed'));
     }
   }
 );
@@ -105,15 +83,6 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = action.payload.user || null;
         state.success = "Login successful!";
-      })
-      .addCase(register.fulfilled, (state, action) => {
-        state.loading = false;
-        state.success = action.payload.message || "Registration successful!";
-      })
-      .addCase(googleAuth.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = action.payload.user || null;
-        state.success = "Google login successful!";
       })
       .addCase(forgotPassword.fulfilled, (state, action) => {
         state.loading = false;

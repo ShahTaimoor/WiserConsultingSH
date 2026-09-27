@@ -16,16 +16,6 @@ export interface LoginResponse {
   token?: string;
 }
 
-export interface RegisterResponse {
-  success: boolean;
-  message?: string;
-  user?: {
-    _id: string;
-    name: string;
-    email: string;
-  };
-}
-
 export interface ForgotPasswordResponse {
   success: boolean;
   message?: string;
@@ -33,13 +23,6 @@ export interface ForgotPasswordResponse {
 
 export interface ResetPasswordResponse {
   success: boolean;
-  message?: string;
-}
-
-export interface GoogleLoginResponse {
-  success: boolean;
-  user?: User;
-  token?: string;
   message?: string;
 }
 
@@ -100,69 +83,6 @@ export const loginUser = async (email: string, password: string): Promise<LoginR
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ message: 'Login failed' }));
       throw new Error(errorData.message || 'Login failed');
-    }
-
-    const responseData = await response.json();
-    const user = responseData.data?.user || responseData.user;
-    const token = responseData.data?.token || responseData.token;
-
-    if (user && token) {
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('token', token);
-    }
-
-    return {
-      success: responseData.success || true,
-      message: responseData.message,
-      user,
-      token,
-    };
-  } catch (error) {
-    if (error instanceof TypeError && error.message === 'Failed to fetch') {
-      throw new Error('Unable to connect to server. Please check if the backend is running.');
-    }
-    throw error;
-  }
-};
-
-// ✅ Register request
-export const registerUser = async (name: string, email: string, password: string): Promise<RegisterResponse> => {
-  try {
-    const res = await fetch(`${API_URL}/signup`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ name, email, password }),
-    });
-
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => ({ message: 'Registration failed' }));
-      throw new Error(errorData.message || 'Registration failed');
-    }
-
-    const data: RegisterResponse = await res.json();
-    return data;
-  } catch (error) {
-    if (error instanceof TypeError && error.message === 'Failed to fetch') {
-      throw new Error('Unable to connect to server. Please check if the backend is running.');
-    }
-    throw error;
-  }
-};
-
-// ✅ Google OAuth login
-export const googleLogin = async (accessToken: string): Promise<GoogleLoginResponse> => {
-  try {
-    const response = await fetch(`${API_URL}/auth/google/token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ access_token: accessToken }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Authentication failed' }));
-      throw new Error(errorData.message || 'Authentication failed');
     }
 
     const responseData = await response.json();

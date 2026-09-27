@@ -60,7 +60,7 @@ class UserService {
 
     // Check if user has password (not Google-only user)
     if (!user.password) {
-      throw new AppError('Please use Google authentication', 400);
+      throw new AppError('Invalid credentials', 400);
     }
 
     // Verify password
@@ -179,65 +179,6 @@ class UserService {
   }
 
   /**
-   * Handle Google OAuth user
-   * Fetches user info from Google and handles authentication
-   */
-  async handleGoogleAuth(accessToken) {
-    // Fetch user info from Google
-    const googleResponse = await fetch(
-      `https://www.googleapis.com/oauth2/v2/userinfo?access_token=${accessToken}`
-    );
-    
-    if (!googleResponse.ok) {
-      throw new AppError('Failed to fetch user info from Google', 400);
-    }
-
-    const googleUser = await googleResponse.json();
-
-    if (!googleUser.id) {
-      throw new AppError('Invalid access token', 400);
-    }
-
-    // Check if user exists by Google ID
-    let user = await userRepository.findByGoogleId(googleUser.id);
-
-    if (user) {
-      // User exists, generate token
-      const token = this.generateToken(user._id);
-      user.password = undefined;
-      return { user, token };
-    }
-
-    // Check if user exists with same email
-    user = await userRepository.findByEmail(googleUser.email);
-
-    if (user) {
-      // Link Google account to existing user
-      await userRepository.updateById(user._id, {
-        googleId: googleUser.id,
-        avatar: googleUser.picture
-      });
-      const updatedUser = await userRepository.findById(user._id);
-      const token = this.generateToken(updatedUser._id);
-      updatedUser.password = undefined;
-      return { user: updatedUser, token };
-    }
-
-    // Create new user
-    user = await userRepository.create({
-      googleId: googleUser.id,
-      name: googleUser.name,
-      email: googleUser.email,
-      avatar: googleUser.picture
-    });
-
-    const token = this.generateToken(user._id);
-    user.password = undefined;
-
-    return { user, token };
-  }
-
-  /**
    * Generate JWT token
    */
   generateToken(userId) {
@@ -253,13 +194,10 @@ class UserService {
    */
   async forgotPassword(email) {
     const user = await userRepository.findByEmail(email);
-    if (!user) {
-      // Return generic message so we don't leak whether the email exists
+    // Only admins can sign in, so only admins can reset their password.
+    // Return the same generic message otherwise so we don't leak which emails exist.
+    if (!user || user.role !== 1 || !user.password) {
       return { message: 'If that email is registered, a reset link has been sent.' };
-    }
-
-    if (!user.password) {
-      throw new AppError('This account uses Google sign-in. Password reset is not available.', 400);
     }
 
     // Generate a secure random token

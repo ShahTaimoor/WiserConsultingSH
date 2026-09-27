@@ -1,16 +1,12 @@
 // server.js
 const express = require("express");
 const cors = require("cors");
-const session = require("express-session");
-const passport = require("passport");
 const cookieParser = require("cookie-parser");
 const path = require("path");
 require("dotenv").config();
-require("./config/passport");
 
 const connectDB = require("./config/db");
 const userRoutes = require("./routes/userRoutes");
-const authRoutes = require("./routes/authRoutes");
 const formSubmissionRoutes = require('./routes/formSubmissionRoutes');
 const portfolioRoutes = require('./routes/portfolioRoutes');
 const teamRoutes = require('./routes/teamRoutes');
@@ -19,7 +15,7 @@ const contentRoutes = require('./routes/contentRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const assessmentRoutes = require('./routes/assessmentRoutes');
-const { apiLimiter, authLimiter } = require('./middleware/rateLimiter');
+const { apiLimiter } = require('./middleware/rateLimiter');
 const sanitize = require('./middleware/sanitize');
 const logger = require('./utils/logger');
 
@@ -58,30 +54,10 @@ app.use(sanitize);
 // Rate limiting
 app.use('/api', apiLimiter);
 
-// Session middleware
-if (!process.env.SESSION_SECRET && process.env.NODE_ENV === 'production') {
-  throw new Error('SESSION_SECRET environment variable is required in production');
-}
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'dev-only-session-secret',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000
-  }
-}));
-
-// Initialize passport
-app.use(passport.initialize());
-app.use(passport.session());
-
 // Serve static files from uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // API Routes with rate limiting
-app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api', userRoutes);
 app.use('/api', formSubmissionRoutes);
 app.use('/api', portfolioRoutes);

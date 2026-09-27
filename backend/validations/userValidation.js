@@ -48,12 +48,6 @@ const createAdminSchema = z.object({
   })
 });
 
-const googleTokenSchema = z.object({
-  body: z.object({
-    access_token: z.string().min(1, 'Access token is required')
-  })
-});
-
 const forgotPasswordSchema = z.object({
   body: z.object({
     email: z.string().email('Invalid email format').trim().toLowerCase()
@@ -73,7 +67,6 @@ module.exports = {
   updateProfileSchema,
   updateUserRoleSchema,
   createAdminSchema,
-  googleTokenSchema,
   forgotPasswordSchema,
   resetPasswordSchema
 };
