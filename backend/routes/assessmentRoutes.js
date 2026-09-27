@@ -8,34 +8,14 @@ const router = express.Router();
 const assessmentController = require('../controllers/assessmentController');
 const { uploadFields, uploadFieldsLocal } = require('../config/cloudinary');
 const validate = require('../middleware/validate');
+const { isAuthorized, isAdmin } = require('../middleware/authMiddleware');
+const { uploadLimiter } = require('../middleware/rateLimiter');
 const { createSubmissionSchema } = require('../validations/formSubmissionValidation');
-
-// Test route to verify PDF upload
-router.post('/test-pdf-upload', uploadFields, async (req, res, next) => {
-  try {
-    if (!req.files) {
-      return res.status(400).json({
-        success: false,
-        message: 'No files uploaded'
-      });
-    }
-
-    const documents = require('../config/cloudinary').processFiles(req.files, 'cloudinary');
-
-    res.json({
-      success: true,
-      message: 'PDF upload test successful',
-      documents: documents,
-      fileCount: documents.length
-    });
-  } catch (error) {
-    next(error);
-  }
-});
 
 // Submit assessment (Cloudinary)
 router.post(
   '/submit-assessment',
+  uploadLimiter,
   uploadFields,
   validate(createSubmissionSchema),
   assessmentController.createSubmission.bind(assessmentController)
@@ -44,15 +24,16 @@ router.post(
 // Submit assessment (Local)
 router.post(
   '/submit-assessment-local',
+  uploadLimiter,
   uploadFieldsLocal,
   validate(createSubmissionSchema),
   assessmentController.createSubmission.bind(assessmentController)
 );
 
 // Merge PDFs
-router.post('/merge-pdfs', assessmentController.mergePDFs.bind(assessmentController));
+router.post('/merge-pdfs', isAuthorized, isAdmin, assessmentController.mergePDFs.bind(assessmentController));
 
 // Compress PDFs
-router.post('/compress-pdfs', assessmentController.compressPDFs.bind(assessmentController));
+router.post('/compress-pdfs', isAuthorized, isAdmin, assessmentController.compressPDFs.bind(assessmentController));
 
 module.exports = router;

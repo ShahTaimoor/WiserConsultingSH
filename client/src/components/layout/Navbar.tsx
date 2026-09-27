@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import { Menu, X, Search, ArrowRight, LogIn } from "lucide-react";
+import { Menu, X, Search, ArrowRight } from "lucide-react";
 import { useSettings } from "@/context/SettingsContext";
 import { NAV_LINKS } from "@/constants";
 import { SearchOverlay } from "@/components/features/SearchOverlay";
@@ -93,12 +93,7 @@ export function Navbar() {
               <button onClick={() => setIsSearchOpen(true)} className="p-2 text-neutral-400 hover:text-white hover:bg-white/10 rounded-md transition-colors" aria-label="Search">
                 <Search className="w-[18px] h-[18px]" />
               </button>
-              {mounted && !user && (
-                <Link href="/login" className="p-2 text-neutral-400 hover:text-white hover:bg-white/10 rounded-md transition-colors" aria-label="Login">
-                  <LogIn className="w-[18px] h-[18px]" />
-                </Link>
-              )}
-              {mounted && user && <UserDropdown user={user} />}
+              {mounted && user?.role === 1 && <UserDropdown user={user} />}
               <Link href="/contact" className="inline-flex items-center gap-1 ml-0.5 px-3 py-1.5 text-xs sm:text-sm font-semibold text-neutral-950 bg-cyan-400 hover:bg-cyan-300 rounded-md transition-colors">
                 Start project <ArrowRight className="w-3 h-3" />
               </Link>
@@ -113,7 +108,7 @@ export function Navbar() {
         </div>
       </div>
 
-      <MobileMenu isOpen={isOpen} onClose={() => setIsOpen(false)} user={user} navLinks={NAV_LINKS} isActive={isActive} />
+      <MobileMenu isOpen={isOpen} onClose={() => setIsOpen(false)} user={user?.role === 1 ? user : null} navLinks={NAV_LINKS} isActive={isActive} />
       <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </header>
   );

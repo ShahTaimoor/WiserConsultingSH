@@ -7,7 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Home, FolderKanban, Users, Mail, Search, ArrowUpRight, LogIn, LogOut,
+  Home, FolderKanban, Users, Mail, Search, ArrowUpRight, LogOut,
   ShieldCheck, FileText, PanelLeftClose, PanelLeftOpen, Menu, X, LayoutDashboard,
 } from "lucide-react";
 import { AppDispatch, RootState } from "@/redux/store";
@@ -202,20 +202,7 @@ function SidebarBody({
           </Link>
         </motion.div>
 
-        {mounted && !user && (
-          <Link
-            href="/login"
-            onClick={onNavigate}
-            title={collapsed ? "Login" : undefined}
-            className={`flex items-center gap-2.5 h-9 text-sm text-neutral-400 hover:text-white hover:bg-white/5 transition-colors ${
-              collapsed ? "justify-center" : "px-3"
-            }`}
-          >
-            <LogIn className="w-4 h-4" /> {!collapsed && "Login"}
-          </Link>
-        )}
-
-        {mounted && user && (
+        {mounted && user?.role === 1 && (
           <div className={`flex items-center gap-2.5 ${collapsed ? "flex-col" : "px-1"}`}>
             <div className="w-8 h-8 shrink-0 rounded-full bg-cyan-400 flex items-center justify-center text-[11px] font-semibold text-neutral-950">
               {user.name?.charAt(0).toUpperCase()}

@@ -73,10 +73,10 @@ const Login: React.FC = () => {
               <LogIn className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-              Welcome Back
+              Admin Login
             </h2>
             <p className="text-slate-300 text-xs sm:text-sm">
-              Sign in to access your account
+              Sign in to access the admin dashboard
             </p>
           </div>
 
@@ -182,18 +182,6 @@ const Login: React.FC = () => {
             </motion.button>
           </form>
 
-          {/* Footer */}
-          <div className="px-8 pb-8 text-center">
-            <p className="text-sm text-slate-600">
-              Don&apos;t have an account?{" "}
-              <Link
-                href="/register"
-                className="font-semibold text-slate-900 hover:text-slate-700 transition-colors underline underline-offset-2"
-              >
-                Create one here
-              </Link>
-            </p>
-          </div>
         </motion.div>
       </div>
     </div>

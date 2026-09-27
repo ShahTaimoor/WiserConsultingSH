@@ -186,6 +186,7 @@ export interface CompressPDFsRequest {
 export const mergePDFs = async (request: MergePDFsRequest): Promise<Blob> => {
   const response = await fetch(`${API_URL}/merge-pdfs`, {
     method: 'POST',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -202,6 +203,7 @@ export const mergePDFs = async (request: MergePDFsRequest): Promise<Blob> => {
 export const compressPDFs = async (request: CompressPDFsRequest): Promise<Blob> => {
   const response = await fetch(`${API_URL}/compress-pdfs`, {
     method: 'POST',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
     },

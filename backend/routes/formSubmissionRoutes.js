@@ -43,9 +43,11 @@ router.put(
   formSubmissionController.addAdminComment.bind(formSubmissionController)
 );
 
-// Add customer comment
+// Add customer comment (Admin only - no public customer portal)
 router.post(
   '/:submissionId/customer-comment',
+  isAuthorized,
+  isAdmin,
   validate(addCustomerCommentSchema),
   formSubmissionController.addCustomerComment.bind(formSubmissionController)
 );
@@ -53,6 +55,8 @@ router.post(
 // Get customer submission
 router.get(
   '/customer-submission/:email',
+  isAuthorized,
+  isAdmin,
   validate(getSubmissionByEmailSchema),
   formSubmissionController.getSubmissionByEmail.bind(formSubmissionController)
 );
@@ -69,6 +73,8 @@ router.delete(
 // Get file URL (works for both local and cloudinary files)
 router.get(
   '/file/:submissionId/:documentId',
+  isAuthorized,
+  isAdmin,
   validate(getFileUrlSchema),
   formSubmissionController.getFileUrl.bind(formSubmissionController)
 );

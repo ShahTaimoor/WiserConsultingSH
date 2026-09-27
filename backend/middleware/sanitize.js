@@ -53,8 +53,14 @@ const sanitize = (req, res, next) => {
   }
 
   // Sanitize query parameters
+  // Express 5 exposes req.query as a getter, so plain assignment is silently ignored
   if (req.query && typeof req.query === 'object') {
-    req.query = sanitizeObject(req.query);
+    Object.defineProperty(req, 'query', {
+      value: sanitizeObject(req.query),
+      writable: true,
+      configurable: true,
+      enumerable: true
+    });
   }
 
   // Sanitize URL parameters

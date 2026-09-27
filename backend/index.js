@@ -18,7 +18,8 @@ const serviceRoutes = require('./routes/serviceRoutes');
 const contentRoutes = require('./routes/contentRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
-const { apiLimiter, authLimiter, uploadLimiter } = require('./middleware/rateLimiter');
+const assessmentRoutes = require('./routes/assessmentRoutes');
+const { apiLimiter, authLimiter } = require('./middleware/rateLimiter');
 const sanitize = require('./middleware/sanitize');
 const logger = require('./utils/logger');
 
@@ -47,19 +48,22 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// Input sanitization (must be before body parsing)
-app.use(sanitize);
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Input sanitization (must be after body parsing so req.body exists)
+app.use(sanitize);
 
 // Rate limiting
 app.use('/api', apiLimiter);
 
 // Session middleware
+if (!process.env.SESSION_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('SESSION_SECRET environment variable is required in production');
+}
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key',
+  secret: process.env.SESSION_SECRET || 'dev-only-session-secret',
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -86,6 +90,7 @@ app.use('/api', serviceRoutes);
 app.use('/api', contentRoutes);
 app.use('/api', contactRoutes);
 app.use('/api', settingsRoutes);
+app.use('/api', assessmentRoutes);
 
 app.get('/', (req, res) => {
   res.send('Welcome to the backend');

@@ -54,12 +54,11 @@ class PortfolioController {
 
   // Get all portfolio items
   getAllPortfolios = asyncHandler(async (req, res) => {
-    const { category, isActive, isDeleted } = req.query;
-    const filter = { isDeleted: false }; // Default: exclude deleted
+    const { category, isActive } = req.query;
+    const filter = { isDeleted: false }; // Public route: never expose deleted items
     
-    if (category) filter.category = category;
+    if (typeof category === 'string' && category) filter.category = category;
     if (isActive !== undefined) filter.isActive = isActive === 'true';
-    if (isDeleted !== undefined) filter.isDeleted = isDeleted === 'true';
     
     const portfolios = await Portfolio.find(filter)
       .sort({ order: 1, createdAt: -1 });

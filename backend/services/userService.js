@@ -69,6 +69,11 @@ class UserService {
       throw new AppError('Invalid credentials', 400);
     }
 
+    // Login is restricted to admins only
+    if (user.role !== 1) {
+      throw new AppError('Invalid credentials', 400);
+    }
+
     // Generate JWT token
     const token = this.generateToken(user._id);
 

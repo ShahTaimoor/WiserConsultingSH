@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, LogIn } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { User as UserType } from "@/types";
 
@@ -49,14 +49,6 @@ export function MobileMenu({ isOpen, onClose, user, navLinks, isActive }: Mobile
             </Link>
 
             <MobileMenuSearch onClose={onClose} />
-
-            {mounted && !user && (
-              <Link href="/login" onClick={onClose}
-                className="flex items-center gap-2 mt-3 px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors"
-              >
-                <LogIn className="w-5 h-5" /> Login
-              </Link>
-            )}
 
             {mounted && user && (
               <MobileMenuUserInfo user={user} onClose={onClose} />

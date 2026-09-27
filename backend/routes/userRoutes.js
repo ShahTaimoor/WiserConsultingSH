@@ -8,21 +8,17 @@ const router = express.Router();
 const userController = require('../controllers/userController');
 const { isAuthorized, isAdmin } = require('../middleware/authMiddleware');
 const validate = require('../middleware/validate');
+const { authLimiter } = require('../middleware/rateLimiter');
 const {
-  signupSchema,
   loginSchema,
   updateProfileSchema,
   updateUserRoleSchema,
-  createAdminSchema,
   forgotPasswordSchema,
   resetPasswordSchema
 } = require('../validations/userValidation');
 
-// Signup
-router.post('/signup', validate(signupSchema), userController.signup.bind(userController));
-
-// Login
-router.post('/login', validate(loginSchema), userController.login.bind(userController));
+// Login (admin only)
+router.post('/login', authLimiter, validate(loginSchema), userController.login.bind(userController));
 
 // Logout
 router.get('/logout', userController.logout.bind(userController));
@@ -53,16 +49,10 @@ router.put(
   userController.updateUserRole.bind(userController)
 );
 
-// Create admin user
-router.post(
-  '/create-admin',
-  validate(createAdminSchema),
-  userController.createAdmin.bind(userController)
-);
-
 // Forgot password - send reset email
 router.post(
   '/forgot-password',
+  authLimiter,
   validate(forgotPasswordSchema),
   userController.forgotPassword.bind(userController)
 );
@@ -70,6 +60,7 @@ router.post(
 // Reset password - set new password with token
 router.post(
   '/reset-password',
+  authLimiter,
   validate(resetPasswordSchema),
   userController.resetPassword.bind(userController)
 );
