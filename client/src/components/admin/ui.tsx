@@ -312,6 +312,7 @@ export function FormDrawer({
   submitLabel,
   saving,
   children,
+  overlay,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -321,6 +322,8 @@ export function FormDrawer({
   submitLabel: string;
   saving?: boolean;
   children: ReactNode;
+  /** Full-panel overlay rendered on top of the form (e.g. an image cropper) */
+  overlay?: ReactNode;
 }) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -344,6 +347,7 @@ export function FormDrawer({
             </Button>
           </div>
         </form>
+        {overlay}
       </SheetContent>
     </Sheet>
   );

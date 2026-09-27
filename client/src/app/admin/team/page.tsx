@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, Github, Linkedin, Mail, Pencil, Plus, Search, Trash2, Twitter, Upload, Users } from "lucide-react";
+import { Check, Crop, Github, Linkedin, Mail, Pencil, Plus, Search, Trash2, Twitter, Upload, Users } from "lucide-react";
 import { adminFetch, isImageUrl } from "@/lib/adminApi";
-import { IMAGE_SIZES, imageToWebp } from "@/lib/imageToWebp";
+import { ImageCropper } from "@/components/admin/ImageCropper";
 import { cn } from "@/lib/utils";
 import {
   Badge,
@@ -102,6 +102,9 @@ export default function AdminTeam() {
   const [form, setForm] = useState(emptyForm);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+  // Full-size source shown in the cropper (kept so "Adjust" can re-crop from the original)
+  const [cropSource, setCropSource] = useState<string>("");
+  const [cropOpen, setCropOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -137,6 +140,8 @@ export default function AdminTeam() {
     setForm(emptyForm);
     setImageFile(null);
     setImagePreview("");
+    setCropSource("");
+    setCropOpen(false);
     setDrawerOpen(true);
   };
 
@@ -160,17 +165,25 @@ export default function AdminTeam() {
     });
     setImageFile(null);
     setImagePreview(isImageUrl(m.image) ? m.image : "");
+    setCropSource(isImageUrl(m.image) ? m.image : "");
+    setCropOpen(false);
     setDrawerOpen(true);
   };
 
-  const pickImage = async (original?: File) => {
+  // New photo chosen: open the cropper on it
+  const pickImage = (original?: File) => {
     if (!original) return;
     if (!original.type.startsWith("image/")) return toast("error", "Please choose an image file");
-    // Shrink + convert to WebP in the browser so the upload is small and fast
-    const file = await imageToWebp(original, IMAGE_SIZES.avatar);
+    setCropSource(URL.createObjectURL(original));
+    setCropOpen(true);
+  };
+
+  // Cropper returns a square WebP, ready to upload
+  const applyCrop = (file: File) => {
     if (file.size > 5 * 1024 * 1024) return toast("error", "Image must be smaller than 5 MB");
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
+    setCropOpen(false);
   };
 
   const toggleRole = (role: string) =>
@@ -310,15 +323,27 @@ export default function AdminTeam() {
         onSubmit={handleSubmit}
         submitLabel={editing ? "Save changes" : "Add member"}
         saving={saving}
+        overlay={
+          cropOpen && cropSource ? (
+            <ImageCropper src={cropSource} onCancel={() => setCropOpen(false)} onDone={applyCrop} />
+          ) : null
+        }
       >
         <FormSection title="Profile">
           <div className="flex items-center gap-4">
             <Avatar member={{ name: form.name || "?", image: imagePreview }} size="lg" />
             <div>
-              <Button type="button" variant="secondary" size="sm" onClick={() => fileRef.current?.click()}>
-                <Upload /> {imagePreview ? "Change photo" : "Upload photo"}
-              </Button>
-              <p className="mt-1.5 text-xs text-slate-500">Square image works best. Converted to WebP automatically.</p>
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" variant="secondary" size="sm" onClick={() => fileRef.current?.click()}>
+                  <Upload /> {imagePreview ? "Change photo" : "Upload photo"}
+                </Button>
+                {cropSource && (
+                  <Button type="button" variant="secondary" size="sm" onClick={() => setCropOpen(true)}>
+                    <Crop /> Adjust
+                  </Button>
+                )}
+              </div>
+              <p className="mt-1.5 text-xs text-slate-500">Crop and zoom after choosing. Saved as WebP.</p>
             </div>
             <input
               ref={fileRef}
