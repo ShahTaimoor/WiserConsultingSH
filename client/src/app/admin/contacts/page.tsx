@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Archive, ArrowLeft, CheckCheck, Inbox, Mail, Phone, Reply, Search, Trash2 } from "lucide-react";
+import { Archive, ArrowLeft, CheckCheck, Copy, Inbox, Mail, Phone, Reply, Search, Trash2 } from "lucide-react";
 import { adminFetch } from "@/lib/adminApi";
 import { cn } from "@/lib/utils";
 import { Badge, Button, EmptyState, PageHeader, PageLoader, inputClass, useFeedback } from "@/components/admin/ui";
@@ -9,6 +9,18 @@ import { CONTACT_STATUSES, statusTone, type Contact, type ContactStatus } from "
 import { CONTACTS_CHANGED_EVENT } from "@/components/shadcn-space/blocks/sidebar-01/app-sidebar";
 
 const notifyContactsChanged = () => window.dispatchEvent(new Event(CONTACTS_CHANGED_EVENT));
+
+// Pre-filled reply: Gmail compose in a new tab (works without a desktop mail app), or the default mail app
+const replyLinks = (c: Contact) => {
+  const subject = `Re: ${c.subject}`;
+  const quoted = c.message.split("\n").map((l) => `> ${l}`).join("\n");
+  const body = `Hi ${c.name},\n\n\n\n---\nOn ${new Date(c.createdAt).toLocaleString()}, ${c.name} wrote:\n${quoted}`;
+  const q = (v: string) => encodeURIComponent(v);
+  return {
+    gmail: `https://mail.google.com/mail/?view=cm&fs=1&to=${q(c.email)}&su=${q(subject)}&body=${q(body)}`,
+    mailto: `mailto:${c.email}?subject=${q(subject)}&body=${q(body)}`,
+  };
+};
 
 const formatDate = (d: string) =>
   new Date(d).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
@@ -54,6 +66,15 @@ export default function AdminContacts() {
   }, [contacts, filter, query]);
 
   const selected = contacts?.find((c) => c._id === selectedId) ?? null;
+
+  const copyEmail = async (email: string) => {
+    try {
+      await navigator.clipboard.writeText(email);
+      toast("success", "Email address copied");
+    } catch {
+      toast("error", "Could not copy — please select it manually");
+    }
+  };
 
   const setStatus = async (id: string, status: ContactStatus, silent = false) => {
     try {
@@ -207,12 +228,23 @@ export default function AdminContacts() {
                   <p className="mt-6 whitespace-pre-wrap text-sm leading-relaxed text-slate-700">{selected.message}</p>
                 </div>
 
-                <div className="border-t border-slate-100 px-6 py-4">
+                <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 px-6 py-4">
                   <a
-                    href={`mailto:${selected.email}?subject=${encodeURIComponent(`Re: ${selected.subject}`)}`}
+                    href={replyLinks(selected).gmail}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="inline-flex h-9 items-center gap-2 rounded-lg bg-slate-900 px-3.5 text-sm font-medium text-white hover:bg-slate-800"
                   >
-                    <Reply className="h-4 w-4" /> Reply by email
+                    <Reply className="h-4 w-4" /> Reply in Gmail
+                  </a>
+                  <Button variant="secondary" onClick={() => copyEmail(selected.email)}>
+                    <Copy /> Copy email
+                  </Button>
+                  <a
+                    href={replyLinks(selected).mailto}
+                    className="ml-auto text-xs font-medium text-slate-500 underline-offset-2 hover:text-slate-900 hover:underline"
+                  >
+                    Open in mail app
                   </a>
                 </div>
               </>
