@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { adminFetch } from "@/lib/adminApi";
 import { Briefcase, ExternalLink, LayoutDashboard, LogOut, Mail, Settings, Users } from "lucide-react";
 import {
   Sidebar,
@@ -25,6 +27,36 @@ export const navData = [
   { title: "Settings", icon: Settings, href: "/admin/settings" },
 ];
 
+// Event the Messages page fires after changing a message, so the badge updates immediately
+export const CONTACTS_CHANGED_EVENT = "admin:contacts-changed";
+
+/** Number of unread ("new") contact messages, refreshed every minute and on changes. */
+function useNewMessageCount() {
+  const [count, setCount] = useState(0);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    let alive = true;
+    const refresh = () =>
+      adminFetch<{ status: string }[]>("/admin/contacts")
+        .then((list) => alive && setCount(list.filter((c) => c.status === "new").length))
+        .catch(() => {});
+
+    refresh();
+    const timer = setInterval(refresh, 60_000);
+    window.addEventListener(CONTACTS_CHANGED_EVENT, refresh);
+    window.addEventListener("focus", refresh);
+    return () => {
+      alive = false;
+      clearInterval(timer);
+      window.removeEventListener(CONTACTS_CHANGED_EVENT, refresh);
+      window.removeEventListener("focus", refresh);
+    };
+  }, [pathname]);
+
+  return count;
+}
+
 export function AppSidebar({
   user,
   onLogout,
@@ -35,6 +67,7 @@ export function AppSidebar({
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
   const closeOnMobile = () => isMobile && setOpenMobile(false);
+  const newMessages = useNewMessageCount();
 
   const isActive = (href: string) =>
     href === "/admin" ? pathname === "/admin" : pathname === href || pathname.startsWith(`${href}/`);
@@ -78,6 +111,14 @@ export function AppSidebar({
                       <Link href={item.href} onClick={closeOnMobile}>
                         <item.icon />
                         <span>{item.title}</span>
+                        {item.href === "/admin/contacts" && newMessages > 0 && (
+                          <span
+                            className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-cyan-600 px-1.5 text-[11px] font-semibold tabular-nums text-white"
+                            aria-label={`${newMessages} new messages`}
+                          >
+                            {newMessages > 99 ? "99+" : newMessages}
+                          </span>
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

@@ -6,6 +6,9 @@ import { adminFetch } from "@/lib/adminApi";
 import { cn } from "@/lib/utils";
 import { Badge, Button, EmptyState, PageHeader, PageLoader, inputClass, useFeedback } from "@/components/admin/ui";
 import { CONTACT_STATUSES, statusTone, type Contact, type ContactStatus } from "@/components/admin/contacts";
+import { CONTACTS_CHANGED_EVENT } from "@/components/shadcn-space/blocks/sidebar-01/app-sidebar";
+
+const notifyContactsChanged = () => window.dispatchEvent(new Event(CONTACTS_CHANGED_EVENT));
 
 const formatDate = (d: string) =>
   new Date(d).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
@@ -56,6 +59,7 @@ export default function AdminContacts() {
     try {
       await adminFetch(`/admin/contacts/${id}`, { method: "PUT", body: JSON.stringify({ status }) });
       setContacts((list) => list?.map((c) => (c._id === id ? { ...c, status } : c)) ?? null);
+      notifyContactsChanged();
       if (!silent) toast("success", `Marked as ${status}`);
     } catch (err) {
       toast("error", err instanceof Error ? err.message : "Could not update message");
@@ -76,6 +80,7 @@ export default function AdminContacts() {
     try {
       await adminFetch(`/admin/contacts/${c._id}`, { method: "DELETE" });
       setContacts((list) => list?.filter((x) => x._id !== c._id) ?? null);
+      notifyContactsChanged();
       setSelectedId(null);
       toast("success", "Message deleted");
     } catch (err) {
