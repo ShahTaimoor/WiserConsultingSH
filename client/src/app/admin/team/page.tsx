@@ -38,6 +38,9 @@ interface TeamMember {
   isActive: boolean;
 }
 
+// The team page shows photos in a 1792×1024 frame; the profile page uses the centre square
+const TEAM_PHOTO_ASPECT = 1792 / 1024;
+
 const ROLE_OPTIONS = [
   "CEO",
   "Project Manager",
@@ -325,7 +328,16 @@ export default function AdminTeam() {
         saving={saving}
         overlay={
           cropOpen && cropSource ? (
-            <ImageCropper src={cropSource} onCancel={() => setCropOpen(false)} onDone={applyCrop} />
+            <ImageCropper
+              src={cropSource}
+              aspect={TEAM_PHOTO_ASPECT}
+              outputWidth={1792}
+              guide="square"
+              guideLabel="Profile page"
+              allowFit
+              onCancel={() => setCropOpen(false)}
+              onDone={applyCrop}
+            />
           ) : null
         }
       >
@@ -343,7 +355,7 @@ export default function AdminTeam() {
                   </Button>
                 )}
               </div>
-              <p className="mt-1.5 text-xs text-slate-500">Crop and zoom after choosing. Saved as WebP.</p>
+              <p className="mt-1.5 text-xs text-slate-500">Crop and zoom to fit the team page frame. Saved as WebP.</p>
             </div>
             <input
               ref={fileRef}
