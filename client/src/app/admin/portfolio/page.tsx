@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Briefcase, ExternalLink, ImageIcon, Pencil, Plus, Search, Trash2, Upload, X } from "lucide-react";
+import { Briefcase, Crop, ExternalLink, ImageIcon, Pencil, Plus, Search, Trash2, Upload, X } from "lucide-react";
 import { adminFetch, isImageUrl } from "@/lib/adminApi";
-import { IMAGE_SIZES, imageToWebp } from "@/lib/imageToWebp";
+import { ImageCropper } from "@/components/admin/ImageCropper";
 import { cn } from "@/lib/utils";
 import {
   Badge,
@@ -41,6 +41,9 @@ const CATEGORIES = [
 
 type ImageItem = { url: string; file?: File };
 
+// The portfolio page shows project images in a 16:10 frame
+const PROJECT_PHOTO_ASPECT = 16 / 10;
+
 const emptyForm = {
   title: "",
   description: "",
@@ -63,6 +66,9 @@ export default function AdminPortfolio() {
   const [images, setImages] = useState<ImageItem[]>([]);
   const [saving, setSaving] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  // Cropper state: photo being cropped (index = existing image being re-cropped) + photos waiting their turn
+  const [crop, setCrop] = useState<{ src: string; index: number | null } | null>(null);
+  const [pending, setPending] = useState<File[]>([]);
 
   const load = async () => {
     try {
@@ -92,6 +98,8 @@ export default function AdminPortfolio() {
     setEditing(null);
     setForm(emptyForm);
     setImages([]);
+    setCrop(null);
+    setPending([]);
     setDrawerOpen(true);
   };
 
@@ -107,26 +115,40 @@ export default function AdminPortfolio() {
       isActive: p.isActive,
     });
     setImages(p.images.filter(isImageUrl).map((url) => ({ url })));
+    setCrop(null);
+    setPending([]);
     setDrawerOpen(true);
   };
 
-  const addFiles = async (files: FileList | null) => {
+  // Open the cropper on the next queued photo (or close it when the queue is empty)
+  const nextInQueue = (queue: File[]) => {
+    const [first, ...rest] = queue;
+    setPending(rest);
+    setCrop(first ? { src: URL.createObjectURL(first), index: null } : null);
+  };
+
+  // Chosen photos are cropped one after another
+  const addFiles = (files: FileList | null) => {
     if (!files) return;
-    const next: ImageItem[] = [];
+    const valid: File[] = [];
     for (const original of Array.from(files)) {
-      if (!original.type.startsWith("image/")) {
-        toast("error", `${original.name} is not an image`);
-        continue;
-      }
-      // Shrink + convert to WebP in the browser so the upload is small and fast
-      const file = await imageToWebp(original, IMAGE_SIZES.project);
-      if (file.size > 5 * 1024 * 1024) {
-        toast("error", `${original.name} is larger than 5 MB`);
-        continue;
-      }
-      next.push({ url: URL.createObjectURL(file), file });
+      if (original.type.startsWith("image/")) valid.push(original);
+      else toast("error", `${original.name} is not an image`);
     }
-    setImages((prev) => [...prev, ...next].slice(0, 10));
+    nextInQueue(valid.slice(0, 10 - images.length));
+  };
+
+  // Cropper returns a WebP in the website's frame, ready to upload
+  const applyCrop = (file: File) => {
+    if (file.size > 5 * 1024 * 1024) {
+      toast("error", "Image must be smaller than 5 MB");
+    } else if (crop?.index != null) {
+      const item = { url: URL.createObjectURL(file), file };
+      setImages((prev) => prev.map((img, j) => (j === crop.index ? item : img)));
+    } else {
+      setImages((prev) => [...prev, { url: URL.createObjectURL(file), file }].slice(0, 10));
+    }
+    nextInQueue(pending);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -299,6 +321,19 @@ export default function AdminPortfolio() {
         onSubmit={handleSubmit}
         submitLabel={editing ? "Save changes" : "Add project"}
         saving={saving}
+        overlay={
+          crop ? (
+            <ImageCropper
+              src={crop.src}
+              aspect={PROJECT_PHOTO_ASPECT}
+              outputWidth={1600}
+              guide="none"
+              allowFit
+              onCancel={() => nextInQueue(pending)}
+              onDone={applyCrop}
+            />
+          ) : null
+        }
       >
         <FormSection title="Project details">
           <Field label="Title" required>
@@ -341,10 +376,10 @@ export default function AdminPortfolio() {
           </Field>
         </FormSection>
 
-        <FormSection title="Images" description="The first image is used as the cover. Up to 10 images — converted to WebP automatically.">
+        <FormSection title="Images" description="The first image is used as the cover. Up to 10 images — each is cropped to the website frame and saved as WebP.">
           <div className="grid grid-cols-3 gap-3">
             {images.map((img, i) => (
-              <div key={img.url} className="group relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+              <div key={img.url} className="group relative aspect-[16/10] overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
                 { }
                 <img src={img.url} alt="" className="h-full w-full object-cover" />
                 {i === 0 && (
@@ -352,6 +387,14 @@ export default function AdminPortfolio() {
                     Cover
                   </span>
                 )}
+                <button
+                  type="button"
+                  onClick={() => setCrop({ src: img.url, index: i })}
+                  className="absolute left-1.5 top-1.5 rounded-full bg-white/90 p-1 text-slate-600 opacity-0 shadow transition-opacity hover:text-cyan-700 group-hover:opacity-100 focus:opacity-100"
+                  aria-label="Adjust image"
+                >
+                  <Crop className="h-3.5 w-3.5" />
+                </button>
                 <button
                   type="button"
                   onClick={() => setImages((prev) => prev.filter((_, j) => j !== i))}
@@ -366,7 +409,7 @@ export default function AdminPortfolio() {
               <button
                 type="button"
                 onClick={() => fileRef.current?.click()}
-                className="flex aspect-square flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed border-slate-300 text-slate-500 transition-colors hover:border-cyan-500 hover:text-cyan-700"
+                className="flex aspect-[16/10] flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed border-slate-300 text-slate-500 transition-colors hover:border-cyan-500 hover:text-cyan-700"
               >
                 <Upload className="h-5 w-5" />
                 <span className="text-xs font-medium">Upload</span>
