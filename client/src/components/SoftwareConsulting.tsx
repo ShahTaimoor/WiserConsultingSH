@@ -572,7 +572,7 @@ const SoftwareConsulting: React.FC = () => {
             </div>
             <a
               href="/contact"
-              className="self-start inline-flex items-center gap-2 px-5 py-2.5 bg-white text-neutral-950 text-sm font-semibold hover:bg-cyan-50 transition-colors"
+              className="self-start inline-flex items-center gap-2 px-5 py-2.5 bg-white text-neutral-950 text-sm font-semibold hover:bg-cyan-400 hover:text-[#0a0a0b] transition-colors"
             >
               Start a Project <ArrowUpRight className="w-4 h-4" />
             </a>
