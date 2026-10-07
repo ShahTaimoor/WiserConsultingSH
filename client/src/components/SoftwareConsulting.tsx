@@ -188,7 +188,7 @@ const SoftwareConsulting: React.FC = () => {
   const LETTERS = ['A', 'B', 'C', 'D'];
 
   return (
-    <div className="relative bg-[#0a0a0b]">
+    <div className="relative bg-[#f4f4f5]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-8 sm:pb-10 space-y-8 sm:space-y-10">
         {/* Hero — company first, live client work as proof */}
         <section>
@@ -202,7 +202,7 @@ const SoftwareConsulting: React.FC = () => {
               <div className={`${dark.cell} relative overflow-hidden p-5 sm:p-8 flex flex-col justify-between gap-8 lg:min-h-[440px]`}>
                 <div
                   aria-hidden
-                  className="absolute inset-0 opacity-40 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:linear-gradient(to_bottom_right,black,transparent_70%)]"
+                  className="absolute inset-0 opacity-40 bg-[linear-gradient(rgba(0,0,0,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.05)_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:linear-gradient(to_bottom_right,black,transparent_70%)]"
                 />
                 <motion.div
                   aria-hidden
@@ -508,16 +508,10 @@ const SoftwareConsulting: React.FC = () => {
                   Meet the Team <ArrowUpRight className="w-4 h-4 text-cyan-400 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </Link>
               </motion.div>
-              <div className="relative overflow-hidden bg-[#111214] min-h-[380px] lg:min-h-[420px]">
+              <div className="relative overflow-hidden bg-[#ffffff] min-h-[380px] lg:min-h-[420px]">
                 <div
                   aria-hidden
-                  className="absolute inset-0 opacity-40 bg-[linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] bg-[size:28px_28px] [mask-image:linear-gradient(to_top,black,transparent_85%)]"
-                />
-                <motion.div
-                  aria-hidden
-                  className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_100%,rgba(34,211,238,0.5),rgba(8,145,178,0.15)_45%,transparent_75%)]"
-                  animate={{ opacity: [0.7, 1, 0.7] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                  className="absolute inset-0 opacity-40 bg-[linear-gradient(rgba(0,0,0,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.06)_1px,transparent_1px)] bg-[size:28px_28px] [mask-image:linear-gradient(to_top,black,transparent_85%)]"
                 />
                 <motion.div
                   className="absolute inset-0"
@@ -536,6 +530,9 @@ const SoftwareConsulting: React.FC = () => {
                 </motion.div>
                 <span className="absolute left-0 bottom-0 bg-neutral-950 text-cyan-400 font-mono text-[10px] uppercase tracking-wider px-2.5 py-1.5">
                   B1 · {PROFILE.title}
+                </span>
+                <span className="absolute right-0 bottom-0 bg-cyan-400 text-neutral-950 font-mono text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1.5">
+                  shahtaimoor
                 </span>
               </div>
             </div>
@@ -563,7 +560,7 @@ const SoftwareConsulting: React.FC = () => {
 
         {/* CTA — cyan card + white card, as in the brand stationery */}
         <motion.section {...reveal()} className="grid md:grid-cols-[1.25fr_1fr] gap-px bg-white/10 border border-white/10">
-          <div className="relative flex flex-col justify-between gap-10 p-6 sm:p-8 bg-gradient-to-b from-cyan-300 via-cyan-600 to-[#0a0a0b] min-h-[280px]">
+          <div className="relative flex flex-col justify-between gap-10 p-6 sm:p-8 bg-gradient-to-b from-cyan-300 via-cyan-600 to-[#f4f4f5] min-h-[280px]">
             <div>
               <p className="font-mono text-[11px] tracking-[0.2em] uppercase text-neutral-900/70 mb-2">06 / Start</p>
               <h2 className="text-3xl sm:text-4xl font-semibold text-neutral-950 tracking-tight">

@@ -27,7 +27,7 @@ export function Footer() {
   );
 
   return (
-    <footer className="bg-[#0a0a0b] text-white border-t border-cyan-400/30">
+    <footer className="bg-[#f4f4f5] text-white border-t border-cyan-400/30">
       <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 pt-10 sm:pt-12 pb-6 sm:pb-8">
         <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex flex-col gap-4 sm:gap-5 shrink-0">
@@ -69,8 +69,8 @@ export function Footer() {
           <svg viewBox="0 6 1000 58" className="block w-full h-auto select-none" role="img" aria-label="Tech Wiser Consulting">
             <defs>
               <linearGradient id="footer-wordmark" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#404040" />
-                <stop offset="100%" stopColor="#171717" />
+                <stop offset="0%" stopColor="#6b6b6b" />
+                <stop offset="100%" stopColor="#a3a3a3" />
               </linearGradient>
             </defs>
             <text
@@ -80,7 +80,9 @@ export function Footer() {
               lengthAdjust="spacingAndGlyphs"
               fill="url(#footer-wordmark)"
               fontSize="72"
-              fontWeight="700"
+              fontWeight="900"
+              stroke="#8a8a8a"
+              strokeWidth="2"
               letterSpacing="-2"
             >
               TECH WISER CONSULTING

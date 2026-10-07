@@ -61,8 +61,8 @@ export function Navbar() {
 
           <nav className={`relative pointer-events-auto flex items-center justify-between gap-2 sm:gap-3 h-12 sm:h-[3rem] px-2.5 sm:px-3.5 rounded-lg border transition-all duration-500 w-full lg:justify-start lg:w-auto lg:flex-1 lg:min-w-0 lg:max-w-5xl lg:mx-auto ${
             isScrolled
-              ? "bg-[#0a0a0b]/95 backdrop-blur-xl border-white/10 shadow-lg shadow-black/40"
-              : "bg-[#0a0a0b]/85 backdrop-blur-lg border-white/10 shadow-sm shadow-black/20"
+              ? "bg-[#f4f4f5]/95 backdrop-blur-xl border-white/10 shadow-lg shadow-black/40"
+              : "bg-[#f4f4f5]/85 backdrop-blur-lg border-white/10 shadow-sm shadow-black/20"
           }`}>
             <Link href="/" className="flex items-center gap-2 shrink-0 group min-w-0">
               <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-md flex items-center justify-center overflow-hidden bg-white ring-1 ring-white/10 group-hover:ring-cyan-400/60 transition-all">

@@ -100,7 +100,7 @@ const Portfolio = () => {
   const techCount = new Set(projects.flatMap((p) => p.technologies ?? [])).size;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0b]">
+    <div className="min-h-screen bg-[#f4f4f5]">
       <PageHero
         eyebrow="Work / Projects"
         title="Selected Projects"
@@ -122,11 +122,11 @@ const Portfolio = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 sm:space-y-10">
         {/* Projects */}
         {loading ? (
-          <div className="border border-white/10 bg-[#111214]">
+          <div className="border border-white/10 bg-[#ffffff]">
             {[0, 1, 2].map((i) => (
               <div key={i} className="grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-px bg-white/[0.08] border-b border-white/10 last:border-b-0">
-                <div className="aspect-[16/10] bg-[#111214] animate-pulse" />
-                <div className="bg-[#111214] p-5 space-y-3">
+                <div className="aspect-[16/10] bg-[#ffffff] animate-pulse" />
+                <div className="bg-[#ffffff] p-5 space-y-3">
                   <div className="h-3 w-24 bg-white/10 animate-pulse" />
                   <div className="h-6 w-3/4 bg-white/10 animate-pulse" />
                   <div className="h-3 w-full bg-white/5 animate-pulse" />
@@ -173,7 +173,7 @@ const Portfolio = () => {
                     className="col-span-full grid grid-cols-1 lg:grid-cols-[40px_minmax(0,1.1fr)_minmax(0,1fr)] gap-px"
                   >
                     <RowNum tone="dark" n={index + 1} className="hidden lg:flex" />
-                    <div className="bg-[#111214] p-3">
+                    <div className="bg-[#ffffff] p-3">
                       {project.images && project.images.length > 0 ? (
                         <ImageSlider images={project.images} title={project.title} link={project.link} />
                       ) : (
@@ -182,7 +182,7 @@ const Portfolio = () => {
                         </div>
                       )}
                     </div>
-                    <div className={`bg-[#111214] ${SELECTABLE} p-5 sm:p-6 flex flex-col gap-4`}>
+                    <div className={`bg-[#ffffff] ${SELECTABLE} p-5 sm:p-6 flex flex-col gap-4`}>
                       <div>
                         <p className="font-mono text-[11px] uppercase tracking-wider text-cyan-400 mb-2">
                           {String(index + 1).padStart(2, "0")} · {categoryLabel(project.category)}
@@ -281,7 +281,7 @@ const Portfolio = () => {
         {/* CTA */}
         <motion.section
           {...reveal()}
-          className="relative overflow-hidden border border-white/10 p-6 sm:p-10 bg-gradient-to-br from-cyan-300 via-cyan-600 to-[#0a0a0b] flex flex-col md:flex-row md:items-end justify-between gap-6"
+          className="relative overflow-hidden border border-white/10 p-6 sm:p-10 bg-gradient-to-br from-cyan-300 via-cyan-600 to-[#f4f4f5] flex flex-col md:flex-row md:items-end justify-between gap-6"
         >
           <div>
             <p className="font-mono text-[11px] tracking-[0.2em] uppercase text-neutral-900/70 mb-2">Next / Your project</p>

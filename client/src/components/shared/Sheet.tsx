@@ -23,10 +23,10 @@ export const TONE: Record<Tone, {
   border: string; title: string; body: string; muted: string;
 }> = {
   dark: {
-    frame: 'bg-[#111214] border-white/10',
+    frame: 'bg-[#ffffff] border-white/10',
     grid: 'bg-white/[0.08]',
-    cell: 'bg-[#111214]',
-    head: 'bg-[#17181b] text-neutral-500',
+    cell: 'bg-[#ffffff]',
+    head: 'bg-[#ececee] text-neutral-500',
     border: 'border-white/10',
     title: 'text-white',
     body: 'text-neutral-400',
@@ -173,7 +173,7 @@ export const PageHero = ({ eyebrow, title, subtitle, meta }: {
   <header className="relative overflow-hidden border-b border-white/10">
     <div
       aria-hidden
-      className="absolute inset-0 opacity-50 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:linear-gradient(to_bottom,black,transparent)]"
+      className="absolute inset-0 opacity-50 bg-[linear-gradient(rgba(0,0,0,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.05)_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:linear-gradient(to_bottom,black,transparent)]"
     />
     <motion.div
       aria-hidden

@@ -21,6 +21,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   useEffect(() => setMounted(true), []);
 
+  // Dark tokens for the admin panel only (portals render outside this tree, so toggle on <html>)
+  useEffect(() => {
+    document.documentElement.classList.add("admin-invert");
+    return () => document.documentElement.classList.remove("admin-invert");
+  }, []);
+
   useEffect(() => {
     if (!mounted) return;
     if (!user) router.replace("/login");

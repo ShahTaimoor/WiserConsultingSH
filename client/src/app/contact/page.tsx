@@ -70,7 +70,7 @@ const Contact = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0b]">
+    <div className="min-h-screen bg-[#f4f4f5]">
       <PageHero
         eyebrow="Contact / Get in touch"
         title="Let's build something"
@@ -188,8 +188,8 @@ const Contact = () => {
           </Sheet>
 
           {/* Contact channels */}
-          <motion.aside {...reveal(0.1)} className="flex flex-col border border-white/10 bg-[#111214]">
-            <div className="border-b border-white/10 bg-[#17181b] px-5 py-2.5 font-mono text-[10px] uppercase tracking-wider text-neutral-500">
+          <motion.aside {...reveal(0.1)} className="flex flex-col border border-white/10 bg-[#ffffff]">
+            <div className="border-b border-white/10 bg-[#ececee] px-5 py-2.5 font-mono text-[10px] uppercase tracking-wider text-neutral-500">
               Direct channels
             </div>
             <ul className="divide-y divide-white/10">
@@ -244,7 +244,7 @@ const Contact = () => {
               href={mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="absolute bottom-4 left-4 inline-flex items-center gap-2 border border-white/10 bg-[#0a0a0b]/90 px-3.5 py-2 text-sm text-white backdrop-blur transition-colors hover:border-cyan-400"
+              className="absolute bottom-4 left-4 inline-flex items-center gap-2 border border-white/10 bg-[#f4f4f5]/90 px-3.5 py-2 text-sm text-white backdrop-blur transition-colors hover:border-cyan-400"
             >
               <MapPin className="h-4 w-4 text-cyan-400" /> Open in Google Maps
             </a>

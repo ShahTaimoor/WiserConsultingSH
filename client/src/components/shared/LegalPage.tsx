@@ -80,7 +80,7 @@ export function LegalPage({
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0a0b]">
+    <div className="min-h-screen bg-[#f4f4f5]">
       <PageHero
         eyebrow={eyebrow}
         title={title}
@@ -108,7 +108,7 @@ export function LegalPage({
           >
             <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" /> Back to Home
           </Link>
-          <div className="border border-white/10 bg-[#111214]">
+          <div className="border border-white/10 bg-[#ffffff]">
             <p className="px-3 py-2 border-b border-white/10 font-mono text-[10px] uppercase tracking-[0.2em] text-neutral-500">
               Contents
             </p>

@@ -292,14 +292,14 @@ export function Sidebar() {
         initial={false}
         animate={{ width: collapsed ? COLLAPSED_W : EXPANDED_W }}
         transition={{ type: "spring", stiffness: 320, damping: 34 }}
-        className="hidden lg:block fixed inset-y-0 left-0 z-40 bg-[#0a0a0b] border-r border-white/10 overflow-hidden"
+        className="hidden lg:block fixed inset-y-0 left-0 z-40 bg-[#f4f4f5] border-r border-white/10 overflow-hidden"
       >
         <SidebarBody collapsed={collapsed} onToggleCollapse={toggleCollapse}
           onOpenSearch={openSearch} indicatorId="sidebar-active-desktop" />
       </motion.aside>
 
       {/* Mobile top bar */}
-      <header className="lg:hidden fixed inset-x-0 top-0 z-40 h-14 flex items-center justify-between px-3 bg-[#0a0a0b]/95 backdrop-blur border-b border-white/10">
+      <header className="lg:hidden fixed inset-x-0 top-0 z-40 h-14 flex items-center justify-between px-3 bg-[#f4f4f5]/95 backdrop-blur border-b border-white/10">
         <button onClick={() => setMobileOpen(true)} aria-label="Open menu"
           className="p-2 text-neutral-300 hover:text-white hover:bg-white/10 transition-colors">
           <Menu className="w-5 h-5" />
@@ -327,7 +327,7 @@ export function Sidebar() {
               key="drawer"
               initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }}
               transition={{ type: "spring", stiffness: 380, damping: 38 }}
-              className="lg:hidden fixed inset-y-0 left-0 z-50 w-[272px] max-w-[85vw] bg-[#0a0a0b] border-r border-white/10"
+              className="lg:hidden fixed inset-y-0 left-0 z-50 w-[272px] max-w-[85vw] bg-[#f4f4f5] border-r border-white/10"
             >
               <button onClick={() => setMobileOpen(false)} aria-label="Close menu"
                 className="absolute right-2 top-4 z-10 p-2 text-neutral-400 hover:text-white">

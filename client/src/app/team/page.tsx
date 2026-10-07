@@ -173,7 +173,7 @@ const Team = () => {
   const activeMember = teamMembers[activeIndex];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0b]">
+    <div className="min-h-screen bg-[#f4f4f5]">
       <PageHero
         eyebrow="People / Team"
         title="Meet the Team"
@@ -189,8 +189,8 @@ const Team = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 sm:space-y-10">
         {loading ? (
           <div className="grid lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] gap-px bg-white/[0.08] border border-white/10">
-            <div className="aspect-[1792/1024] bg-[#111214] animate-pulse" />
-            <div className="bg-[#111214] p-6 space-y-3">
+            <div className="aspect-[1792/1024] bg-[#ffffff] animate-pulse" />
+            <div className="bg-[#ffffff] p-6 space-y-3">
               <div className="h-3 w-20 bg-white/10 animate-pulse" />
               <div className="h-7 w-2/3 bg-white/10 animate-pulse" />
               <div className="h-3 w-full bg-white/5 animate-pulse" />
@@ -256,7 +256,7 @@ const Team = () => {
                     </span>
                   </div>
 
-                  <div className="bg-[#111214] p-5 sm:p-7 flex flex-col gap-5">
+                  <div className="bg-[#ffffff] p-5 sm:p-7 flex flex-col gap-5">
                     <AnimatePresence mode="wait">
                       <motion.div
                         key={activeMember._id}
@@ -385,7 +385,7 @@ const Team = () => {
         {/* CTA */}
         <motion.section
           {...reveal()}
-          className="relative overflow-hidden border border-white/10 p-6 sm:p-10 bg-gradient-to-br from-cyan-300 via-cyan-600 to-[#0a0a0b] flex flex-col md:flex-row md:items-end justify-between gap-6"
+          className="relative overflow-hidden border border-white/10 p-6 sm:p-10 bg-gradient-to-br from-cyan-300 via-cyan-600 to-[#f4f4f5] flex flex-col md:flex-row md:items-end justify-between gap-6"
         >
           <div>
             <p className="font-mono text-[11px] tracking-[0.2em] uppercase text-neutral-900/70 mb-2">Careers / Open</p>
